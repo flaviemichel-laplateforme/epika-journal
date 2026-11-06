@@ -1,0 +1,46 @@
+/*
+ * Screenshot gallery of an issue page (gallery.js). Self-contained: uses the tokens of styles.css when they exist,
+ * with fallbacks. One slide = one scene, the desktop shot and the phone shot side by side, and its caption.
+ * Without JavaScript: a row of slides that scrolls sideways. No autoplay, ever (RGAA 13.8).
+ */
+.gallery { display: grid; gap: 12px; min-width: 0; }
+
+.gallery-controls { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.gallery-controls[hidden] { display: none; }
+.gallery-button {
+  min-width: 44px; min-height: 44px; border-radius: 999px; cursor: pointer;
+  border: 2px solid var(--navy, #14116d); background: var(--bg, #fff); color: var(--fg, #1a1a1a);
+  font: inherit; font-size: 20px; font-weight: 700; line-height: 1;
+}
+.gallery-button:hover:not(:disabled) { background: var(--tint, #e0f7f5); }
+.gallery-button:disabled { opacity: .4; cursor: default; }
+.gallery-count { min-width: 4.5em; text-align: center; font-variant-numeric: tabular-nums; color: var(--muted, #5f5f66); font-weight: 600; }
+
+.gallery-track {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth;
+  overscroll-behavior-x: contain; scrollbar-width: thin;
+  border: 1px solid var(--line, #d8d0d0); border-radius: 16px; background: var(--surface, #f6f7fb);
+}
+.gallery-track:focus-visible { outline: 3px solid var(--turquoise, #0d8f8b); outline-offset: 2px; }
+.slide { flex: 0 0 100%; scroll-snap-align: start; padding: 16px; min-width: 0; }
+.slide figure { margin: 0; display: grid; gap: 12px; }
+
+/* Desktop shot (1280 × 800) and phone shot (360 × 740) at the same height: widths 3.3 to 1. */
+.shots { display: grid; grid-template-columns: 3.3fr 1fr; gap: 14px; align-items: start; }
+.shots img { display: block; width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line, #d8d0d0); background: var(--bg, #fff); }
+.shots .shot-mobile { border-radius: 14px; box-shadow: 0 0 0 4px var(--fg, #1a1a1a); border-color: transparent; }
+
+.slide figcaption { font-size: 15px; max-width: 68ch; }
+.slide-num {
+  display: inline-grid; place-items: center; width: 26px; height: 26px; margin-right: 6px; border-radius: 50%;
+  background: var(--tint, #e0f7f5); color: var(--turquoise, #0d8f8b); font-weight: 800; font-size: 13px;
+}
+
+/* A phone reading the journal: the desktop shot on top, the phone shot under it, narrower. */
+@media (max-width: 640px) {
+  .shots { grid-template-columns: 1fr; }
+  .shots .shot-mobile { width: 60%; justify-self: center; }
+}
+
+@media (prefers-reduced-motion: reduce) { .gallery-track { scroll-behavior: auto; } }

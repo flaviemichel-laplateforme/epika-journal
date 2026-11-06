@@ -1,0 +1,12 @@
+{
+  "name": "epika-journal",
+  "private": true,
+  "type": "module",
+  "description": "Journal d'Epika: static site, plus the tool that takes the screenshots of each issue.",
+  "scripts": {
+    "captures": "node tools/capture.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}
