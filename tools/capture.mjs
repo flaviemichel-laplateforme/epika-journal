@@ -48,7 +48,9 @@ try {
                 await scene.play(page, context, format.name);
                 // Fonts and images settled, no blinking caret in the shot.
                 await page.evaluate(() => document.fonts.ready);
-                await page.waitForLoadState("networkidle");
+                // Next.js prefetches the pages a link points to (« /cgu » on the registration page, not built yet): those
+                // requests may stay pending, so the wait is capped instead of failing the whole run.
+                await page.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => {});
                 await page.screenshot({ path: fileURLToPath(new URL(`../images/${issue}/${file}-${format.name}.jpg`, import.meta.url)), type: "jpeg", quality: 80, caret: "hide", animations: "disabled" });
                 await context.close();
             }
