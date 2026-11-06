@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signaler un événement (#76) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #76 d'Epika : signaler un problème sur un événement, l'anti-spam sans CAPTCHA, l'adresse IP jamais gardée, la fenêtre accessible et le formulaire chargé à la demande.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="wrap">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a href="../index.html">← Toutes les issues</a>
+  </div>
+</nav>
+
+<header class="band">
+  <div class="wrap">
+    <div class="chips">
+      <span class="chip done">Terminée · 06/11/2026</span>
+      <span class="chip">#76</span>
+      <span class="chip">#34 user story</span>
+      <span class="chip">EF-30 · US-V10</span>
+    </div>
+    <h1>Signaler un événement</h1>
+    <p class="lede">En bas de chaque fiche, n'importe qui peut signaler un problème : une date fausse, un événement annulé, un contenu déplacé, une arnaque. Sans compte, il suffit d'une adresse e-mail. Les robots sont arrêtés sans CAPTCHA, et l'adresse IP du visiteur n'est jamais enregistrée.</p>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <section>
+      <h2><small>Le parcours</small>De la fiche à la confirmation</h2>
+      <ol class="steps">
+        <li><div><strong>Le visiteur lit la fiche jusqu'en bas</strong><span>Après la source de l'événement, un bouton : « Signaler un problème sur cet événement ». Il est formulé pour inviter à corriger une erreur autant qu'à dénoncer un abus, sans accuser personne.</span></div></li>
+        <li><div><strong>Une fenêtre s'ouvre</strong><span>Un <code>&lt;dialog&gt;</code> natif, comme « Contacter l'organisateur » : il monte du bas de l'écran sur un téléphone et se centre sur un ordinateur. Il rappelle le titre et la date de l'événement.</span></div></li>
+        <li><div><strong>Il choisit un sujet et décrit le problème</strong><span>Cinq sujets en boutons radio, puis un message de 10 à 2000 caractères, avec un compteur. L'e-mail n'est demandé que sans compte : connecté, celui du compte est utilisé.</span></div></li>
+        <li><div><strong>L'API vérifie et enregistre</strong><span><code>POST /api/events/{slug}/reports</code> : la limite d'envois, le champ piège, le doublon, puis l'enregistrement avec l'empreinte de l'IP.</span></div></li>
+        <li><div><strong>La fenêtre confirme</strong><span>« Merci, votre signalement a été envoyé. L'équipe d'Epika va le vérifier. » Le message reçoit le focus, donc un lecteur d'écran le lit aussitôt. En fermant la fenêtre, le focus revient sur le bouton.</span></div></li>
+      </ol>
+    </section>
+
+    <section>
+      <h2><small>Ce que voit le visiteur</small>Le formulaire, puis une erreur</h2>
+      <div class="grid2">
+        <figure class="mock" style="margin:0">
+          <strong>Signaler un problème</strong>
+          <div class="card">
+            <strong>Quel est le problème ?</strong>
+            <span>◉ Informations erronées (date, lieu, prix)<br>○ Événement annulé ou reporté<br>○ Contenu inapproprié<br>○ Arnaque ou spam<br>○ Autre</span>
+            <strong>Adresse e-mail</strong>
+            <span class="caption">Il sert uniquement au suivi de votre signalement.</span>
+          </div>
+          <span class="pill solid">Envoyer le signalement</span>
+          <figcaption class="caption">Aperçu de la fenêtre, avec les textes réels du formulaire. Le message et son compteur sont entre les sujets et l'e-mail.</figcaption>
+        </figure>
+        <figure class="mock" style="margin:0">
+          <strong>Signaler un problème</strong>
+          <div class="alert">Trop de signalements envoyés. Réessayez dans 6 minutes.</div>
+          <figcaption class="caption">Une limite atteinte : le délai vient de l'en-tête <code>Retry-After</code> de l'API, converti en minutes. L'alerte reçoit le focus. Une erreur de saisie, elle, s'affiche sous son champ.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <h2><small>Un choix d'interface</small>Pourquoi pas un drapeau sur les cartes</h2>
+      <p>L'idée de départ était un petit drapeau sur chaque carte d'événement. Il a été écarté :</p>
+      <ul>
+        <li><strong>Signaler est rare</strong>, et on le fait après avoir lu la fiche, pas en parcourant une liste.</li>
+        <li><strong>Sur une carte déjà chargée</strong>, une icône de plus ajoute du bruit.</li>
+        <li><strong>Sur un téléphone</strong>, un drapeau près du doigt provoque des appuis accidentels, donc de faux signalements pour les modérateurs.</li>
+        <li><strong>Un drapeau sur chaque événement</strong> suggère la méfiance.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><small>Vie privée</small>Arrêter les robots sans surveiller les gens</h2>
+      <div class="callout">
+        <p>Pour limiter les abus, il faut reconnaître un expéditeur. Pour respecter la vie privée, il ne faut pas garder son adresse IP. La solution : une <strong>empreinte</strong>.</p>
+        <ul>
+          <li><strong>L'IP n'est jamais enregistrée</strong>, ni écrite dans un journal ou un message d'erreur. La base garde une empreinte HMAC-SHA256 de 64 caractères, calculée avec une clé secrète réservée à cet usage. Sans la clé, personne ne peut retrouver l'adresse.</li>
+          <li><strong>En IPv6, une box a des milliards d'adresses</strong> : l'empreinte est calculée sur le préfixe /64, sinon il suffirait de changer d'adresse pour contourner la limite.</li>
+          <li><strong>L'e-mail sert uniquement au suivi</strong>, et le formulaire le dit.</li>
+          <li><strong>Une anonymisation prévue</strong> : l'e-mail et l'empreinte peuvent devenir vides une fois le signalement traité, ou quand le compte est supprimé (#78). L'historique reste, sans donnée personnelle.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2><small>Backend · PR #174</small>La route <code>POST /api/events/{slug}/reports</code></h2>
+      <p>Une Resource API Platform et son Processor, sans controller. Le client n'envoie que le sujet, le message, l'e-mail et le champ piège : le statut, l'empreinte et le compte ne peuvent pas être imposés.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th scope="col">Réponse</th><th scope="col">Quand</th></tr></thead>
+          <tbody>
+            <tr><td class="code ok">201</td><td>Signalement enregistré. Aussi quand le champ piège est rempli, ou quand un visiteur a déjà signalé cet événement avec cette adresse : rien n'est enregistré, mais rien ne le dit.</td></tr>
+            <tr><td class="code ko">409</td><td>Un compte connecté signale à nouveau le même événement : « Vous avez déjà signalé cet événement. »</td></tr>
+            <tr><td class="code ko">422</td><td>Formulaire invalide : une erreur par champ.</td></tr>
+            <tr><td class="code">404</td><td>Événement inconnu, ou que le public ne peut pas voir (brouillon, masqué, suspendu) : la même réponse que sa fiche.</td></tr>
+            <tr><td class="code ko">429</td><td>Trop d'envois, avec <code>Retry-After</code>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="grid2">
+        <div class="box"><h3>L'anti-spam, dans l'ordre</h3><ul>
+          <li>10 signalements par heure et par réseau, comptés sur l'empreinte</li>
+          <li>Le champ piège <code>website</code>, invisible pour les humains</li>
+          <li>5 signalements par heure et par e-mail, quelle que soit l'IP</li>
+          <li>Un seul signalement par événement et par e-mail, garanti aussi par un index unique en base</li>
+        </ul></div>
+        <div class="box"><h3>Pourquoi pas de 409 pour un visiteur</h3><p>Une 409 permettrait à n'importe qui de taper l'adresse de quelqu'un d'autre et d'apprendre si cette personne a signalé un événement. Un compte, lui, ne peut interroger que sa propre adresse : il reçoit donc la 409.</p></div>
+      </div>
+      <div class="grid2">
+        <div class="box"><h3>La base de données se défend aussi</h3><ul>
+          <li>Des contraintes CHECK : le sujet, le statut, le message de 2000 caractères au plus, l'empreinte en 64 caractères hexadécimaux</li>
+          <li>Un signalement en attente garde toujours son e-mail et son empreinte</li>
+          <li>Des clés étrangères NO ACTION : on ne peut pas supprimer un événement qui a des signalements sans décider d'abord ce qu'ils deviennent</li>
+        </ul></div>
+        <div class="box"><h3>Au déploiement</h3><p>Deux réglages sont obligatoires : la clé des empreintes, qu'il ne faudra jamais changer, et les proxys de confiance. Derrière un reverse proxy mal réglé, tous les visiteurs partageraient la même IP, donc la même limite de 10 signalements par heure.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2><small>Frontend · PR #179</small>Une fenêtre accessible, chargée à la demande</h2>
+      <div class="grid2">
+        <div class="box"><h3>Accessibilité (RGAA)</h3><ul>
+          <li>Les sujets dans un <code>fieldset</code> avec sa <code>legend</code>. Leur erreur est reliée au groupe : <code>aria-invalid</code> n'est pas permis sur un bouton radio.</li>
+          <li>Le compteur est lu avec le message, sans être annoncé à chaque frappe</li>
+          <li>Le focus va sur le premier champ en erreur, sur l'alerte, puis sur la confirmation</li>
+          <li>Le champ piège est hors écran, hors du parcours au clavier et caché aux lecteurs d'écran</li>
+          <li>Des cibles d'au moins 44 px</li>
+        </ul></div>
+        <div class="box"><h3>Les pièces</h3><ul>
+          <li><code>services/report.ts</code> : les sujets, les limites, l'envoi, un message par refus</li>
+          <li><code>schemas/report.ts</code> : la validation Zod, l'e-mail seulement pour un visiteur</li>
+          <li><code>ReportDialog</code> : le bouton et la fenêtre</li>
+          <li><code>ReportForm</code> : le formulaire et la confirmation</li>
+        </ul></div>
+      </div>
+      <p>Lighthouse a montré un vrai problème. Avec la fenêtre, chaque fiche téléchargeait React Hook Form et Zod, alors que presque personne ne signale rien. Le formulaire est maintenant chargé à la demande, avec <code>next/dynamic</code>, et son téléchargement commence dès que la souris survole le bouton.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th scope="col">Fiche d'un événement</th><th scope="col">JavaScript</th><th scope="col">Temps de blocage (mobile)</th></tr></thead>
+          <tbody>
+            <tr><td>Sans la fenêtre</td><td class="code">181 Kio</td><td>330 à 510 ms</td></tr>
+            <tr><td>Formulaire dans la page</td><td class="code ko">229 Kio</td><td>900 à 1 040 ms</td></tr>
+            <tr><td>Formulaire chargé à la demande</td><td class="code ok">182 Kio</td><td>200 à 640 ms</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2><small>Les tests</small>Chaque règle a son test</h2>
+      <div class="grid2">
+        <div class="box"><h3>Backend (PHPUnit)</h3><ul>
+          <li>La route de bout en bout : réponses, validation, doublons, piège, limites, aucune IP en clair</li>
+          <li>Les règles anti-spam, dont deux envois au même instant</li>
+          <li>L'empreinte : IPv4, IPv6 /64, IPv4 écrite en IPv6, clé trop courte</li>
+          <li>Les contraintes de la base et les clés étrangères NO ACTION</li>
+        </ul></div>
+        <div class="box"><h3>Frontend</h3><ul>
+          <li>Vitest : le service, le schéma, la fenêtre (14 tests)</li>
+          <li>Playwright : 7 parcours, visiteur, compte connecté, Échap, 409, 429</li>
+          <li>axe à 360 et 1280 px : fenêtre ouverte, avec ses erreurs, puis confirmée</li>
+          <li>Vérifié aussi contre la vraie API : l'empreinte en base, aucune IP</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section>
+      <h2><small>Livraison</small>Deux PR, l'API puis l'interface</h2>
+      <ul class="prs">
+        <li><span class="num">#174</span><span>Backend : l'entité <code>Report</code> et ses contraintes, l'empreinte de l'IP, la route avec son anti-spam, la documentation.</span></li>
+        <li><span class="num">#179</span><span>Frontend : le service, le schéma, la fenêtre et son formulaire chargé à la demande, les tests de bout en bout.</span></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><small>À savoir</small>Les limites assumées, et la suite</h2>
+      <p class="limit">Une adresse e-mail peut être prise par quelqu'un d'autre. Si un visiteur signale un événement avec l'adresse d'un membre, ce membre recevra « Vous avez déjà signalé cet événement » en le signalant à son tour. C'est accepté : l'événement a bien été signalé une fois, et c'est ce dont la modération a besoin.</p>
+      <p class="limit">La limite par e-mail garde l'adresse dans son cache pendant une heure au plus, comme la limite de l'inscription. Ce cache n'est jamais exposé.</p>
+      <p>La suite : le traitement des signalements par les modérateurs (#89), où le message devra être affiché échappé, jamais interprété comme du HTML ; et l'anonymisation à la suppression d'un compte (#78).</p>
+    </section>
+
+    <nav class="pager" aria-label="Issues">
+      <a href="73-autour-de-moi.html">← #73 Autour de moi</a>
+      <a href="../index.html">Toutes les issues</a>
+    </nav>
+  </div>
+</main>
+</body>
+</html>
