@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>La fiche d'un événement (#74) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #74 d'Epika : la fiche événement, ses dates, sa carte chargée à la demande, la réservation par contact, la source des événements importés et une vraie erreur 404.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a href="../index.html">← Toutes les issues</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 3 · issue #74 et user stories #6, #7 et #33 · EF-04, EF-05, EF-29 · terminée le 05/11/2026</p>
+    <h1>La fiche d'un événement</h1>
+    <p class="lede">Tout ce qu'un visiteur doit savoir d'un événement, et la façon d'y aller ou de réserver. La page est écrite par le serveur : un visiteur ou un robot reçoit la fiche entière. Epika ne prend pas de réservation, elle renvoie vers l'organisateur.</p>
+    <dl class="facts">
+      <div class="fact"><dt>dates affichées d'abord</dt><dd>3</dd></div>
+      <div class="fact"><dt>performance, mobile (Lighthouse)</dt><dd>98</dd></div>
+      <div class="fact"><dt>plus grand élément affiché</dt><dd>1,9 s</dd></div>
+      <div class="fact"><dt>tests Playwright</dt><dd>46</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#parcours">Le parcours</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#serveur">Écrite par le serveur, une vraie 404</a></li>
+        <li><a href="#dates">Les dates</a></li>
+        <li><a href="#lieu">Le lieu et sa carte</a></li>
+        <li><a href="#reservation">Réserver, sans réservation</a></li>
+        <li><a href="#source">La source d'un événement importé</a></li>
+        <li><a href="#accessibilite">Accessibilité et performance</a></li>
+        <li><a href="#tests">Les tests</a></li>
+        <li><a href="#livraison">La PR</a></li>
+        <li><a href="#limites">Limites et suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="parcours" aria-labelledby="parcours-titre">
+      <h2 id="parcours-titre">Le parcours, de la carte à la réservation</h2>
+      <ol class="pipeline">
+        <li><div><strong>Le visiteur ouvre une fiche</strong><span>Depuis une carte de l'accueil ou des résultats, depuis Google ou un lien partagé. Un seul appel à l'API sert à la fois les balises de la page et son contenu.</span></div></li>
+        <li><div><strong>Il lit l'essentiel</strong><span>Photos, pastilles (prix, sous-catégorie, âge), titre avec la prochaine date, organisateur et « Voir le profil », ville et période, bandeaux « annulé », « complet » ou « terminé » en toutes lettres.</span></div></li>
+        <li><div><strong>Il choisit une date</strong><span>Trois dates d'abord, les autres à la demande.</span></div></li>
+        <li><div><strong>Il situe l'événement</strong><span>L'adresse, une carte IGN, et « Ouvrir dans un plan ».</span></div></li>
+        <li><div><strong>Il contacte l'organisateur ou va sur son site</strong><span>Une barre de réservation (en bas de l'écran sur téléphone) ou une carte sous l'en-tête (sur ordinateur).</span></div></li>
+      </ol>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <p class="prose muted">Captures prises par Playwright contre la fausse API d'Epika : toutes les données sont fictives (la carte, elle, est la vraie carte IGN de la commune). Sur ordinateur à gauche, sur téléphone à droite.</p>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #74">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/74/01-entete-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le haut de la fiche « Plongée » : les boutons de retour et de partage sur l'image, le titre, l'organisateur et le lieu. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/74/01-entete-mobile.jpg" width="360" height="740" loading="lazy" alt="Le haut de la fiche « Plongée » : les boutons de retour et de partage sur l'image, le titre, l'organisateur et le lieu. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> L'en-tête : l'image, les pastilles (prix, sous-catégorie, âge), le titre avec la date, l'organisateur et son lien « Voir le profil ». Sur téléphone, la barre de réservation reste en bas de l'écran.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/74/02-dates-desktop.jpg" width="1280" height="800" loading="lazy" alt="La section « Les dates (12) » dépliée, avec cinq dates et les boutons « Voir plus de dates » et « Réduire la liste ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/74/02-dates-mobile.jpg" width="360" height="740" loading="lazy" alt="La section « Les dates (12) » dépliée, avec cinq dates et les boutons « Voir plus de dates » et « Réduire la liste ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> Trois dates d'abord ; « Voir les 9 autres dates » déplie celles qui sont déjà dans la page, puis « Voir plus de dates » charge la suite, par pages.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/74/03-lieu-desktop.jpg" width="1280" height="800" loading="lazy" alt="La section « Lieu » : l'adresse et la carte, avec le bouton « Ouvrir dans un plan ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/74/03-lieu-mobile.jpg" width="360" height="740" loading="lazy" alt="La section « Lieu » : l'adresse et la carte, avec le bouton « Ouvrir dans un plan ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> Le lieu, avec une carte IGN qui ne se charge qu'en arrivant à cet endroit de la page : aucune tuile n'est demandée avant.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/74/04-source-desktop.jpg" width="1280" height="800" loading="lazy" alt="La zone « Source » dépliée : le lien vers l'événement d'origine, l'organisme et la licence. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/74/04-source-mobile.jpg" width="360" height="740" loading="lazy" alt="La zone « Source » dépliée : le lien vers l'événement d'origine, l'organisme et la licence. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">4</span> Un événement importé garde sa source : une ligne repliée dit l'essentiel (« Source : OpenAgenda · mis à jour le … »), et le détail (lien d'origine, licence) s'ouvre.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/74/05-contact-desktop.jpg" width="1280" height="800" loading="lazy" alt="La fenêtre « Contacter l'organisateur », avec les boutons « Appeler » et « Écrire un e-mail ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/74/05-contact-mobile.jpg" width="360" height="740" loading="lazy" alt="La fenêtre « Contacter l'organisateur », avec les boutons « Appeler » et « Écrire un e-mail ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">5</span> Epika ne prend pas de réservation : ici, « Contacter l'organisateur » ouvre une fenêtre avec l'appel et l'e-mail. Échap la ferme et rend le focus au bouton.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/74/06-introuvable-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page « introuvable » d'Epika, affichée pour un événement masqué. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/74/06-introuvable-mobile.jpg" width="360" height="740" loading="lazy" alt="La page « introuvable » d'Epika, affichée pour un événement masqué. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">6</span> Un événement masqué ou supprimé répond une vraie erreur 404, pas une page vide avec un code 200 : les moteurs de recherche l'oublient.</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="serveur" aria-labelledby="serveur-titre">
+      <hgroup><p class="eyebrow">Frontend · PR #166</p><h2 id="serveur-titre">Écrite par le serveur, une vraie 404</h2></hgroup>
+      <div class="grid2">
+        <div class="box"><h3>Référencement</h3><ul>
+          <li>Titre, description, adresse canonique et Open Graph propres à chaque fiche</li>
+          <li>Des données structurées JSON-LD <code>Event</code>, une par prochaine séance (les 5 prochaines), avec le <code>&lt;</code> échappé</li>
+          <li>Une adresse en majuscules redirige (308) vers la page en minuscules</li>
+        </ul></div>
+        <div class="box"><h3>Une erreur qui en est une</h3><ul>
+          <li>Un événement masqué, en brouillon ou inconnu répond une vraie <strong>404</strong>, décidée avant l'envoi de la page, non indexée</li>
+          <li>Pas une page « introuvable » avec un code 200, que les moteurs garderaient</li>
+          <li>La page offre « Chercher un événement » et « Revenir à l'accueil »</li>
+        </ul></div>
+      </div>
+      <div class="note">
+        <h3>Retour et partage</h3>
+        <p>Deux boutons ronds sont posés sur la photo. « Retour » revient en arrière dans l'historique quand on vient d'Epika (les filtres de la recherche et le défilement sont conservés), sinon il mène à la recherche : c'est un vrai lien, qui marche sans JavaScript. « Partager » utilise le partage du téléphone, ou copie le lien et dit « Lien copié ».</p>
+      </div>
+    </section>
+
+    <section id="dates" aria-labelledby="dates-titre">
+      <hgroup><p class="eyebrow">Décision du 05/11/2026</p><h2 id="dates-titre">Trois dates d'abord</h2></hgroup>
+      <ol class="pipeline">
+        <li><div><strong>Trois dates affichées</strong><span>Le cahier des charges en demandait cinq (EF-04) ; trois suffisent à décider, et la page reste courte. Les données structurées gardent les cinq prochaines.</span></div></li>
+        <li><div><strong>« Voir les 9 autres dates »</strong><span>Les cinq prochaines dates arrivent avec la page : les déplier ne demande rien au serveur.</span></div></li>
+        <li><div><strong>« Voir plus de dates »</strong><span>Charge la suite par pages de dix, avec TanStack Query. Le focus passe à la première nouvelle date.</span></div></li>
+        <li><div><strong>« Réduire la liste »</strong><span>Revient à trois. Une seule date n'est jamais repliée.</span></div></li>
+      </ol>
+    </section>
+
+    <section id="lieu" aria-labelledby="lieu-titre">
+      <h2 id="lieu-titre">Le lieu et sa carte</h2>
+      <div class="prose">
+        <p>L'adresse est écrite dans un <code>&lt;address&gt;</code>. La carte est une carte IGN « Plan » avec Leaflet, qui <strong>ne se charge qu'en arrivant au lieu</strong> : tant que le visiteur n'y est pas, aucune tuile n'est demandée et aucun script de carte n'est exécuté. « Ouvrir dans un plan » mène à OpenStreetMap.</p>
+        <p>Un test arrête les tuiles (une image vide à la place) pour vérifier qu'aucune n'est demandée avant le défilement, et que l'intégration continue ne sort jamais sur Internet.</p>
+      </div>
+    </section>
+
+    <section id="reservation" aria-labelledby="reservation-titre">
+      <hgroup><p class="eyebrow">EF-05 · décision du 05/11/2026</p><h2 id="reservation-titre">Réserver, sans réservation</h2></hgroup>
+      <div class="grid2">
+        <div class="box"><h3>Réserver sur le site</h3><p>L'organisateur a un site de réservation (ou, pour un événement importé, sa page OpenAgenda) : « Réserver sur le site » ou « Voir sur OpenAgenda », dans un nouvel onglet annoncé comme tel.</p></div>
+        <div class="box"><h3>Contacter l'organisateur</h3><p>Une fenêtre (<code>&lt;dialog&gt;</code> natif, qui monte du bas sur téléphone) avec <code>tel:</code>, <code>mailto:</code> (objet déjà écrit) et des boutons pour copier. Échap la ferme et rend le focus au bouton.</p></div>
+      </div>
+      <ul class="prose">
+        <li>Le bouton est un bouton navy : le navy est l'action principale, le turquoise reste l'accent de la marque, jamais un bouton</li>
+        <li>Sur téléphone, une barre blanche collée en bas de l'écran pendant la lecture (le pied de page vient après elle) ; sur ordinateur, une carte sous l'en-tête</li>
+        <li>Aucun bouton quand l'événement est terminé, annulé ou complet</li>
+        <li><code>scroll-padding-bottom</code> : la barre ne cache jamais l'élément qui a le focus (WCAG 2.4.11)</li>
+      </ul>
+    </section>
+
+    <section id="source" aria-labelledby="source-titre">
+      <hgroup><p class="eyebrow">EF-29 · Licence Ouverte</p><h2 id="source-titre">La source d'un événement importé</h2></hgroup>
+      <div class="prose">
+        <p>Un événement venu d'OpenAgenda doit en citer la source. La zone « Source » est repliée sur une ligne qui garde ce que la licence exige : « Source : OpenAgenda · mis à jour le 31 août 2026 ». Le détail s'ouvre dessous : le lien vers l'événement d'origine (dans un nouvel onglet), l'organisme qui le diffuse et la licence, liée à son texte officiel quand elle est connue.</p>
+        <p>Les vues (RG-09) sont comptées par le navigateur, <strong>une fois par onglet et par événement</strong> (<code>sessionStorage</code>, avec un repli en mémoire), et jamais par le rendu du serveur : un robot ou un rechargement ne gonfle pas les chiffres.</p>
+      </div>
+    </section>
+
+    <section id="accessibilite" aria-labelledby="accessibilite-titre">
+      <h2 id="accessibilite-titre">Accessibilité et performance</h2>
+      <div class="grid2">
+        <div class="box"><h3>Accessibilité (RGAA 4.1.2)</h3><ul>
+          <li>Des <code>&lt;dialog&gt;</code> et des <code>&lt;details&gt;</code> natifs</li>
+          <li>Un carrousel de photos accessible : boutons, points avec <code>aria-current</code>, « Photo 2 sur 4 » annoncé, balayage, pas de lecture automatique</li>
+          <li>Des cibles de 44 px, 24 px au minimum pour un lien dans du texte (WCAG 2.5.8)</li>
+          <li>axe : 0 défaut à 360 et 1280 px, avec la source et la fenêtre de contact ouvertes</li>
+        </ul></div>
+        <div class="box"><h3>Performance (Lighthouse, mobile, 4G lente)</h3><ul>
+          <li>Performance 98, accessibilité 100, bonnes pratiques 96, référencement 100</li>
+          <li>Plus grand élément affiché : 1,9 s ; blocage total : 110 ms ; décalage de mise en page : 0</li>
+          <li>La première photo est demandée tout de suite, jamais en chargement différé</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section id="tests" aria-labelledby="tests-titre">
+      <h2 id="tests-titre">Chaque critère a son test</h2>
+      <div class="grid2">
+        <div class="box"><h3>Vitest : 201 tests</h3><ul><li>Les services et les composants de la fiche</li></ul></div>
+        <div class="box"><h3>Playwright : 46 tests</h3><ul>
+          <li>La vraie 404, les dates, la fenêtre de contact, la barre collée, la carte à la demande</li>
+          <li>Une vue par onglet, « Retour » après une recherche filtrée, et depuis un lien direct</li>
+          <li>axe à 360 et 1280 px</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section id="livraison" aria-labelledby="livraison-titre">
+      <h2 id="livraison-titre">Une PR</h2>
+      <ul class="prs">
+        <li><span class="num">#166</span><span>Frontend : la lecture et les métadonnées, la photo et les boutons, l'en-tête, les dates, le contenu, le lieu et sa carte, la réservation, la source, les vues, les tests de bout en bout.</span></li>
+      </ul>
+    </section>
+
+    <section id="limites" aria-labelledby="limites-titre">
+      <h2 id="limites-titre">Les limites assumées, et la suite</h2>
+      <p class="limit">Pas de cœur de favori : il attend les comptes (#77).</p>
+      <p class="limit">Epika ne prend aucune réservation : elle renvoie vers l'organisateur. Une réservation en ligne est prévue en v2 (#104).</p>
+      <p class="prose">La suite, déjà en issues : la page de la structure derrière « Voir le profil » (#75), le pied de page (#165), le cache des pages publiques (#168) et la fin des erreurs 401 dans la console pour un visiteur (#169). Le signalement d'un problème, en bas de la fiche, vient avec #76.</p>
+    </section>
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="73-autour-de-moi.html" rel="prev"><span>← Issue précédente</span><strong>#73 Autour de moi</strong></a>
+      <a class="next" href="75-page-d-une-structure.html" rel="next"><span>Issue suivante →</span><strong>#75 La page d'une structure</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>

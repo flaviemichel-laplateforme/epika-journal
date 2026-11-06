@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>Les pages de compte (#59) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #59 d'Epika : l'inscription, la connexion, le mot de passe oublié et l'espace privé, des formulaires accessibles au clavier, avec des erreurs liées aux champs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a href="../index.html">← Toutes les issues</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 1 · issue #59 et user stories #35, #36 et #39 · US-P4, US-P5, US-P6 · terminée le 12/10/2026</p>
+    <h1>Les pages de compte</h1>
+    <p class="lede">Créer un compte, se connecter, retrouver son mot de passe, entrer dans son espace : la partie de l'interface qui touche aux comptes, branchée sur l'API d'authentification. Tout se fait au clavier, et chaque erreur est annoncée avec son champ.</p>
+    <dl class="facts">
+      <div class="fact"><dt>pull requests, dont 2 corrections</dt><dd>6</dd></div>
+      <div class="fact"><dt>écrans de compte</dt><dd>9</dd></div>
+      <div class="fact"><dt>tests Vitest</dt><dd>77</dd></div>
+      <div class="fact"><dt>défauts axe</dt><dd>0</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#parcours">Le parcours</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#connexion">La connexion</a></li>
+        <li><a href="#inscription">L'inscription</a></li>
+        <li><a href="#mot-de-passe">Le mot de passe</a></li>
+        <li><a href="#espace">L'espace privé</a></li>
+        <li><a href="#accessibilite">Accessibilité</a></li>
+        <li><a href="#tests">Les tests</a></li>
+        <li><a href="#livraison">Les PR</a></li>
+        <li><a href="#limites">Limites et suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="parcours" aria-labelledby="parcours-titre">
+      <h2 id="parcours-titre">Le parcours, de l'inscription à l'espace privé</h2>
+      <ol class="pipeline">
+        <li><div><strong>La personne s'inscrit</strong><span>Prénom, nom, e-mail, date de naissance, acceptation des conditions. Pas de mot de passe à ce stade.</span></div></li>
+        <li><div><strong>Elle vérifie sa boîte mail</strong><span>Un message contient un lien à usage unique. L'écran explique quoi faire si rien n'arrive.</span></div></li>
+        <li><div><strong>Elle choisit son mot de passe</strong><span>Le lien ouvre <code>/inscription/confirmation#token=…</code> : une jauge de robustesse, puis le compte est activé.</span></div></li>
+        <li><div><strong>Elle se connecte</strong><span>La page de connexion dit que le compte est actif. L'API pose les cookies de session, et l'interface relit la personne connectée.</span></div></li>
+        <li><div><strong>Elle entre dans son espace</strong><span>« Mon espace » et « Se déconnecter » apparaissent dans l'en-tête. Un mot de passe oublié suit le même chemin, par e-mail.</span></div></li>
+      </ol>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <p class="prose muted">Captures prises par Playwright : l'API des comptes est simulée comme dans les tests de bout en bout, et la personne est fictive (Camille Martin, <code>example.com</code>). Sur ordinateur à gauche, sur téléphone à droite.</p>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #59">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/59/01-inscription-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le formulaire d'inscription d'Epika, avec ses champs et le bouton « Créer mon compte ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/59/01-inscription-mobile.jpg" width="360" height="740" loading="lazy" alt="Le formulaire d'inscription d'Epika, avec ses champs et le bouton « Créer mon compte ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> L'inscription : prénom, nom, e-mail, date de naissance en trois champs dans un groupe étiqueté, et l'acceptation des conditions. Pas encore de mot de passe : il se choisit après la vérification de l'e-mail.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/59/02-inscription-erreurs-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le formulaire d'inscription envoyé vide, avec le résumé des erreurs et les messages sous chaque champ. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/59/02-inscription-erreurs-mobile.jpg" width="360" height="740" loading="lazy" alt="Le formulaire d'inscription envoyé vide, avec le résumé des erreurs et les messages sous chaque champ. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> Un envoi incomplet : un résumé compte ce qui reste à corriger, chaque erreur s'affiche sous son champ, et le focus va sur le premier champ en erreur.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/59/03-verifiez-votre-boite-desktop.jpg" width="1280" height="800" loading="lazy" alt="L'écran « Vérifiez votre boîte mail », avec l'adresse e-mail saisie et le bouton de renvoi. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/59/03-verifiez-votre-boite-mobile.jpg" width="360" height="740" loading="lazy" alt="L'écran « Vérifiez votre boîte mail », avec l'adresse e-mail saisie et le bouton de renvoi. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> « Vérifiez votre boîte mail » : le titre reçoit le focus, le renvoi de l'e-mail est bloqué 60 secondes, et « Changer l'adresse » ramène au formulaire rempli.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/59/04-mot-de-passe-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page « Activer mon compte », avec un mot de passe saisi et la jauge « Robustesse : forte ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/59/04-mot-de-passe-mobile.jpg" width="360" height="740" loading="lazy" alt="La page « Activer mon compte », avec un mot de passe saisi et la jauge « Robustesse : forte ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">4</span> Le lien reçu par e-mail mène au choix du mot de passe, avec une jauge de robustesse calculée comme celle de Symfony côté serveur, et annoncée aux lecteurs d'écran.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/59/05-lien-expire-desktop.jpg" width="1280" height="800" loading="lazy" alt="L'écran « Ce lien a expiré », avec le lien « Recevoir un nouveau lien ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/59/05-lien-expire-mobile.jpg" width="360" height="740" loading="lazy" alt="L'écran « Ce lien a expiré », avec le lien « Recevoir un nouveau lien ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">5</span> Un lien expiré ou déjà utilisé a son propre écran, avec un moyen d'en recevoir un nouveau. Sans jeton dans l'adresse, le lien est dit invalide.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/59/06-connexion-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page de connexion, avec le mot de passe affiché grâce au bouton œil et le lien « Mot de passe oublié ? ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/59/06-connexion-mobile.jpg" width="360" height="740" loading="lazy" alt="La page de connexion, avec le mot de passe affiché grâce au bouton œil et le lien « Mot de passe oublié ? ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">6</span> La connexion : un bouton œil affiche le mot de passe (son état est dit par aria-pressed), et un lien mène au mot de passe oublié.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/59/07-connexion-erreur-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page de connexion avec l'alerte « Adresse e-mail ou mot de passe incorrect. » en haut du formulaire. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/59/07-connexion-erreur-mobile.jpg" width="360" height="740" loading="lazy" alt="La page de connexion avec l'alerte « Adresse e-mail ou mot de passe incorrect. » en haut du formulaire. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">7</span> Une erreur de connexion reste vague (« Adresse e-mail ou mot de passe incorrect. ») pour ne jamais révéler quelles adresses ont un compte. Elle est annoncée et reçoit le focus.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/59/08-mot-de-passe-oublie-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page « Mot de passe oublié », avec un champ e-mail rempli et le bouton « Envoyer le lien ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/59/08-mot-de-passe-oublie-mobile.jpg" width="360" height="740" loading="lazy" alt="La page « Mot de passe oublié », avec un champ e-mail rempli et le bouton « Envoyer le lien ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">8</span> Mot de passe oublié : on donne son e-mail, et la réponse est la même que l'adresse ait un compte ou non. Le lien reçu mène à « Nouveau mot de passe ».</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/59/09-mon-espace-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page « Mon espace », avec la salutation et les informations du compte. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/59/09-mon-espace-mobile.jpg" width="360" height="740" loading="lazy" alt="La page « Mon espace », avec la salutation et les informations du compte. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">9</span> Connecté, l'en-tête propose « Mon espace » et « Se déconnecter ». L'espace est derrière une garde : un visiteur est renvoyé à la connexion, puis ramené ici.</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="connexion" aria-labelledby="connexion-titre">
+      <hgroup><p class="eyebrow">Frontend · PR #117 · US-P5</p><h2 id="connexion-titre">La connexion</h2></hgroup>
+      <div class="grid2">
+        <div class="box"><h3>Le formulaire</h3><ul>
+          <li>Zod pour les règles, React Hook Form pour le formulaire, une mutation TanStack Query pour l'envoi</li>
+          <li>L'API pose des cookies de session <code>HttpOnly</code> : le JavaScript de la page ne voit jamais le jeton</li>
+          <li>Un bouton œil affiche le mot de passe ; son état est dit par <code>aria-pressed</code></li>
+        </ul></div>
+        <div class="box"><h3>Des erreurs qui ne disent rien de trop</h3><ul>
+          <li>Erreur 401 : un message vague, « Adresse e-mail ou mot de passe incorrect. », qui ne révèle pas quelles adresses ont un compte</li>
+          <li>Erreur 429 : le délai d'attente, en minutes</li>
+          <li>Autre erreur : un message général</li>
+          <li>L'alerte reçoit le focus et est annoncée</li>
+        </ul></div>
+      </div>
+      <p class="prose">Les appels à l'API vivent dans une couche <code>services/</code>, jamais dans les composants (critère de l'issue). Un petit jeu de composants accessibles est partagé : <code>Button</code>, <code>TextField</code>, <code>PasswordField</code>, <code>Alert</code>. Les pages de compte sont en <code>noindex</code>.</p>
+    </section>
+
+    <section id="inscription" aria-labelledby="inscription-titre">
+      <hgroup><p class="eyebrow">Frontend · PR #118 · US-P4</p><h2 id="inscription-titre">L'inscription</h2></hgroup>
+      <div class="grid2">
+        <div class="box"><h3>Le formulaire</h3><ul>
+          <li>La date de naissance en trois champs (jour, mois, année), dans un <code>fieldset</code> avec sa <code>legend</code></li>
+          <li>Les erreurs de l'API (422) s'affichent sous leur propre champ</li>
+          <li>Un résumé compte ce qui reste à corriger, et le focus va sur le premier champ en erreur, y compris le groupe de la date</li>
+          <li>Des <code>autocomplete</code> adaptés : nom, e-mail, date de naissance, nouveau mot de passe</li>
+        </ul></div>
+        <div class="box"><h3>Après l'envoi</h3><ul>
+          <li>« Vérifiez votre boîte mail » : le titre reçoit le focus, le renvoi est bloqué 60 secondes, « Modifier l'adresse » ramène au formulaire rempli</li>
+          <li>Un lien expiré ou invalide a son propre écran, avec « Recevoir un nouveau lien »</li>
+          <li>Sans jeton dans l'adresse : « Ce lien est invalide »</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section id="mot-de-passe" aria-labelledby="mot-de-passe-titre">
+      <hgroup><p class="eyebrow">PR #118 et #119 · US-P6</p><h2 id="mot-de-passe-titre">Le mot de passe</h2></hgroup>
+      <div class="prose">
+        <p>La jauge de robustesse est calculée <strong>exactement comme la contrainte <code>PasswordStrength</code> de Symfony</strong>, côté serveur : elle a été comparée aux résultats de PHP lui-même, octets UTF-8 compris. Le visiteur voit « Robustesse : forte » avant d'envoyer, et le serveur ne dira pas autre chose. Elle est annoncée poliment aux lecteurs d'écran.</p>
+        <p>Le même composant, <code>SetPasswordFromLink</code>, sert pour l'activation d'un compte et pour la réinitialisation. « Mot de passe oublié » demande une adresse, et la réponse est <strong>la même que l'adresse ait un compte ou non</strong>. Après une réinitialisation, la page de connexion rappelle que tous les appareils ont été déconnectés.</p>
+      </div>
+    </section>
+
+    <section id="espace" aria-labelledby="espace-titre">
+      <hgroup><p class="eyebrow">Frontend · PR #120</p><h2 id="espace-titre">L'espace privé</h2></hgroup>
+      <div class="grid2">
+        <div class="box"><h3>Ce que la personne voit</h3><ul>
+          <li>En-tête : « Se connecter » pour un visiteur, « Mon espace » et « Se déconnecter » une fois connecté</li>
+          <li><code>/mon-espace</code> (<code>noindex</code>) : une salutation et les informations du compte</li>
+          <li>Un visiteur est renvoyé à la connexion, puis ramené à la page demandée (<code>?retour=</code>)</li>
+        </ul></div>
+        <div class="box"><h3>Pas de redirection ouverte</h3><ul>
+          <li>L'adresse de retour est vérifiée avec l'analyseur d'adresses du navigateur</li>
+          <li>Sont refusées : <code>//</code>, <code>/\</code>, les onglets cachés et <code>javascript:</code></li>
+        </ul></div>
+      </div>
+      <div class="note">
+        <h3>Pourquoi la garde est dans la page, pas dans <code>proxy.ts</code></h3>
+        <p>Le cookie du jeton de renouvellement n'est envoyé qu'à <code>/api/token</code> : un contrôle dans le proxy ne verrait que le jeton de 15 minutes, et renverrait à tort à la connexion quelqu'un qui est encore connecté. La vraie protection reste l'API ; la page <code>RequireAuth</code> n'est qu'une garde d'interface.</p>
+      </div>
+    </section>
+
+    <section id="accessibilite" aria-labelledby="accessibilite-titre">
+      <h2 id="accessibilite-titre">Accessibilité (RGAA 4.1.2)</h2>
+      <div class="grid2">
+        <div class="box"><h3>Les formulaires</h3><ul>
+          <li>Des étiquettes liées aux champs, des aides et des erreurs lues avec eux (<code>aria-describedby</code>), <code>aria-invalid</code></li>
+          <li>Le focus va sur le premier champ invalide, sur l'alerte ou sur le titre de l'écran suivant</li>
+          <li>Un <code>h1</code> unique à chaque état, y compris « Connexion requise »</li>
+          <li>Des liens qui s'ouvrent dans un nouvel onglet, annoncés comme tels</li>
+        </ul></div>
+        <div class="box"><h3>Deux corrections, après coup</h3><ul>
+          <li><strong>#122</strong> : le focus partait vers le premier champ invalide avant que son message ne soit dessiné, et NVDA disait « invalide » sans dire pourquoi. Un hook <code>useFocusAfterRender</code> déplace le focus une fois la page dessinée.</li>
+          <li><strong>#124</strong> : une faute de frappe (<code>jane@</code>, <code>Jean3</code>, une date qui n'existe pas) est signalée dès qu'on quitte un champ rempli ; un champ laissé vide n'est pas déclaré obligatoire avant l'envoi.</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section id="tests" aria-labelledby="tests-titre">
+      <h2 id="tests-titre">Chaque critère a son test</h2>
+      <div class="grid2">
+        <div class="box"><h3>Vitest : 77 tests</h3><ul>
+          <li>Les services, les formulaires, la jauge de robustesse</li>
+          <li>Pour #122, un outil de test enregistre ce qu'un champ expose au moment où il reçoit le focus, comme le lirait un lecteur d'écran ; les nouveaux tests échouent sans la correction</li>
+        </ul></div>
+        <div class="box"><h3>Playwright : 23 tests</h3><ul>
+          <li>L'API simulée avec <code>page.route</code> : ces tests vérifient la page, pas le serveur, et n'ont pas besoin de base de données</li>
+          <li>La connexion au clavier seul, le bouton œil, l'inscription complète, les liens expirés, le mot de passe oublié</li>
+          <li>axe sur chaque page, y compris « Mon espace » une fois connecté</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section id="livraison" aria-labelledby="livraison-titre">
+      <h2 id="livraison-titre">Quatre PR, puis deux corrections</h2>
+      <ul class="prs">
+        <li><span class="num">#117</span><span>La page de connexion, le jeu de composants accessibles, le service d'authentification et ses hooks.</span></li>
+        <li><span class="num">#118</span><span>L'inscription, « Vérifiez votre boîte mail », le choix du mot de passe avec sa jauge, les liens expirés.</span></li>
+        <li><span class="num">#119</span><span>Le mot de passe oublié et le nouveau mot de passe.</span></li>
+        <li><span class="num">#120</span><span>L'espace privé et la déconnexion. Cette partie devait partir avec #119, mais son commit a été fait après le push : #119 ne contenait que les pages du mot de passe.</span></li>
+        <li><span class="num">#122</span><span>Correction : annoncer les erreurs de champ aux lecteurs d'écran.</span></li>
+        <li><span class="num">#124</span><span>Amélioration : signaler une faute de frappe en quittant un champ rempli.</span></li>
+      </ul>
+    </section>
+
+    <section id="limites" aria-labelledby="limites-titre">
+      <h2 id="limites-titre">Les limites assumées, et la suite</h2>
+      <p class="limit">L'espace privé est encore minimal : une salutation et les informations du compte. La modification des informations et la suppression du compte viennent avec #78.</p>
+      <p class="limit">Les liens des conditions générales et de la politique de confidentialité pointent vers des pages qui ne sont pas encore écrites : elles viennent avec les pages légales (#93).</p>
+      <p class="prose">La suite : les favoris (#77), qui ont besoin d'un compte, et la fin des erreurs 401 dans la console pour un visiteur non connecté (#169).</p>
+    </section>
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a class="next" href="71-page-d-accueil.html" rel="next"><span>Issue suivante →</span><strong>#71 La page d'accueil</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>

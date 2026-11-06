@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>La page d'une structure (#75) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #75 d'Epika : la page publique d'une structure, son bandeau, ses liens, ses événements à venir, et ce qu'elle ne montre jamais (rue, gérant, SIRET).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a href="../index.html">← Toutes les issues</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 3 · issue #75 et US-O1 · EF-12 · terminée le 05/11/2026</p>
+    <h1>La page d'une structure</h1>
+    <p class="lede">La page publique d'une association, d'une mairie ou d'une entreprise : qui elle est, où la trouver en ligne, et ses événements à venir. C'est la destination de « Voir le profil » sur chaque fiche. On n'y affiche que ce qui est connu, et jamais rien de privé.</p>
+    <dl class="facts">
+      <div class="fact"><dt>événements par page</dt><dd>20</dd></div>
+      <div class="fact"><dt>rue, gérant ou SIRET affichés</dt><dd>0</dd></div>
+      <div class="fact"><dt>structures testées avec axe</dt><dd>3</dd></div>
+      <div class="fact"><dt>tests Playwright</dt><dd>57</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#parcours">Le parcours</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#bandeau">Le bandeau, avec ce qu'on sait</a></li>
+        <li><a href="#vie-privee">Vie privée</a></li>
+        <li><a href="#evenements">Les événements à venir</a></li>
+        <li><a href="#serveur">Écrite par le serveur, une vraie 404</a></li>
+        <li><a href="#accessibilite">Accessibilité</a></li>
+        <li><a href="#tests">Les tests</a></li>
+        <li><a href="#livraison">La PR</a></li>
+        <li><a href="#limites">Limites et suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="parcours" aria-labelledby="parcours-titre">
+      <h2 id="parcours-titre">Le parcours, de la fiche à la structure et retour</h2>
+      <ol class="pipeline">
+        <li><div><strong>Le visiteur lit une fiche</strong><span>Sous le titre, « Organisé par Club de plongée · Voir le profil ». Le lien porte un nom complet pour les lecteurs d'écran : « Voir le profil : Club de plongée ».</span></div></li>
+        <li><div><strong>Il arrive sur la page de la structure</strong><span><code>/structures/{slug}</code>, écrite par le serveur à partir de <code>GET /api/organizations/{slug}</code> et de la liste de ses événements.</span></div></li>
+        <li><div><strong>Il découvre qui elle est</strong><span>Un bandeau : logo, nom, type, ville, liens, description.</span></div></li>
+        <li><div><strong>Il parcourt ses événements</strong><span>Les mêmes cartes que la recherche, vingt par page.</span></div></li>
+        <li><div><strong>Il ouvre une carte, puis revient</strong><span>La fiche de l'événement, puis « Retour » ramène à la structure, au même endroit.</span></div></li>
+      </ol>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <p class="prose muted">Captures prises par Playwright contre la fausse API d'Epika : toutes les données sont fictives. Sur ordinateur à gauche, sur téléphone à droite.</p>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #75">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/75/01-bandeau-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le bandeau de « Club de plongée » : les initiales, le nom, « Association », la ville, les liens « Site web », « Facebook » et « Instagram ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/75/01-bandeau-mobile.jpg" width="360" height="740" loading="lazy" alt="Le bandeau de « Club de plongée » : les initiales, le nom, « Association », la ville, les liens « Site web », « Facebook » et « Instagram ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> Le bandeau d'une structure complète : son logo ou ses initiales, son nom, son type en toutes lettres et sa ville, ses liens en pastilles, sa description.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/75/02-evenements-desktop.jpg" width="1280" height="800" loading="lazy" alt="La section « Événements à venir (25) » avec ses cartes. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/75/02-evenements-mobile.jpg" width="360" height="740" loading="lazy" alt="La section « Événements à venir (25) » avec ses cartes. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> Les événements à venir de la structure, avec les mêmes cartes que la recherche : vingt par page, et de vrais liens entre les pages.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/75/03-pagination-desktop.jpg" width="1280" height="800" loading="lazy" alt="La deuxième page des événements de la structure, avec cinq cartes. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/75/03-pagination-mobile.jpg" width="360" height="740" loading="lazy" alt="La deuxième page des événements de la structure, avec cinq cartes. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> La page 2 reste une vraie page : son adresse, son titre et sa balise canonique sont les siens.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/75/04-nom-seul-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page de « Association exemple » : des initiales, le nom et trois événements, sans lien ni description. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/75/04-nom-seul-mobile.jpg" width="360" height="740" loading="lazy" alt="La page de « Association exemple » : des initiales, le nom et trois événements, sans lien ni description. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">4</span> Une structure importée d'OpenAgenda n'a souvent que son nom : on n'affiche que ce qui est connu, sans trou ni « non renseigné ».</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/75/05-sans-evenement-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le message « Aucun événement à venir pour le moment » et le lien « Découvrir d'autres événements ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/75/05-sans-evenement-mobile.jpg" width="360" height="740" loading="lazy" alt="Le message « Aucun événement à venir pour le moment » et le lien « Découvrir d'autres événements ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">5</span> Sans événement à venir : un message clair et un chemin vers la recherche.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/75/06-introuvable-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page « introuvable » d'Epika, affichée pour une structure qui n'existe pas. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/75/06-introuvable-mobile.jpg" width="360" height="740" loading="lazy" alt="La page « introuvable » d'Epika, affichée pour une structure qui n'existe pas. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">6</span> Une structure qui n'existe pas répond une vraie erreur 404. Une page d'événements au-delà de la dernière aussi.</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="bandeau" aria-labelledby="bandeau-titre">
+      <hgroup><p class="eyebrow">Frontend · PR #170 · disposition choisie le 05/11/2026</p><h2 id="bandeau-titre">Le bandeau, avec ce qu'on sait</h2></hgroup>
+      <div class="grid2">
+        <div class="box"><h3>Ce qu'il montre</h3><ul>
+          <li>Un bandeau turquoise clair avec le logo ; à défaut, les armoiries (pour une collectivité) ; à défaut, les initiales sur fond navy</li>
+          <li>Le nom (<code>h1</code>), son type en toutes lettres, jamais deviné quand il est inconnu, et sa ville</li>
+          <li>Les liens en pastilles : « Site web », « Facebook », « Instagram », avec une icône ET un mot, dans un nouvel onglet annoncé</li>
+          <li>La description, avec « Lire la suite »</li>
+        </ul></div>
+        <div class="box"><h3>Le cas le plus fréquent</h3><p>Une structure importée d'OpenAgenda n'a souvent que son <strong>nom</strong>. Chaque élément n'apparaît que s'il est connu : pas de trou, pas de « non renseigné », pas de liste de liens vide. La capture « Association exemple » montre ce cas.</p></div>
+      </div>
+    </section>
+
+    <section id="vie-privee" aria-labelledby="vie-privee-titre">
+      <hgroup><p class="eyebrow">Décidé le 03/11/2026</p><h2 id="vie-privee-titre">Vie privée : la ville, jamais la rue</h2></hgroup>
+      <div class="note key">
+        <h3>L'adresse d'une petite association est souvent celle d'une personne</h3>
+        <p>L'API ne donne jamais la rue de la structure, ni son gérant, ni son numéro SIRET ou RNA, ni son identifiant OpenAgenda, ni son statut. La page n'a donc aucun moyen de les montrer : la ville est la seule adresse publique. Une structure non revendiquée n'a ni compte ni contact personnel (critère de l'issue).</p>
+      </div>
+    </section>
+
+    <section id="evenements" aria-labelledby="evenements-titre">
+      <h2 id="evenements-titre">Les événements à venir</h2>
+      <ul class="prose">
+        <li>Les cartes de la recherche (<code>EventCard</code>), réutilisées telles quelles : une carte se lit de la même façon partout</li>
+        <li>Vingt par page, avec de vrais liens entre les pages, la page courante marquée</li>
+        <li>Aucun événement : « Aucun événement à venir pour le moment », avec un chemin vers la recherche (« Découvrir d'autres événements »)</li>
+        <li>Les boutons ronds « Retour » et « Partager » de la fiche, réutilisés eux aussi</li>
+      </ul>
+    </section>
+
+    <section id="serveur" aria-labelledby="serveur-titre">
+      <h2 id="serveur-titre">Écrite par le serveur, une vraie 404</h2>
+      <div class="grid2">
+        <div class="box"><h3>Référencement</h3><ul>
+          <li>Un seul appel à l'API pour les balises et pour la page (<code>cache</code> de React)</li>
+          <li>Un titre qui dit l'essentiel : « Club de plongée, association à Saint-Mandrier-sur-Mer »</li>
+          <li>Une description de 160 caractères au plus, une balise canonique par page d'événements (la première sans <code>?page=</code>), Open Graph avec le logo</li>
+          <li>JSON-LD <code>Organization</code> avec ce qui est connu seulement : <code>logo</code>, <code>address</code>, <code>sameAs</code></li>
+        </ul></div>
+        <div class="box"><h3>Des erreurs qui en sont</h3><ul>
+          <li>Une structure absente répond une vraie 404</li>
+          <li>Une page d'événements au-delà de la dernière aussi</li>
+          <li>Une adresse en majuscules redirige (308) vers la page en minuscules</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section id="accessibilite" aria-labelledby="accessibilite-titre">
+      <h2 id="accessibilite-titre">Accessibilité (RGAA 4.1.2)</h2>
+      <ul class="prose">
+        <li>axe : 0 défaut à 360 et 1280 px, sur une structure complète, une structure au nom seul et une structure sans événement</li>
+        <li>Une hiérarchie de titres <code>h1</code> puis <code>h2</code> puis <code>h3</code></li>
+        <li>Le logo et les initiales sont décoratifs : le nom est écrit à côté, il n'est pas lu deux fois</li>
+        <li>Des cibles de 44 px, une icône ET un mot sur chaque lien</li>
+      </ul>
+    </section>
+
+    <section id="tests" aria-labelledby="tests-titre">
+      <h2 id="tests-titre">Chaque critère a son test</h2>
+      <div class="grid2">
+        <div class="box"><h3>Vitest : 211 tests</h3><ul><li>Le service, le bandeau, la liste des événements</li></ul></div>
+        <div class="box"><h3>Playwright : 57 tests</h3><ul>
+          <li>Les vraies 404 et la pagination</li>
+          <li>La structure au nom seul, et celle sans événement</li>
+          <li>Le parcours fiche, profil, fiche, « Retour »</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section id="livraison" aria-labelledby="livraison-titre">
+      <h2 id="livraison-titre">Une PR</h2>
+      <ul class="prs">
+        <li><span class="num">#170</span><span>Frontend : la lecture du profil, la page avec ses métadonnées, le bandeau, la liste paginée des événements à venir, les boutons « Retour » et « Partager », les tests de bout en bout.</span></li>
+      </ul>
+    </section>
+
+    <section id="limites" aria-labelledby="limites-titre">
+      <h2 id="limites-titre">Les limites assumées, et la suite</h2>
+      <p class="limit">Les structures du catalogue fictif de développement ont environ 270 événements chacune, dans des villes au hasard. Ce n'est pas réaliste : l'issue #160 couvrira aussi des structures crédibles (une ville, un nombre d'événements plausible).</p>
+      <p class="prose">La suite : la déclaration d'une structure et le suivi de sa validation (#79), puis son profil modifiable (#80). Aujourd'hui la page est en lecture seule, alimentée par l'import.</p>
+    </section>
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="74-fiche-evenement.html" rel="prev"><span>← Issue précédente</span><strong>#74 La fiche d'un événement</strong></a>
+      <a class="next" href="76-signaler-un-evenement.html" rel="next"><span>Issue suivante →</span><strong>#76 Signaler un événement</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>Résultats et filtres (#72) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #72 d'Epika : la page de résultats, ses filtres en colonne ou en panneau, le rayon réellement cherché, une adresse par recherche et une pagination en vrais liens.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a href="../index.html">← Toutes les issues</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 3 · issue #72 et user stories #4 et #5 · EF-02, EF-03 · terminée le 04/11/2026</p>
+    <h1>Résultats et filtres</h1>
+    <p class="lede">La page de recherche d'Epika : des résultats écrits par le serveur, des filtres en colonne sur ordinateur et en panneau sur téléphone, le rayon réellement cherché toujours dit, et une adresse par recherche, que l'on peut partager.</p>
+    <dl class="facts">
+      <div class="fact"><dt>familles de filtres</dt><dd>5</dd></div>
+      <div class="fact"><dt>résultats par page</dt><dd>20</dd></div>
+      <div class="fact"><dt>tests Vitest</dt><dd>157</dd></div>
+      <div class="fact"><dt>défauts axe (panneau ouvert compris)</dt><dd>0</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#parcours">Le parcours</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#adresse">Une adresse, une recherche</a></li>
+        <li><a href="#filtres">Les filtres</a></li>
+        <li><a href="#rayon">Le rayon, dit en toutes lettres</a></li>
+        <li><a href="#affichage">Liste, cartes et agenda</a></li>
+        <li><a href="#accessibilite">Accessibilité</a></li>
+        <li><a href="#tests">Les tests</a></li>
+        <li><a href="#livraison">La PR</a></li>
+        <li><a href="#limites">Limites et suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="parcours" aria-labelledby="parcours-titre">
+      <h2 id="parcours-titre">Le parcours, de la saisie aux résultats</h2>
+      <ol class="pipeline">
+        <li><div><strong>Le visiteur cherche</strong><span>« Quoi ? » suit la frappe (400 ms après la dernière touche), « Où ? » est localisé à l'envoi. Sur téléphone, une fois la recherche faite, la carte se replie en une ligne que l'on touche pour la rouvrir.</span></div></li>
+        <li><div><strong>Le serveur appelle l'API</strong><span><code>GET /api/search/events</code> et <code>GET /api/categories</code> : la page arrive déjà écrite, avec son nombre de résultats.</span></div></li>
+        <li><div><strong>Il affine avec les filtres</strong><span>Date, catégories, prix, âge, distance. Chaque choix change l'adresse de la page, donc les résultats.</span></div></li>
+        <li><div><strong>Il lit, trie, change d'affichage</strong><span>« Plus proche d'abord » autour d'une ville, « Liste » ou « Cartes », des pastilles pour retirer un filtre.</span></div></li>
+        <li><div><strong>Il tourne les pages</strong><span>Des liens réels, la page courante marquée, et le bouton « Retour » du navigateur qui fait ce qu'on attend.</span></div></li>
+      </ol>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <p class="prose muted">Captures prises par Playwright contre la fausse API d'Epika : toutes les données sont fictives. Sur ordinateur à gauche, sur téléphone à droite.</p>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #72">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/72/01-resultats-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page « Événements à Toulon » : « 45 événements · page 1 sur 3 », le rayon de 20 km et les premières cartes. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/72/01-resultats-mobile.jpg" width="360" height="740" loading="lazy" alt="La page « Événements à Toulon » : « 45 événements · page 1 sur 3 », le rayon de 20 km et les premières cartes. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> Autour de Toulon : le nombre de résultats, le rayon réellement cherché (« Dans un rayon de 20 km ») et les cartes, avec la barre de recherche en haut.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/72/02-filtres-desktop.jpg" width="1280" height="800" loading="lazy" alt="Les filtres : la colonne de gauche sur ordinateur, le panneau « Filtres » avec « Voir les 12 événements » sur téléphone. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/72/02-filtres-mobile.jpg" width="360" height="740" loading="lazy" alt="Les filtres : la colonne de gauche sur ordinateur, le panneau « Filtres » avec « Voir les 12 événements » sur téléphone. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> Sur ordinateur, les filtres sont dans la colonne et s'appliquent aussitôt. Sur téléphone, un panneau : les choix sont un brouillon, et le bouton dit combien d'événements il va montrer avant de valider.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/72/03-filtres-actifs-desktop.jpg" width="1280" height="800" loading="lazy" alt="Les filtres actifs (« Gratuit », « Musique ») sous forme de pastilles à retirer, au-dessus des résultats. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/72/03-filtres-actifs-mobile.jpg" width="360" height="740" loading="lazy" alt="Les filtres actifs (« Gratuit », « Musique ») sous forme de pastilles à retirer, au-dessus des résultats. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> Chaque filtre actif est une pastille que l'on retire d'un clic, et l'adresse de la page les garde tous : un lien de recherche se partage.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/72/04-affichage-desktop.jpg" width="1280" height="800" loading="lazy" alt="Les boutons « Liste » et « Cartes », le bouton « Plus proche d'abord » et les résultats en liste. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/72/04-affichage-mobile.jpg" width="360" height="740" loading="lazy" alt="Les boutons « Liste » et « Cartes », le bouton « Plus proche d'abord » et les résultats en liste. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">4</span> « Liste » ou « Cartes », au choix du visiteur, et « Plus proche d'abord » autour d'une ville. Trié par date, la liste se range par jour.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/72/05-pagination-desktop.jpg" width="1280" height="800" loading="lazy" alt="La pagination en bas de la page de résultats, avec la page 1 marquée comme page courante. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/72/05-pagination-mobile.jpg" width="360" height="740" loading="lazy" alt="La pagination en bas de la page de résultats, avec la page 1 marquée comme page courante. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">5</span> Vingt résultats par page, avec de vrais liens : la page courante est marquée, et « Retour » du navigateur fonctionne.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/72/06-aucun-resultat-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le message « Aucun événement trouvé » avec le lien « Voir tous les événements à venir ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/72/06-aucun-resultat-mobile.jpg" width="360" height="740" loading="lazy" alt="Le message « Aucun événement trouvé » avec le lien « Voir tous les événements à venir ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">6</span> Aucun résultat : un message clair et une issue, jamais une page vide.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/72/07-ailleurs-desktop.jpg" width="1280" height="800" loading="lazy" alt="La section « Ailleurs en France », avec six cartes d'événements, sous le message qui dit qu'il y a peu d'événements près de Mende. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/72/07-ailleurs-mobile.jpg" width="360" height="740" loading="lazy" alt="La section « Ailleurs en France », avec six cartes d'événements, sous le message qui dit qu'il y a peu d'événements près de Mende. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">7</span> Trop peu d'événements, même à 100 km (RG-23) : la page le dit et propose des idées ailleurs en France.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/72/08-ville-inconnue-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le champ « Où ? » avec « Nullepart » et le message « Aucune commune ne porte ce nom. » dessous. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/72/08-ville-inconnue-mobile.jpg" width="360" height="740" loading="lazy" alt="Le champ « Où ? » avec « Nullepart » et le message « Aucune commune ne porte ce nom. » dessous. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">8</span> Une ville inconnue est signalée sous son champ, et le champ le dit aux lecteurs d'écran.</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="adresse" aria-labelledby="adresse-titre">
+      <hgroup><p class="eyebrow">Frontend · PR #163</p><h2 id="adresse-titre">Une adresse, une recherche</h2></hgroup>
+      <div class="prose">
+        <p>Le site parle français dans ses adresses (<code>ville</code>, <code>periode</code>, <code>gratuit</code>, <code>categorie</code>…), l'API parle anglais. La traduction se fait à un seul endroit, <code>services/search-params.ts</code>. Une valeur inconnue est simplement ignorée : un vieux lien partagé s'ouvre toujours.</p>
+        <p>Chaque filtre est donc une nouvelle adresse. C'est ce qui rend une recherche partageable, et le bouton « Retour » du navigateur cohérent. La page est en <code>noindex, follow</code> (décidé le 03/11/2026) : les combinaisons de filtres ne sont pas indexées, mais leurs liens vers les fiches sont suivis. Le <code>robots.txt</code> ne la bloque pas, sinon Google ne verrait pas le <code>noindex</code>.</p>
+      </div>
+    </section>
+
+    <section id="filtres" aria-labelledby="filtres-titre">
+      <h2 id="filtres-titre">Les filtres : colonne ou panneau</h2>
+      <div class="grid2">
+        <div class="box"><h3>Sur ordinateur (dès 1024 px)</h3><ul>
+          <li>Une colonne collée à gauche, qui s'applique tout de suite (<code>useOptimistic</code> : l'écran réagit avant la réponse du serveur)</li>
+          <li>Cinq familles : Date, Catégories, Prix, Âge, Distance</li>
+          <li>Les catégories sont des accordéons, avec une pastille « Toute la catégorie », la catégorie ouverte collée en haut et « Tout ouvrir / Tout fermer »</li>
+        </ul></div>
+        <div class="box"><h3>Sur téléphone</h3><ul>
+          <li>Un panneau en bas, un <code>&lt;dialog&gt;</code> natif</li>
+          <li>Les choix sont un brouillon : rien ne change tant qu'on n'a pas validé</li>
+          <li>Le bouton dit combien d'événements il va montrer (« Voir les 12 événements »), compté avant de valider avec TanStack Query</li>
+          <li>Échap ferme le panneau et rend le focus au bouton « Filtres »</li>
+        </ul></div>
+      </div>
+      <p class="prose">Les filtres actifs sont rappelés au-dessus des résultats, en pastilles que l'on retire d'un clic (une seule ligne qui défile sur téléphone).</p>
+    </section>
+
+    <section id="rayon" aria-labelledby="rayon-titre">
+      <hgroup><p class="eyebrow">RG-20 à RG-23</p><h2 id="rayon-titre">Le rayon, dit en toutes lettres</h2></hgroup>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Règles de rayon, tableau défilant">
+        <table>
+          <thead><tr><th>Cas</th><th>Ce que la page fait</th></tr></thead>
+          <tbody>
+            <tr><td>Autour d'une ville</td><td>Écrit le rayon réellement cherché (« Dans un rayon de 20 km autour de Toulon »), même quand il a été élargi automatiquement (RG-21).</td></tr>
+            <tr><td>Un rayon choisi, trop peu de résultats</td><td>Propose « Élargir à 50 km » (RG-22).</td></tr>
+            <tr><td>Trop peu d'événements, même à 100 km</td><td>Le dit, et montre des idées sous « Ailleurs en France » (RG-23), six événements nationaux.</td></tr>
+            <tr><td>Une ville inconnue</td><td>L'erreur est écrite sous le champ « Où ? », qui devient invalide pour les lecteurs d'écran.</td></tr>
+            <tr><td>Aucun résultat</td><td>Un message clair et un lien « Voir tous les événements à venir ».</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="affichage" aria-labelledby="affichage-titre">
+      <h2 id="affichage-titre">Liste, cartes et agenda</h2>
+      <ul class="prose">
+        <li><strong>Liste ou cartes</strong> : deux boutons avec une icône et un mot, <code>aria-pressed</code> pour l'état. Le choix est gardé dans le navigateur ; par défaut, la liste sur téléphone et les cartes sur grand écran, décidé en CSS seul pour que rien ne saute au chargement.</li>
+        <li><strong>Agenda</strong> : trié par date, les événements se rangent par jour sous des titres collés en haut.</li>
+        <li><strong>Plus proche d'abord</strong> : autour d'une ville seulement (RG-20), avec la distance écrite sur chaque carte.</li>
+      </ul>
+    </section>
+
+    <section id="accessibilite" aria-labelledby="accessibilite-titre">
+      <h2 id="accessibilite-titre">Accessibilité (RGAA 4.1.2)</h2>
+      <div class="grid2">
+        <div class="box"><h3>Les composants</h3><ul>
+          <li>De vraies cases et de vrais boutons radio, dessinés en pastilles : clavier et lecteurs d'écran fonctionnent</li>
+          <li>Des <code>fieldset</code> avec leur <code>legend</code></li>
+          <li>Les bascules en <code>aria-pressed</code></li>
+          <li>Les nombres annoncés dans un <code>role="status"</code></li>
+        </ul></div>
+        <div class="box"><h3>Ce qui ne repose pas sur la couleur</h3><ul>
+          <li>Une coche et un mot, jamais la couleur seule</li>
+          <li>Du texte navy sur le turquoise (7,5:1), jamais du blanc</li>
+          <li>Des cibles de 44 px, un focus visible (blanc sur le pied de page navy)</li>
+          <li>axe : 0 défaut à 360 et 1280 px, panneau ouvert compris ; aucun débordement horizontal</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section id="tests" aria-labelledby="tests-titre">
+      <h2 id="tests-titre">Chaque critère a son test</h2>
+      <div class="grid2">
+        <div class="box"><h3>Vitest : 157 tests</h3><ul>
+          <li>La traduction des adresses, les services, chaque composant de la recherche</li>
+        </ul></div>
+        <div class="box"><h3>Playwright : 32 tests, dont 9 pour cette page</h3><ul>
+          <li>Joués contre la fausse API <code>e2e/mock-api.mjs</code> : la page est dessinée par le serveur Next.js, que <code>page.route()</code> ne peut pas atteindre</li>
+          <li>Le serveur de test écoute sur le port 3100, pour ne jamais réutiliser le serveur de développement</li>
+          <li><code>tsc</code>, ESLint et <code>next build</code> propres</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section id="livraison" aria-labelledby="livraison-titre">
+      <h2 id="livraison-titre">Une PR</h2>
+      <ul class="prs">
+        <li><span class="num">#163</span><span>Frontend : l'ouverture de la page et sa barre de recherche, les filtres (colonne et panneau), les pastilles, le rayon réel, « Liste / Cartes », l'agenda par jour, la pagination, les tests de bout en bout.</span></li>
+      </ul>
+    </section>
+
+    <section id="limites" aria-labelledby="limites-titre">
+      <h2 id="limites-titre">Les limites assumées, et la suite</h2>
+      <p class="limit">Une seule tranche d'âge à la fois, et une période prédéfinie (« Aujourd'hui », « Demain », « Ce week-end », « 7 prochains jours ») : les dates au choix et plusieurs tranches d'âge viendront avec #161 et #158.</p>
+      <p class="prose">La suite, ouverte dans des issues : la bande de jours en raccourci (#156), le nom de l'organisateur sur la carte (#157), l'autocomplétion des villes (#159), des titres cohérents dans le catalogue fictif (#160), les boutons des filtres alignés sur la charte (#164) et, en v2, une carte interactive (#162).</p>
+    </section>
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="71-page-d-accueil.html" rel="prev"><span>← Issue précédente</span><strong>#71 La page d'accueil</strong></a>
+      <a class="next" href="73-autour-de-moi.html" rel="next"><span>Issue suivante →</span><strong>#73 Autour de moi</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>
