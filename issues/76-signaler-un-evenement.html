@@ -2,41 +2,59 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Signaler un événement (#76) · Journal d'Epika</title>
 <meta name="description" content="Bilan de l'issue #76 d'Epika : signaler un problème sur un événement, l'anti-spam sans CAPTCHA, l'adresse IP jamais gardée, la fenêtre accessible et le formulaire chargé à la demande.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
 <link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
 </head>
 <body>
 <nav class="topnav" aria-label="Site">
-  <div class="wrap">
+  <div class="inner">
     <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
     <a href="../index.html">← Toutes les issues</a>
   </div>
 </nav>
 
-<header class="band">
-  <div class="wrap">
-    <div class="chips">
-      <span class="chip done">Terminée · 06/11/2026</span>
-      <span class="chip">#76</span>
-      <span class="chip">#34 user story</span>
-      <span class="chip">EF-30 · US-V10</span>
-    </div>
-    <h1>Signaler un événement</h1>
-    <p class="lede">En bas de chaque fiche, n'importe qui peut signaler un problème : une date fausse, un événement annulé, un contenu déplacé, une arnaque. Sans compte, il suffit d'une adresse e-mail. Les robots sont arrêtés sans CAPTCHA, et l'adresse IP du visiteur n'est jamais enregistrée.</p>
-  </div>
-</header>
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#parcours">Le parcours</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#drapeau">Pas de drapeau sur les cartes</a></li>
+        <li><a href="#vie-privee">Vie privée</a></li>
+        <li><a href="#api">La route de l'API</a></li>
+        <li><a href="#fenetre">La fenêtre</a></li>
+        <li><a href="#performance">Chargé à la demande</a></li>
+        <li><a href="#tests">Les tests</a></li>
+        <li><a href="#livraison">Les deux PR</a></li>
+        <li><a href="#limites">Limites et suite</a></li>
+      </ol>
+    </details>
+  </nav>
 
-<main>
-  <div class="wrap">
+  <main>
+    <header class="hero">
+      <p class="eyebrow">Lot 3 · issue #76 et user story #34 · EF-30 · terminée le 06/11/2026</p>
+      <h1>Signaler un événement</h1>
+      <p class="lede">En bas de chaque fiche, n'importe qui peut signaler un problème : une date fausse, un événement annulé, un contenu déplacé, une arnaque. Sans compte, il suffit d'une adresse e-mail. Les robots sont arrêtés sans CAPTCHA, et l'adresse IP du visiteur n'est jamais enregistrée.</p>
+      <dl class="facts">
+        <div class="fact"><dt>pull requests</dt><dd>2</dd></div>
+        <div class="fact"><dt>sujets proposés</dt><dd>5</dd></div>
+        <div class="fact"><dt>adresse IP gardée</dt><dd>0</dd></div>
+        <div class="fact"><dt>de JavaScript en moins par fiche</dt><dd>47 Kio</dd></div>
+      </dl>
+    </header>
 
-    <section>
-      <h2><small>Le parcours</small>De la fiche à la confirmation</h2>
-      <ol class="steps">
+    <section id="parcours" aria-labelledby="parcours-titre">
+      <h2 id="parcours-titre">Le parcours, de la fiche à la confirmation</h2>
+      <ol class="pipeline">
         <li><div><strong>Le visiteur lit la fiche jusqu'en bas</strong><span>Après la source de l'événement, un bouton : « Signaler un problème sur cet événement ». Il est formulé pour inviter à corriger une erreur autant qu'à dénoncer un abus, sans accuser personne.</span></div></li>
         <li><div><strong>Une fenêtre s'ouvre</strong><span>Un <code>&lt;dialog&gt;</code> natif, comme « Contacter l'organisateur » : il monte du bas de l'écran sur un téléphone et se centre sur un ordinateur. Il rappelle le titre et la date de l'événement.</span></div></li>
         <li><div><strong>Il choisit un sujet et décrit le problème</strong><span>Cinq sujets en boutons radio, puis un message de 10 à 2000 caractères, avec un compteur. L'e-mail n'est demandé que sans compte : connecté, celui du compte est utilisé.</span></div></li>
@@ -45,32 +63,87 @@
       </ol>
     </section>
 
-    <section>
-      <h2><small>Ce que voit le visiteur</small>Le formulaire, puis une erreur</h2>
-      <div class="grid2">
-        <figure class="mock" style="margin:0">
-          <strong>Signaler un problème</strong>
-          <div class="card">
-            <strong>Quel est le problème ?</strong>
-            <span>◉ Informations erronées (date, lieu, prix)<br>○ Événement annulé ou reporté<br>○ Contenu inapproprié<br>○ Arnaque ou spam<br>○ Autre</span>
-            <strong>Adresse e-mail</strong>
-            <span class="caption">Il sert uniquement au suivi de votre signalement.</span>
-          </div>
-          <span class="pill solid">Envoyer le signalement</span>
-          <figcaption class="caption">Aperçu de la fenêtre, avec les textes réels du formulaire. Le message et son compteur sont entre les sujets et l'e-mail.</figcaption>
-        </figure>
-        <figure class="mock" style="margin:0">
-          <strong>Signaler un problème</strong>
-          <div class="alert">Trop de signalements envoyés. Réessayez dans 6 minutes.</div>
-          <figcaption class="caption">Une limite atteinte : le délai vient de l'en-tête <code>Retry-After</code> de l'API, converti en minutes. L'alerte reçoit le focus. Une erreur de saisie, elle, s'affiche sous son champ.</figcaption>
-        </figure>
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <p class="prose muted">Captures prises par Playwright contre la fausse API d'Epika : toutes les données sont fictives. Sur ordinateur à gauche, sur téléphone à droite.</p>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #76">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/76/01-bouton-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le bas de la fiche « Atelier poterie », avec le bouton souligné et son icône de drapeau. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/76/01-bouton-mobile.jpg" width="360" height="740" loading="lazy" alt="Le bas de la fiche « Atelier poterie », avec le bouton souligné et son icône de drapeau. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> En bas de la fiche, après la source : « Signaler un problème sur cet événement ». Pas de drapeau sur les cartes.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/76/02-fenetre-desktop.jpg" width="1280" height="800" loading="lazy" alt="La fenêtre « Signaler un problème » ouverte, avec le titre de l'événement, sa date et la liste des sujets. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/76/02-fenetre-mobile.jpg" width="360" height="740" loading="lazy" alt="La fenêtre « Signaler un problème » ouverte, avec le titre de l'événement, sa date et la liste des sujets. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> La fenêtre rappelle l'événement et sa date, puis propose cinq sujets. Sur un téléphone, elle monte du bas de l'écran.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/76/03-erreurs-desktop.jpg" width="1280" height="800" loading="lazy" alt="Les messages « Choisissez un sujet. » et « Décrivez le problème. » sous leurs champs. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/76/03-erreurs-mobile.jpg" width="360" height="740" loading="lazy" alt="Les messages « Choisissez un sujet. » et « Décrivez le problème. » sous leurs champs. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> Un envoi vide : chaque erreur s'affiche sous son champ, et le focus va sur le premier sujet.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/76/04-rempli-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le formulaire rempli : un sujet coché, le message, son compteur et l'adresse e-mail. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/76/04-rempli-mobile.jpg" width="360" height="740" loading="lazy" alt="Le formulaire rempli : un sujet coché, le message, son compteur et l'adresse e-mail. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">4</span> Sans compte, l'adresse e-mail est demandée, et le formulaire dit à quoi elle sert : uniquement au suivi.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/76/05-confirmation-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le message « Merci, votre signalement a été envoyé. L'équipe d'Epika va le vérifier. » et le bouton « Fermer ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/76/05-confirmation-mobile.jpg" width="360" height="740" loading="lazy" alt="Le message « Merci, votre signalement a été envoyé. L'équipe d'Epika va le vérifier. » et le bouton « Fermer ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">5</span> Envoyé : la confirmation remplace le formulaire et reçoit le focus, pour être lue tout de suite.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/76/06-connecte-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le formulaire d'une personne connectée : le sujet, le message et le bouton d'envoi, sans champ e-mail. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/76/06-connecte-mobile.jpg" width="360" height="740" loading="lazy" alt="Le formulaire d'une personne connectée : le sujet, le message et le bouton d'envoi, sans champ e-mail. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">6</span> Connecté, aucune adresse n'est demandée : l'API prend celle du compte.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/76/07-limite-desktop.jpg" width="1280" height="800" loading="lazy" alt="L'alerte « Trop de signalements envoyés. Réessayez dans 6 minutes. » en haut du formulaire. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/76/07-limite-mobile.jpg" width="360" height="740" loading="lazy" alt="L'alerte « Trop de signalements envoyés. Réessayez dans 6 minutes. » en haut du formulaire. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">7</span> Trop d'envois : l'alerte donne le délai renvoyé par l'API, en minutes, et reçoit le focus.</figcaption>
+          </figure>
+        </li>
+        </ul>
       </div>
     </section>
 
-    <section>
-      <h2><small>Un choix d'interface</small>Pourquoi pas un drapeau sur les cartes</h2>
-      <p>L'idée de départ était un petit drapeau sur chaque carte d'événement. Il a été écarté :</p>
-      <ul>
+    <section id="drapeau" aria-labelledby="drapeau-titre">
+      <hgroup><p class="eyebrow">Un choix d'interface</p><h2 id="drapeau-titre">Pas de drapeau sur les cartes</h2></hgroup>
+      <p class="prose">L'idée de départ était un petit drapeau sur chaque carte d'événement. Il a été écarté :</p>
+      <ul class="prose">
         <li><strong>Signaler est rare</strong>, et on le fait après avoir lu la fiche, pas en parcourant une liste.</li>
         <li><strong>Sur une carte déjà chargée</strong>, une icône de plus ajoute du bruit.</li>
         <li><strong>Sur un téléphone</strong>, un drapeau près du doigt provoque des appuis accidentels, donc de faux signalements pour les modérateurs.</li>
@@ -78,9 +151,9 @@
       </ul>
     </section>
 
-    <section>
-      <h2><small>Vie privée</small>Arrêter les robots sans surveiller les gens</h2>
-      <div class="callout">
+    <section id="vie-privee" aria-labelledby="vie-privee-titre">
+      <h2 id="vie-privee-titre">Vie privée : arrêter les robots sans surveiller les gens</h2>
+      <div class="note key">
         <p>Pour limiter les abus, il faut reconnaître un expéditeur. Pour respecter la vie privée, il ne faut pas garder son adresse IP. La solution : une <strong>empreinte</strong>.</p>
         <ul>
           <li><strong>L'IP n'est jamais enregistrée</strong>, ni écrite dans un journal ou un message d'erreur. La base garde une empreinte HMAC-SHA256 de 64 caractères, calculée avec une clé secrète réservée à cet usage. Sans la clé, personne ne peut retrouver l'adresse.</li>
@@ -91,18 +164,18 @@
       </div>
     </section>
 
-    <section>
-      <h2><small>Backend · PR #174</small>La route <code>POST /api/events/{slug}/reports</code></h2>
-      <p>Une Resource API Platform et son Processor, sans controller. Le client n'envoie que le sujet, le message, l'e-mail et le champ piège : le statut, l'empreinte et le compte ne peuvent pas être imposés.</p>
-      <div class="table-scroll">
+    <section id="api" aria-labelledby="api-titre">
+      <hgroup><p class="eyebrow">Backend · PR #174</p><h2 id="api-titre">La route <code>POST /api/events/{slug}/reports</code></h2></hgroup>
+      <p class="prose">Une Resource API Platform et son Processor, sans controller. Le client n'envoie que le sujet, le message, l'e-mail et le champ piège : le statut, l'empreinte et le compte ne peuvent pas être imposés.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Réponses de la route, tableau défilant">
         <table>
           <thead><tr><th scope="col">Réponse</th><th scope="col">Quand</th></tr></thead>
           <tbody>
-            <tr><td class="code ok">201</td><td>Signalement enregistré. Aussi quand le champ piège est rempli, ou quand un visiteur a déjà signalé cet événement avec cette adresse : rien n'est enregistré, mais rien ne le dit.</td></tr>
-            <tr><td class="code ko">409</td><td>Un compte connecté signale à nouveau le même événement : « Vous avez déjà signalé cet événement. »</td></tr>
-            <tr><td class="code ko">422</td><td>Formulaire invalide : une erreur par champ.</td></tr>
-            <tr><td class="code">404</td><td>Événement inconnu, ou que le public ne peut pas voir (brouillon, masqué, suspendu) : la même réponse que sa fiche.</td></tr>
-            <tr><td class="code ko">429</td><td>Trop d'envois, avec <code>Retry-After</code>.</td></tr>
+            <tr><td><span class="pill done">201</span></td><td>Signalement enregistré. Aussi quand le champ piège est rempli, ou quand un visiteur a déjà signalé cet événement avec cette adresse : rien n'est enregistré, mais rien ne le dit.</td></tr>
+            <tr><td><span class="pill bad">409</span></td><td>Un compte connecté signale à nouveau le même événement : « Vous avez déjà signalé cet événement. »</td></tr>
+            <tr><td><span class="pill bad">422</span></td><td>Formulaire invalide : une erreur par champ.</td></tr>
+            <tr><td><span class="pill todo">404</span></td><td>Événement inconnu, ou que le public ne peut pas voir (brouillon, masqué, suspendu) : la même réponse que sa fiche.</td></tr>
+            <tr><td><span class="pill part">429</span></td><td>Trop d'envois, avec <code>Retry-After</code>.</td></tr>
           </tbody>
         </table>
       </div>
@@ -114,8 +187,6 @@
           <li>Un seul signalement par événement et par e-mail, garanti aussi par un index unique en base</li>
         </ul></div>
         <div class="box"><h3>Pourquoi pas de 409 pour un visiteur</h3><p>Une 409 permettrait à n'importe qui de taper l'adresse de quelqu'un d'autre et d'apprendre si cette personne a signalé un événement. Un compte, lui, ne peut interroger que sa propre adresse : il reçoit donc la 409.</p></div>
-      </div>
-      <div class="grid2">
         <div class="box"><h3>La base de données se défend aussi</h3><ul>
           <li>Des contraintes CHECK : le sujet, le statut, le message de 2000 caractères au plus, l'empreinte en 64 caractères hexadécimaux</li>
           <li>Un signalement en attente garde toujours son e-mail et son empreinte</li>
@@ -125,8 +196,8 @@
       </div>
     </section>
 
-    <section>
-      <h2><small>Frontend · PR #179</small>Une fenêtre accessible, chargée à la demande</h2>
+    <section id="fenetre" aria-labelledby="fenetre-titre">
+      <hgroup><p class="eyebrow">Frontend · PR #179</p><h2 id="fenetre-titre">Une fenêtre accessible</h2></hgroup>
       <div class="grid2">
         <div class="box"><h3>Accessibilité (RGAA)</h3><ul>
           <li>Les sujets dans un <code>fieldset</code> avec sa <code>legend</code>. Leur erreur est reliée au groupe : <code>aria-invalid</code> n'est pas permis sur un bouton radio.</li>
@@ -142,21 +213,26 @@
           <li><code>ReportForm</code> : le formulaire et la confirmation</li>
         </ul></div>
       </div>
-      <p>Lighthouse a montré un vrai problème. Avec la fenêtre, chaque fiche téléchargeait React Hook Form et Zod, alors que presque personne ne signale rien. Le formulaire est maintenant chargé à la demande, avec <code>next/dynamic</code>, et son téléchargement commence dès que la souris survole le bouton.</p>
-      <div class="table-scroll">
+    </section>
+
+    <section id="performance" aria-labelledby="performance-titre">
+      <h2 id="performance-titre">Le formulaire, chargé à la demande</h2>
+      <p class="prose">Lighthouse a montré un vrai problème. Avec la fenêtre, chaque fiche téléchargeait React Hook Form et Zod, alors que presque personne ne signale rien. Le formulaire est maintenant chargé à la demande, avec <code>next/dynamic</code>, et son téléchargement commence dès que la souris survole le bouton.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Mesures de performance, tableau défilant">
         <table>
           <thead><tr><th scope="col">Fiche d'un événement</th><th scope="col">JavaScript</th><th scope="col">Temps de blocage (mobile)</th></tr></thead>
           <tbody>
-            <tr><td>Sans la fenêtre</td><td class="code">181 Kio</td><td>330 à 510 ms</td></tr>
-            <tr><td>Formulaire dans la page</td><td class="code ko">229 Kio</td><td>900 à 1 040 ms</td></tr>
-            <tr><td>Formulaire chargé à la demande</td><td class="code ok">182 Kio</td><td>200 à 640 ms</td></tr>
+            <tr><td>Sans la fenêtre</td><td class="num">181 Kio</td><td>330 à 510 ms</td></tr>
+            <tr><td>Formulaire dans la page</td><td class="num"><span class="pill bad">229 Kio</span></td><td>900 à 1 040 ms</td></tr>
+            <tr><td>Formulaire chargé à la demande</td><td class="num"><span class="pill done">182 Kio</span></td><td>200 à 640 ms</td></tr>
           </tbody>
         </table>
       </div>
+      <p class="prose muted">Trois mesures par ligne, sur le build de production. Le temps de blocage varie beaucoup d'une mesure à l'autre ; le poids du JavaScript ne varie pas, c'est lui la preuve.</p>
     </section>
 
-    <section>
-      <h2><small>Les tests</small>Chaque règle a son test</h2>
+    <section id="tests" aria-labelledby="tests-titre">
+      <h2 id="tests-titre">Chaque règle a son test</h2>
       <div class="grid2">
         <div class="box"><h3>Backend (PHPUnit)</h3><ul>
           <li>La route de bout en bout : réponses, validation, doublons, piège, limites, aucune IP en clair</li>
@@ -173,26 +249,27 @@
       </div>
     </section>
 
-    <section>
-      <h2><small>Livraison</small>Deux PR, l'API puis l'interface</h2>
+    <section id="livraison" aria-labelledby="livraison-titre">
+      <h2 id="livraison-titre">Deux PR, l'API puis l'interface</h2>
       <ul class="prs">
         <li><span class="num">#174</span><span>Backend : l'entité <code>Report</code> et ses contraintes, l'empreinte de l'IP, la route avec son anti-spam, la documentation.</span></li>
         <li><span class="num">#179</span><span>Frontend : le service, le schéma, la fenêtre et son formulaire chargé à la demande, les tests de bout en bout.</span></li>
       </ul>
     </section>
 
-    <section>
-      <h2><small>À savoir</small>Les limites assumées, et la suite</h2>
+    <section id="limites" aria-labelledby="limites-titre">
+      <h2 id="limites-titre">Les limites assumées, et la suite</h2>
       <p class="limit">Une adresse e-mail peut être prise par quelqu'un d'autre. Si un visiteur signale un événement avec l'adresse d'un membre, ce membre recevra « Vous avez déjà signalé cet événement » en le signalant à son tour. C'est accepté : l'événement a bien été signalé une fois, et c'est ce dont la modération a besoin.</p>
       <p class="limit">La limite par e-mail garde l'adresse dans son cache pendant une heure au plus, comme la limite de l'inscription. Ce cache n'est jamais exposé.</p>
-      <p>La suite : le traitement des signalements par les modérateurs (#89), où le message devra être affiché échappé, jamais interprété comme du HTML ; et l'anonymisation à la suppression d'un compte (#78).</p>
+      <p class="prose">La suite : le traitement des signalements par les modérateurs (#89), où le message devra être affiché échappé, jamais interprété comme du HTML ; et l'anonymisation à la suppression d'un compte (#78).</p>
     </section>
 
-    <nav class="pager" aria-label="Issues">
-      <a href="73-autour-de-moi.html">← #73 Autour de moi</a>
-      <a href="../index.html">Toutes les issues</a>
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="73-autour-de-moi.html" rel="prev"><span>← Issue précédente</span><strong>#73 Autour de moi</strong></a>
     </nav>
-  </div>
-</main>
+  </main>
+</div>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
 </body>
 </html>

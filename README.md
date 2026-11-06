@@ -9,6 +9,8 @@ Un site statique en HTML et CSS, sans dépendance ni étape de build.
 - `index.html` : l'accueil, la liste des issues terminées par lot
 - `issues/<numéro>-<nom>.html` : une page par issue
 - `styles.css` : le style commun, aux couleurs d'Epika
+- `toc.js` : le sommaire d'une page d'issue (collé à gauche sur ordinateur, replié sur téléphone, section en cours surlignée). Chaque lien du sommaire pointe vers l'`id` d'une `<section>` de la page
+- `gallery.css`, `gallery.js` : la galerie de captures (voir plus bas)
 
 ## Voir le site en local
 

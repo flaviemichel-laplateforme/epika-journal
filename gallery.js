@@ -1,7 +1,8 @@
 /**
  * Screenshot galleries ([data-gallery], styles in gallery.css). Without this script the slides still scroll sideways;
- * with it: « Précédente » / « Suivante » buttons, a « 2 / 5 » counter announced politely, the arrow keys on the track,
- * and each slide named « 2 sur 5 ». Never moves by itself.
+ * with it: « Précédente » / « Suivante » buttons, a « 2 / 5 » counter announced politely and the arrow keys on the track.
+ * The slides stay plain list items: a screen reader already says « 2 sur 5 » (a role="group" on them would break the
+ * list, flagged by axe). Never moves by itself.
  */
 for (const gallery of document.querySelectorAll("[data-gallery]")) {
     const track = gallery.querySelector(".gallery-track");
@@ -10,12 +11,6 @@ for (const gallery of document.querySelectorAll("[data-gallery]")) {
     const previous = gallery.querySelector("[data-gallery-previous]");
     const next = gallery.querySelector("[data-gallery-next]");
     const count = gallery.querySelector(".gallery-count");
-
-    slides.forEach((slide, index) => {
-        slide.setAttribute("role", "group");
-        slide.setAttribute("aria-roledescription", "diapositive");
-        slide.setAttribute("aria-label", `${index + 1} sur ${slides.length}`);
-    });
 
     const current = () => Math.round(track.scrollLeft / track.clientWidth);
     const go = (index) => {

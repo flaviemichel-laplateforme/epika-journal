@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Journal d'Epika</title>
 <meta name="description" content="Le journal de bord du développement d'Epika, issue par issue : ce qui a été construit, comment, et pourquoi.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,22 +12,24 @@
 </head>
 <body>
 <nav class="topnav" aria-label="Site">
-  <div class="wrap"><a class="brand" href="index.html">Epika<span>.</span> journal</a></div>
+  <div class="inner"><a class="brand" href="index.html">Epika<span>.</span> journal</a></div>
 </nav>
 
-<header class="band">
-  <div class="wrap">
-    <div class="chips"><span class="chip">Projet personnel</span></div>
-    <h1>Journal d'Epika</h1>
-    <p class="lede">Epika, <em>au cœur de l'événement</em>, est une plateforme de découverte d'événements locaux : associations, mairies, entreprises. Ce journal raconte son développement, issue par issue : ce qui a été construit, comment, et surtout pourquoi.</p>
-  </div>
-</header>
+<div class="page single">
+  <main>
+    <header class="hero">
+      <p class="eyebrow">Projet personnel · journal de bord</p>
+      <h1>Journal d'Epika</h1>
+      <p class="lede">Epika, <em>au cœur de l'événement</em>, est une plateforme de découverte d'événements locaux : associations, mairies, entreprises. Ce journal raconte son développement, issue par issue : ce qui a été construit, comment, et surtout pourquoi.</p>
+      <dl class="facts">
+        <div class="fact"><dt>issues racontées</dt><dd>2</dd></div>
+        <div class="fact"><dt>pull requests</dt><dd>4</dd></div>
+        <div class="fact"><dt>captures d'écran</dt><dd>24</dd></div>
+      </dl>
+    </header>
 
-<main>
-  <div class="wrap">
-
-    <section>
-      <h2><small>Le projet</small>La stack</h2>
+    <section aria-labelledby="stack-titre">
+      <hgroup><p class="eyebrow">Le projet</p><h2 id="stack-titre">La stack</h2></hgroup>
       <div class="grid2">
         <div class="box"><h3>Backend</h3><ul>
           <li>Symfony 7.4 LTS et API Platform, PHP 8.3</li>
@@ -44,8 +46,8 @@
       </div>
     </section>
 
-    <section>
-      <h2><small>Le journal</small>Les issues terminées</h2>
+    <section aria-labelledby="issues-titre">
+      <hgroup><p class="eyebrow">Le journal</p><h2 id="issues-titre">Les issues terminées</h2></hgroup>
       <div class="lot">
         <h3>Lot 3 · Pages publiques et recherche</h3>
         <ul class="entries">
@@ -64,7 +66,7 @@
     </section>
 
     <footer class="site">Journal du projet Epika · <a href="https://github.com/flaviemichel-laplateforme/epika-journal">sources sur GitHub</a></footer>
-  </div>
-</main>
+  </main>
+</div>
 </body>
 </html>

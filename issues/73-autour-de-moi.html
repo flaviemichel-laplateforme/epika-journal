@@ -2,41 +2,56 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Autour de moi (#73) · Journal d'Epika</title>
 <meta name="description" content="Bilan de l'issue #73 (et #68) d'Epika : le parcours, la vie privée, l'API, les états d'échec, les tests et la limite assumée.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
 <link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
 </head>
 <body>
 <nav class="topnav" aria-label="Site">
-  <div class="wrap">
+  <div class="inner">
     <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
     <a href="../index.html">← Toutes les issues</a>
   </div>
 </nav>
 
-<header class="band">
-  <div class="wrap">
-    <div class="chips">
-      <span class="chip done">Terminée · 05/11/2026</span>
-      <span class="chip">#73 frontend</span>
-      <span class="chip">#68 backend</span>
-      <span class="chip">EF-27 · US-V7</span>
-    </div>
-    <h1>Autour de moi</h1>
-    <p class="lede">Un bouton qui trouve les événements près du visiteur. Sa position devient une commune, puis la recherche par ville fait le reste. La position est arrondie à environ 1 km, elle n'est jamais enregistrée, et l'adresse de la page ne dit à personne où il se trouvait.</p>
-  </div>
-</header>
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#parcours">Le parcours</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#vie-privee">Vie privée</a></li>
+        <li><a href="#api">La route de l'API</a></li>
+        <li><a href="#echecs">Chaque échec a son message</a></li>
+        <li><a href="#livraison">Les deux PR</a></li>
+        <li><a href="#limite">La limite assumée</a></li>
+      </ol>
+    </details>
+  </nav>
 
-<main>
-  <div class="wrap">
+  <main>
+    <header class="hero">
+      <p class="eyebrow">Lot 3 · issue #73, avec #68 pour l'API · EF-27 · US-V7 · terminée le 05/11/2026</p>
+      <h1>Autour de moi</h1>
+      <p class="lede">Un bouton qui trouve les événements près du visiteur. Sa position devient une commune, puis la recherche par ville fait le reste. La position est arrondie à environ 1 km, elle n'est jamais enregistrée, et l'adresse de la page ne dit à personne où il se trouvait.</p>
+      <dl class="facts">
+        <div class="fact"><dt>pull requests</dt><dd>2</dd></div>
+        <div class="fact"><dt>arrondi de la position</dt><dd>≈ 1 km</dd></div>
+        <div class="fact"><dt>position enregistrée</dt><dd>0</dd></div>
+        <div class="fact"><dt>échecs, chacun son message</dt><dd>4</dd></div>
+      </dl>
+    </header>
 
-    <section>
-      <h2><small>Le parcours</small>Du clic aux résultats</h2>
-      <ol class="steps">
+    <section id="parcours" aria-labelledby="parcours-titre">
+      <h2 id="parcours-titre">Le parcours, du clic aux résultats</h2>
+      <ol class="pipeline">
         <li><div><strong>Le visiteur clique sur « Autour de moi »</strong><span>Sur l'accueil (bandeau navy) ou sur la page de résultats. Rien n'est demandé au chargement de la page.</span></div></li>
         <li><div><strong>Epika explique avant de demander</strong><span>Un court message dit ce qui va être demandé, pourquoi, et ce que devient la position. Ensuite seulement, « Me localiser » déclenche la fenêtre d'autorisation du navigateur.</span></div></li>
         <li><div><strong>Le navigateur donne la position, arrondie aussitôt</strong><span><code>useGeolocation</code> : sans puce GPS, 10 s au maximum, arrondi à 2 décimales (environ 1,1 km) avant tout envoi.</span></div></li>
@@ -45,28 +60,68 @@
       </ol>
     </section>
 
-    <section>
-      <h2><small>Ce que voit le visiteur</small>Le bouton, son explication, un échec</h2>
-      <div class="grid2">
-        <figure class="mock" style="margin:0">
-          <span class="pill">◎ Autour de moi</span>
-          <div class="card">
-            <span>Epika va demander votre position à votre navigateur, pour trouver votre commune et les événements autour. Elle est arrondie à environ 1 km, et n'est ni enregistrée ni partagée.</span>
-            <span style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span class="pill solid">◎ Me localiser</span><u>Annuler</u></span>
-          </div>
-          <figcaption class="caption">Aperçu du panneau d'explication, avec le texte réel de <code>AroundMeButton.tsx</code>.</figcaption>
-        </figure>
-        <figure class="mock" style="margin:0">
-          <span class="pill">◎ Autour de moi</span>
-          <div class="alert">Vous n'avez pas autorisé la localisation. Indiquez une ville, ou autorisez-la dans les réglages de votre navigateur.</div>
-          <figcaption class="caption">Un refus : annoncé en <code>role="alert"</code>, puis le focus passe dans le champ « Ville » de la page, texte sélectionné. La solution de rechange est déjà sous le curseur.</figcaption>
-        </figure>
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <p class="prose muted">Captures prises par Playwright contre la fausse API d'Epika : toutes les données sont fictives. Sur ordinateur à gauche, sur téléphone à droite.</p>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #73">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/73/01-accueil-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page d'accueil d'Epika, avec le bandeau de recherche et le bouton « Autour de moi ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/73/01-accueil-mobile.jpg" width="360" height="740" loading="lazy" alt="La page d'accueil d'Epika, avec le bandeau de recherche et le bouton « Autour de moi ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> L'accueil : « Autour de moi » est dans le bandeau de recherche, à côté des champs « Quoi ? » et « Où ? ».</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/73/02-explication-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le panneau d'explication ouvert sous le bouton, avec « Me localiser » et « Annuler ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/73/02-explication-mobile.jpg" width="360" height="740" loading="lazy" alt="Le panneau d'explication ouvert sous le bouton, avec « Me localiser » et « Annuler ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> Le premier clic explique ce qui va être demandé et ce que devient la position. Le navigateur n'a encore rien demandé.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/73/03-resultats-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page de résultats « Événements à Toulon ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/73/03-resultats-mobile.jpg" width="360" height="740" loading="lazy" alt="La page de résultats « Événements à Toulon ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> Position accordée : la recherche s'ouvre autour de la commune trouvée, avec une adresse qui contient une ville et pas des coordonnées.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/73/04-refus-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le message « Vous n'avez pas autorisé la localisation » sous le bouton, le champ ville sélectionné. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/73/04-refus-mobile.jpg" width="360" height="740" loading="lazy" alt="Le message « Vous n'avez pas autorisé la localisation » sous le bouton, le champ ville sélectionné. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">4</span> Position refusée : un message clair, et le curseur est déjà dans le champ « Où ? » pour taper une ville.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/73/05-en-mer-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le message « Aucune commune française n'a été trouvée à votre position ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/73/05-en-mer-mobile.jpg" width="360" height="740" loading="lazy" alt="Le message « Aucune commune française n'a été trouvée à votre position ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">5</span> Une position sans commune française (en mer, à l'étranger) : un autre message, la même solution de rechange.</figcaption>
+          </figure>
+        </li>
+        </ul>
       </div>
     </section>
 
-    <section>
-      <h2><small>Vie privée</small>Une position appartient à une personne</h2>
-      <div class="callout">
+    <section id="vie-privee" aria-labelledby="vie-privee-titre">
+      <h2 id="vie-privee-titre">Vie privée : une position appartient à une personne</h2>
+      <div class="note key">
         <p>C'est le choix central de l'issue : chercher <strong>par commune</strong> plutôt que par coordonnées exactes.</p>
         <ul>
           <li><strong>Arrondie deux fois</strong> à environ 1 km, dans le navigateur puis dans le backend : la Géoplateforme ne reçoit jamais plus que cela.</li>
@@ -77,18 +132,18 @@
       </div>
     </section>
 
-    <section>
-      <h2><small>Backend · #68 · PR #172</small>La route <code>GET /api/geo/commune</code></h2>
-      <p>Publique, sans compte. Une Resource API Platform et son Provider, sans controller.</p>
-      <div class="table-scroll">
+    <section id="api" aria-labelledby="api-titre">
+      <hgroup><p class="eyebrow">Backend · #68 · PR #172</p><h2 id="api-titre">La route <code>GET /api/geo/commune</code></h2></hgroup>
+      <p class="prose">Publique, sans compte. Une Resource API Platform et son Provider, sans controller.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Réponses de la route, tableau défilant">
         <table>
           <thead><tr><th scope="col">Réponse</th><th scope="col">Quand</th></tr></thead>
           <tbody>
-            <tr><td class="code ok">200</td><td><code>{ "city": "Toulon", "postcode": "83200" }</code> : la commune et le code postal de l'adresse la plus proche.</td></tr>
-            <tr><td class="code">404</td><td>Aucune adresse française à proximité (en mer, à l'étranger).</td></tr>
-            <tr><td class="code ko">422</td><td><code>lat</code> (-90 à 90) ou <code>lon</code> (-180 à 180) absent ou non numérique : une erreur par champ.</td></tr>
-            <tr><td class="code ko">429</td><td>Plus de 30 requêtes par minute depuis la même IP (<code>geo_commune_ip</code>) : Epika n'est pas un géocodeur gratuit pour les scripts.</td></tr>
-            <tr><td class="code ko">503</td><td>La Géoplateforme ne répond pas.</td></tr>
+            <tr><td><span class="pill done">200</span></td><td><code>{ "city": "Toulon", "postcode": "83200" }</code> : la commune et le code postal de l'adresse la plus proche.</td></tr>
+            <tr><td><span class="pill todo">404</span></td><td>Aucune adresse française à proximité (en mer, à l'étranger).</td></tr>
+            <tr><td><span class="pill bad">422</span></td><td><code>lat</code> (-90 à 90) ou <code>lon</code> (-180 à 180) absent ou non numérique : une erreur par champ.</td></tr>
+            <tr><td><span class="pill part">429</span></td><td>Plus de 30 requêtes par minute depuis la même IP (<code>geo_commune_ip</code>) : Epika n'est pas un géocodeur gratuit pour les scripts.</td></tr>
+            <tr><td><span class="pill bad">503</span></td><td>La Géoplateforme ne répond pas.</td></tr>
           </tbody>
         </table>
       </div>
@@ -103,16 +158,16 @@
       </div>
     </section>
 
-    <section>
-      <h2><small>Frontend · #73 · PR #173</small>Chaque échec a son message</h2>
-      <div class="table-scroll">
+    <section id="echecs" aria-labelledby="echecs-titre">
+      <hgroup><p class="eyebrow">Frontend · #73 · PR #173</p><h2 id="echecs-titre">Chaque échec a son message</h2></hgroup>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Messages d'échec, tableau défilant">
         <table>
           <thead><tr><th scope="col">État</th><th scope="col">Cause</th><th scope="col">Ce qui est dit</th></tr></thead>
           <tbody>
-            <tr><td class="code">denied</td><td>Le visiteur refuse</td><td>Indiquez une ville, ou autorisez la localisation dans les réglages.</td></tr>
-            <tr><td class="code">unavailable</td><td>Pas de géolocalisation, page hors HTTPS, aucune position</td><td>Votre position n'est pas disponible sur cet appareil.</td></tr>
-            <tr><td class="code">error</td><td>Trop lent (10 s), ou l'API en panne</td><td>La localisation n'a pas abouti. Réessayez.</td></tr>
-            <tr><td class="code">nowhere</td><td>L'API répond 404</td><td>Aucune commune française n'a été trouvée.</td></tr>
+            <tr><td><code>denied</code></td><td>Le visiteur refuse</td><td>Indiquez une ville, ou autorisez la localisation dans les réglages.</td></tr>
+            <tr><td><code>unavailable</code></td><td>Pas de géolocalisation, page hors HTTPS, aucune position</td><td>Votre position n'est pas disponible sur cet appareil.</td></tr>
+            <tr><td><code>error</code></td><td>Trop lent (10 s), ou l'API en panne</td><td>La localisation n'a pas abouti. Réessayez.</td></tr>
+            <tr><td><code>nowhere</code></td><td>L'API répond 404</td><td>Aucune commune française n'a été trouvée.</td></tr>
           </tbody>
         </table>
       </div>
@@ -132,24 +187,25 @@
       </div>
     </section>
 
-    <section>
-      <h2><small>Livraison</small>Deux PR, l'API puis l'interface</h2>
+    <section id="livraison" aria-labelledby="livraison-titre">
+      <h2 id="livraison-titre">Deux PR, l'API puis l'interface</h2>
       <ul class="prs">
         <li><span class="num">#172</span><span>Backend : <code>CommuneFinder</code>, la route avec sa limite par IP, la section « Around me » de <code>docs/search.md</code>.</span></li>
         <li><span class="num">#173</span><span>Frontend : <code>services/geo.ts</code>, <code>useGeolocation</code>, <code>AroundMeButton</code>, les tests de bout en bout.</span></li>
       </ul>
     </section>
 
-    <section>
-      <h2><small>À savoir</small>La limite assumée</h2>
+    <section id="limite" aria-labelledby="limite-titre">
+      <h2 id="limite-titre">La limite assumée</h2>
       <p class="limit">Le rayon part du centre de la commune, pas de l'endroit exact du visiteur. Dans une grande ville, « autour de moi » veut donc dire « autour de ma ville ». C'est le prix de la vie privée, et le cahier des charges l'intègre dans sa prochaine mise à jour groupée.</p>
     </section>
 
-    <nav class="pager" aria-label="Issues">
-      <a href="../index.html">← Toutes les issues</a>
-      <a href="76-signaler-un-evenement.html">#76 Signaler un événement →</a>
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a class="next" href="76-signaler-un-evenement.html" rel="next"><span>Issue suivante →</span><strong>#76 Signaler un événement</strong></a>
     </nav>
-  </div>
-</main>
+  </main>
+</div>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
 </body>
 </html>
