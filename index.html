@@ -16,7 +16,10 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
 </head>
 <body>
 <nav class="topnav" aria-label="Site">
-  <div class="inner"><a class="brand" href="index.html">Epika<span>.</span> journal</a></div>
+  <div class="inner">
+    <a class="brand" href="index.html">Epika<span>.</span> journal</a>
+    <a class="home" href="index.html" aria-current="page">Accueil</a>
+  </div>
 </nav>
 
 <header class="hero single">
@@ -29,6 +32,7 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       <div class="fact"><dt>pull requests</dt><dd>14</dd></div>
       <div class="fact"><dt>captures d'écran</dt><dd>94</dd></div>
     </dl>
+    <a class="cta" href="#issues">Voir les issues terminées <span aria-hidden="true">↓</span></a>
   </div>
 </header>
 
@@ -53,8 +57,9 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       <div class="prose"><p>Le socle du frontend (#70) n'a pas de page à lui : rendu serveur avec Next.js, mise en page mobile d'abord dès 360 px, couche <code>services/</code> pour tous les appels à l'API, composants de base (PR #115) et carte d'événement avec ses états de chargement, de vide et d'erreur (PR #154).</p></div>
     </section>
 
-    <section aria-labelledby="issues-titre">
+    <section id="issues" aria-labelledby="issues-titre">
       <hgroup><p class="eyebrow">Le journal</p><h2 id="issues-titre">Les issues terminées</h2></hgroup>
+      <p class="hint"><strong>Cliquez sur une issue</strong> pour lire son bilan : le parcours, les captures d'écran, les décisions et les tests.</p>
       <div class="lot">
         <h3>Lot 3 · Pages publiques et recherche</h3>
         <ul class="entries">
@@ -62,31 +67,37 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
             <span class="num">#76</span>
             <span class="entry-title">Signaler un événement</span>
             <span class="entry-sub">Un signalement sans CAPTCHA, une adresse IP jamais gardée, un formulaire chargé à la demande · 06/11/2026 · avec #34</span>
+            <span class="entry-go">Lire le bilan <span aria-hidden="true">→</span></span>
           </a></li>
           <li class="entry"><a href="issues/75-page-d-une-structure.html">
             <span class="num">#75</span>
             <span class="entry-title">La page d'une structure</span>
             <span class="entry-sub">Qui elle est, ses liens et ses événements à venir, sans rue ni gérant · 05/11/2026</span>
+            <span class="entry-go">Lire le bilan <span aria-hidden="true">→</span></span>
           </a></li>
           <li class="entry"><a href="issues/74-fiche-evenement.html">
             <span class="num">#74</span>
             <span class="entry-title">La fiche d'un événement</span>
             <span class="entry-sub">Trois dates d'abord, une carte à la demande, la réservation par contact et une vraie 404 · 05/11/2026</span>
+            <span class="entry-go">Lire le bilan <span aria-hidden="true">→</span></span>
           </a></li>
           <li class="entry"><a href="issues/73-autour-de-moi.html">
             <span class="num">#73</span>
             <span class="entry-title">Autour de moi</span>
             <span class="entry-sub">La position du visiteur devient une commune, sans jamais être gardée · 05/11/2026 · avec #68 (API)</span>
+            <span class="entry-go">Lire le bilan <span aria-hidden="true">→</span></span>
           </a></li>
           <li class="entry"><a href="issues/72-resultats-et-filtres.html">
             <span class="num">#72</span>
             <span class="entry-title">Résultats et filtres</span>
             <span class="entry-sub">Des filtres en colonne ou en panneau, le rayon réellement cherché, une adresse par recherche · 04/11/2026</span>
+            <span class="entry-go">Lire le bilan <span aria-hidden="true">→</span></span>
           </a></li>
           <li class="entry"><a href="issues/71-page-d-accueil.html">
             <span class="num">#71</span>
             <span class="entry-title">La page d'accueil</span>
             <span class="entry-sub">Une recherche qui marche sans JavaScript, des raccourcis, les catégories et six événements à la une · 05/11/2026</span>
+            <span class="entry-go">Lire le bilan <span aria-hidden="true">→</span></span>
           </a></li>
         </ul>
       </div>
@@ -97,6 +108,7 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
             <span class="num">#59</span>
             <span class="entry-title">Les pages de compte</span>
             <span class="entry-sub">Inscription, connexion, mot de passe oublié et espace privé, accessibles au clavier · 12/10/2026 · avec #35, #36 et #39</span>
+            <span class="entry-go">Lire le bilan <span aria-hidden="true">→</span></span>
           </a></li>
         </ul>
       </div>
