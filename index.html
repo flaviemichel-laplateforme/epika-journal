@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Journal d'Epika</title>
+<meta name="description" content="Le journal de bord du développement d'Epika, issue par issue : ce qui a été construit, comment, et pourquoi.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="wrap"><a class="brand" href="index.html">Epika<span>.</span> journal</a></div>
+</nav>
+
+<header class="band">
+  <div class="wrap">
+    <div class="chips"><span class="chip">Projet personnel</span></div>
+    <h1>Journal d'Epika</h1>
+    <p class="lede">Epika, <em>au cœur de l'événement</em>, est une plateforme de découverte d'événements locaux : associations, mairies, entreprises. Ce journal raconte son développement, issue par issue : ce qui a été construit, comment, et surtout pourquoi.</p>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <section>
+      <h2><small>Le projet</small>La stack</h2>
+      <div class="grid2">
+        <div class="box"><h3>Backend</h3><ul>
+          <li>Symfony 7.4 LTS et API Platform, PHP 8.3</li>
+          <li>PostgreSQL 18 avec PostGIS (la géographie)</li>
+          <li>Authentification JWT dans un cookie HttpOnly</li>
+          <li>Tests PHPUnit</li>
+        </ul></div>
+        <div class="box"><h3>Frontend</h3><ul>
+          <li>Next.js 16 (React 19) et TypeScript</li>
+          <li>Tailwind CSS 4</li>
+          <li>Accessibilité RGAA 4.1.2 dès le départ</li>
+          <li>Tests Vitest et Playwright, audit axe</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section>
+      <h2><small>Le journal</small>Les issues terminées</h2>
+      <div class="lot">
+        <h3>Lot 3 · Pages publiques et recherche</h3>
+        <ul class="entries">
+          <li class="entry"><a href="issues/73-autour-de-moi.html">
+            <span class="num">#73</span>
+            <span class="entry-title">Autour de moi</span>
+            <span class="entry-sub">La position du visiteur devient une commune, sans jamais être gardée · 05/11/2026 · avec #68 (API)</span>
+          </a></li>
+        </ul>
+      </div>
+    </section>
+
+    <footer class="site">Journal du projet Epika · <a href="https://github.com/flaviemichel-laplateforme/epika-journal">sources sur GitHub</a></footer>
+  </div>
+</main>
+</body>
+</html>

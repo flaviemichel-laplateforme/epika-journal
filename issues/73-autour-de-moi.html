@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Autour de moi (#73) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #73 (et #68) d'Epika : le parcours, la vie privée, l'API, les états d'échec, les tests et la limite assumée.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="wrap">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a href="../index.html">← Toutes les issues</a>
+  </div>
+</nav>
+
+<header class="band">
+  <div class="wrap">
+    <div class="chips">
+      <span class="chip done">Terminée · 05/11/2026</span>
+      <span class="chip">#73 frontend</span>
+      <span class="chip">#68 backend</span>
+      <span class="chip">EF-27 · US-V7</span>
+    </div>
+    <h1>Autour de moi</h1>
+    <p class="lede">Un bouton qui trouve les événements près du visiteur. Sa position devient une commune, puis la recherche par ville fait le reste. La position est arrondie à environ 1 km, elle n'est jamais enregistrée, et l'adresse de la page ne dit à personne où il se trouvait.</p>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <section>
+      <h2><small>Le parcours</small>Du clic aux résultats</h2>
+      <ol class="steps">
+        <li><div><strong>Le visiteur clique sur « Autour de moi »</strong><span>Sur l'accueil (bandeau navy) ou sur la page de résultats. Rien n'est demandé au chargement de la page.</span></div></li>
+        <li><div><strong>Epika explique avant de demander</strong><span>Un court message dit ce qui va être demandé, pourquoi, et ce que devient la position. Ensuite seulement, « Me localiser » déclenche la fenêtre d'autorisation du navigateur.</span></div></li>
+        <li><div><strong>Le navigateur donne la position, arrondie aussitôt</strong><span><code>useGeolocation</code> : sans puce GPS, 10 s au maximum, arrondi à 2 décimales (environ 1,1 km) avant tout envoi.</span></div></li>
+        <li><div><strong>L'API trouve la commune</strong><span><code>GET /api/geo/commune?lat=43.13&amp;lon=5.92</code> arrondit à nouveau et interroge le géocodage inverse de la Géoplateforme (IGN).</span></div></li>
+        <li><div><strong>La recherche par ville s'ouvre</strong><span><code>/recherche?ville=Toulon&amp;cp=83200</code> reprend le rayon, l'élargissement et le tri « Plus proche d'abord ». Sur la page de résultats, les autres filtres sont conservés.</span></div></li>
+      </ol>
+    </section>
+
+    <section>
+      <h2><small>Ce que voit le visiteur</small>Le bouton, son explication, un échec</h2>
+      <div class="grid2">
+        <figure class="mock" style="margin:0">
+          <span class="pill">◎ Autour de moi</span>
+          <div class="card">
+            <span>Epika va demander votre position à votre navigateur, pour trouver votre commune et les événements autour. Elle est arrondie à environ 1 km, et n'est ni enregistrée ni partagée.</span>
+            <span style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span class="pill solid">◎ Me localiser</span><u>Annuler</u></span>
+          </div>
+          <figcaption class="caption">Aperçu du panneau d'explication, avec le texte réel de <code>AroundMeButton.tsx</code>.</figcaption>
+        </figure>
+        <figure class="mock" style="margin:0">
+          <span class="pill">◎ Autour de moi</span>
+          <div class="alert">Vous n'avez pas autorisé la localisation. Indiquez une ville, ou autorisez-la dans les réglages de votre navigateur.</div>
+          <figcaption class="caption">Un refus : annoncé en <code>role="alert"</code>, puis le focus passe dans le champ « Ville » de la page, texte sélectionné. La solution de rechange est déjà sous le curseur.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <h2><small>Vie privée</small>Une position appartient à une personne</h2>
+      <div class="callout">
+        <p>C'est le choix central de l'issue : chercher <strong>par commune</strong> plutôt que par coordonnées exactes.</p>
+        <ul>
+          <li><strong>Arrondie deux fois</strong> à environ 1 km, dans le navigateur puis dans le backend : la Géoplateforme ne reçoit jamais plus que cela.</li>
+          <li><strong>Jamais enregistrée</strong> : pas de cache, contrairement aux noms de villes (une ville appartient à tout le monde).</li>
+          <li><strong>Jamais écrite dans un log</strong> par le code d'Epika. Les journaux d'accès du serveur de production (lot 6, #99) devront exclure les paramètres de cette route.</li>
+          <li><strong>Une adresse partageable et anonyme</strong> : l'URL des résultats contient une ville, pas des coordonnées.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2><small>Backend · #68 · PR #172</small>La route <code>GET /api/geo/commune</code></h2>
+      <p>Publique, sans compte. Une Resource API Platform et son Provider, sans controller.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th scope="col">Réponse</th><th scope="col">Quand</th></tr></thead>
+          <tbody>
+            <tr><td class="code ok">200</td><td><code>{ "city": "Toulon", "postcode": "83200" }</code> : la commune et le code postal de l'adresse la plus proche.</td></tr>
+            <tr><td class="code">404</td><td>Aucune adresse française à proximité (en mer, à l'étranger).</td></tr>
+            <tr><td class="code ko">422</td><td><code>lat</code> (-90 à 90) ou <code>lon</code> (-180 à 180) absent ou non numérique : une erreur par champ.</td></tr>
+            <tr><td class="code ko">429</td><td>Plus de 30 requêtes par minute depuis la même IP (<code>geo_commune_ip</code>) : Epika n'est pas un géocodeur gratuit pour les scripts.</td></tr>
+            <tr><td class="code ko">503</td><td>La Géoplateforme ne répond pas.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="grid2">
+        <div class="box"><h3>Les pièces</h3><ul>
+          <li><code>CommuneFinder</code> : le géocodage inverse</li>
+          <li><code>PositionQuery</code> : le DTO, des chaînes jusqu'à validation</li>
+          <li><code>CommuneProvider</code> et <code>CommuneResource</code></li>
+          <li><code>Commune</code> : un objet-valeur, ville et code postal</li>
+        </ul></div>
+        <div class="box"><h3>Le piège évité</h3><p>La première version demandait <code>type=municipality</code>. Elle renvoyait le centre de la commune, souvent trop loin pour le cercle de recherche : un point dans Toulon ne trouvait rien. La requête finale cherche l'adresse la plus proche (<code>index=address</code>, <code>limit=1</code>).</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2><small>Frontend · #73 · PR #173</small>Chaque échec a son message</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th scope="col">État</th><th scope="col">Cause</th><th scope="col">Ce qui est dit</th></tr></thead>
+          <tbody>
+            <tr><td class="code">denied</td><td>Le visiteur refuse</td><td>Indiquez une ville, ou autorisez la localisation dans les réglages.</td></tr>
+            <tr><td class="code">unavailable</td><td>Pas de géolocalisation, page hors HTTPS, aucune position</td><td>Votre position n'est pas disponible sur cet appareil.</td></tr>
+            <tr><td class="code">error</td><td>Trop lent (10 s), ou l'API en panne</td><td>La localisation n'a pas abouti. Réessayez.</td></tr>
+            <tr><td class="code">nowhere</td><td>L'API répond 404</td><td>Aucune commune française n'a été trouvée.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="grid2">
+        <div class="box"><h3>Accessibilité (RGAA)</h3><ul>
+          <li>Le bouton annonce son panneau (<code>aria-expanded</code>, <code>aria-controls</code>)</li>
+          <li>Les échecs en <code>role="alert"</code>, la progression en <code>aria-live="polite"</code></li>
+          <li>Une seule zone <code>role="status"</code> par page : celle du nombre de résultats</li>
+          <li>Des cibles d'au moins 44 px</li>
+        </ul></div>
+        <div class="box"><h3>Les tests</h3><ul>
+          <li>Vitest : l'arrondi, la route appelée, les 4 états</li>
+          <li>Playwright : accordé, refusé, en mer, avec <code>setGeolocation</code></li>
+          <li>axe en WCAG 2.2 AA</li>
+          <li>PHPUnit : <code>CommuneApiTest</code> avec <code>MockHttpClient</code></li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section>
+      <h2><small>Livraison</small>Deux PR, l'API puis l'interface</h2>
+      <ul class="prs">
+        <li><span class="num">#172</span><span>Backend : <code>CommuneFinder</code>, la route avec sa limite par IP, la section « Around me » de <code>docs/search.md</code>.</span></li>
+        <li><span class="num">#173</span><span>Frontend : <code>services/geo.ts</code>, <code>useGeolocation</code>, <code>AroundMeButton</code>, les tests de bout en bout.</span></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><small>À savoir</small>La limite assumée</h2>
+      <p class="limit">Le rayon part du centre de la commune, pas de l'endroit exact du visiteur. Dans une grande ville, « autour de moi » veut donc dire « autour de ma ville ». C'est le prix de la vie privée, et le cahier des charges l'intègre dans sa prochaine mise à jour groupée.</p>
+    </section>
+
+    <nav class="pager" aria-label="Issues">
+      <a href="../index.html">← Toutes les issues</a>
+    </nav>
+  </div>
+</main>
+</body>
+</html>
