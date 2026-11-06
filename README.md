@@ -7,7 +7,7 @@ Un site statique en HTML et CSS, sans dépendance ni étape de build.
 ## Structure
 
 - `index.html` : l'accueil, la liste des issues terminées par lot
-- `issues/<numéro>-<nom>.html` : une page par issue
+- `issues/<numéro>-<nom>.html` : une page par issue (#59 comptes, #71 accueil, #72 résultats et filtres, #73 autour de moi, #74 fiche événement, #75 page d'une structure, #76 signaler un événement). Chaque page a ses liens « Issue précédente / suivante » (ordre des numéros) : en ajouter une demande de mettre à jour les deux voisines et la liste de `index.html`
 - `styles.css` : le style commun, aux couleurs d'Epika. L'en-tête de page (`<header class="hero">`, avec son `<div class="inner">`) est un bandeau navy pleine largeur, placé entre la barre du haut et `.page` ; il reste navy en thème sombre
 - `toc.js` : le sommaire d'une page d'issue (collé à gauche sur ordinateur, replié sur téléphone, section en cours surlignée). Chaque lien du sommaire pointe vers l'`id` d'une `<section>` de la page
 - `theme.js` : le choix du thème (Clair / Sombre / Auto), trois boutons ajoutés à droite de la barre du haut, choix gardé dans `localStorage`. **Chaque page** doit aussi avoir, dans son `<head>` avant les feuilles de style, le petit script inline qui applique le choix avant l'affichage (sinon la page clignote) : le copier depuis `index.html`
@@ -34,6 +34,7 @@ Prises par Playwright, contre la **fausse API** d'Epika (données fictives uniqu
    ```
    npm run captures -- 73
    ```
+   Plusieurs issues d'un coup : `npm run captures -- 59 71 72 74 75`. Pour la #59, les scènes simulent l'API des comptes avec `page.route`, comme les tests d'Epika (la fausse API n'a pas de routes de compte).
    Les images vont dans `images/<numéro>/`, et `tools/out/<numéro>.html` reçoit les diapositives à coller dans la page.
 
 Une scène = un nom, une légende, un texte alternatif, et `play(page, context)` qui amène la page dans l'état à photographier (voir `tools/scenes/73.mjs`).
