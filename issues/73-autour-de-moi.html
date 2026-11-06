@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
 <title>Autour de moi (#73) · Journal d'Epika</title>
 <meta name="description" content="Bilan de l'issue #73 (et #68) d'Epika : le parcours, la vie privée, l'API, les états d'échec, les tests et la limite assumée.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,6 +22,20 @@
     <a href="../index.html">← Toutes les issues</a>
   </div>
 </nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 3 · issue #73, avec #68 pour l'API · EF-27 · US-V7 · terminée le 05/11/2026</p>
+    <h1>Autour de moi</h1>
+    <p class="lede">Un bouton qui trouve les événements près du visiteur. Sa position devient une commune, puis la recherche par ville fait le reste. La position est arrondie à environ 1 km, elle n'est jamais enregistrée, et l'adresse de la page ne dit à personne où il se trouvait.</p>
+    <dl class="facts">
+      <div class="fact"><dt>pull requests</dt><dd>2</dd></div>
+      <div class="fact"><dt>arrondi de la position</dt><dd>≈ 1 km</dd></div>
+      <div class="fact"><dt>position enregistrée</dt><dd>0</dd></div>
+      <div class="fact"><dt>échecs, chacun son message</dt><dd>4</dd></div>
+    </dl>
+  </div>
+</header>
 
 <div class="page">
   <nav class="toc" aria-label="Sommaire">
@@ -37,18 +55,6 @@
   </nav>
 
   <main>
-    <header class="hero">
-      <p class="eyebrow">Lot 3 · issue #73, avec #68 pour l'API · EF-27 · US-V7 · terminée le 05/11/2026</p>
-      <h1>Autour de moi</h1>
-      <p class="lede">Un bouton qui trouve les événements près du visiteur. Sa position devient une commune, puis la recherche par ville fait le reste. La position est arrondie à environ 1 km, elle n'est jamais enregistrée, et l'adresse de la page ne dit à personne où il se trouvait.</p>
-      <dl class="facts">
-        <div class="fact"><dt>pull requests</dt><dd>2</dd></div>
-        <div class="fact"><dt>arrondi de la position</dt><dd>≈ 1 km</dd></div>
-        <div class="fact"><dt>position enregistrée</dt><dd>0</dd></div>
-        <div class="fact"><dt>échecs, chacun son message</dt><dd>4</dd></div>
-      </dl>
-    </header>
-
     <section id="parcours" aria-labelledby="parcours-titre">
       <h2 id="parcours-titre">Le parcours, du clic aux résultats</h2>
       <ol class="pipeline">
@@ -205,6 +211,7 @@
     </nav>
   </main>
 </div>
+<script src="../theme.js"></script>
 <script src="../toc.js"></script>
 <script src="../gallery.js"></script>
 </body>

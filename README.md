@@ -8,8 +8,9 @@ Un site statique en HTML et CSS, sans dépendance ni étape de build.
 
 - `index.html` : l'accueil, la liste des issues terminées par lot
 - `issues/<numéro>-<nom>.html` : une page par issue
-- `styles.css` : le style commun, aux couleurs d'Epika
+- `styles.css` : le style commun, aux couleurs d'Epika. L'en-tête de page (`<header class="hero">`, avec son `<div class="inner">`) est un bandeau navy pleine largeur, placé entre la barre du haut et `.page` ; il reste navy en thème sombre
 - `toc.js` : le sommaire d'une page d'issue (collé à gauche sur ordinateur, replié sur téléphone, section en cours surlignée). Chaque lien du sommaire pointe vers l'`id` d'une `<section>` de la page
+- `theme.js` : le choix du thème (Clair / Sombre / Auto), trois boutons ajoutés à droite de la barre du haut, choix gardé dans `localStorage`. **Chaque page** doit aussi avoir, dans son `<head>` avant les feuilles de style, le petit script inline qui applique le choix avant l'affichage (sinon la page clignote) : le copier depuis `index.html`
 - `gallery.css`, `gallery.js` : la galerie de captures (voir plus bas)
 
 ## Voir le site en local

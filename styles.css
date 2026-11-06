@@ -14,6 +14,10 @@
   --tint: #e0f7f5;
   --bar: #14116d;
   --bar-accent: #47c3c9;
+  /* Brand colours of the banner: fixed, they do NOT change with the theme (unlike --navy, which turns light in dark mode) */
+  --brand: #14116d;
+  --brand-accent: #47c3c9;
+  --brand-muted: #d9d8f5;
   --done: #0a6e6a;
   --done-bg: #ddf4f1;
   --part: #8a4a00;
@@ -61,6 +65,15 @@ p { margin: 0; }
 .topnav a:hover { text-decoration: underline; }
 .brand { font-weight: 800; letter-spacing: .01em; }
 .brand span { color: var(--bar-accent); }
+/* On the navy bars the default (dark turquoise) focus ring is too faint: use the light one */
+.topnav :focus-visible, .hero :focus-visible { outline-color: var(--brand-accent); }
+
+/* Theme choice (theme.js): three buttons, the pressed one filled and ticked so colour is never the only sign */
+.theme { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.theme button { font: inherit; font-size: .88rem; font-weight: 700; color: #fff; background: transparent; border: 2px solid rgba(255, 255, 255, .55); border-radius: 999px; min-width: 44px; min-height: 44px; padding: 0 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.theme button:hover { border-color: #fff; background: rgba(255, 255, 255, .12); }
+.theme button[aria-pressed="true"] { background: var(--brand-accent); border-color: var(--brand-accent); color: #0b0a3d; }
+.theme button[aria-pressed="true"]::before { content: "✓"; }
 
 /* Page: the table of contents beside the text; one column without it, or on a phone */
 .page { max-width: 1120px; margin: 0 auto; padding: 40px max(16px, env(safe-area-inset-right, 0px)) 72px max(16px, env(safe-area-inset-left, 0px)); display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 48px; }
@@ -90,15 +103,18 @@ section { display: grid; gap: 16px; min-width: 0; scroll-margin-top: 16px; }
   .toc a { padding-block: 9px; }
 }
 
-/* The opening of a page */
-.hero { display: grid; gap: 18px; border-bottom: 1px solid var(--line); padding-bottom: 32px; }
-.hero h1 { font-size: clamp(2rem, 5vw, 2.9rem); font-weight: 800; letter-spacing: -.02em; }
+/* The opening of a page: a full-width navy banner (Epika's brand colour, the same in light and dark), above the contents */
+header.hero { background: var(--brand); color: #fff; }
+.hero .inner { max-width: 1120px; margin: 0 auto; display: grid; gap: 18px; padding: 40px max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px)); }
+.hero.single .inner { max-width: 880px; } /* same width as .page.single, so the left edges line up */
+.hero h1 { font-size: clamp(2rem, 5vw, 2.9rem); font-weight: 800; letter-spacing: -.02em; color: #fff; }
 .eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: .75rem; font-weight: 700; color: var(--turquoise); }
+.hero .eyebrow { color: var(--brand-accent); }
 .lede { font-size: 1.12rem; max-width: 66ch; }
 .facts { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; }
-.fact { display: grid; gap: 2px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); min-width: 0; }
-.fact dd { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--navy); font-variant-numeric: tabular-nums; order: -1; }
-.fact dt { font-size: .8rem; color: var(--muted); }
+.fact { display: grid; gap: 2px; padding: 10px 14px; border: 1px solid rgba(255, 255, 255, .35); border-radius: 12px; background: rgba(255, 255, 255, .1); min-width: 0; }
+.fact dd { margin: 0; font-size: 1.25rem; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; order: -1; }
+.fact dt { font-size: .8rem; color: var(--brand-muted); }
 hgroup { display: grid; gap: 4px; margin: 0; }
 /* On a narrow phone, the key figures in two even columns rather than a ragged wrap. */
 @media (max-width: 520px) { .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); } }

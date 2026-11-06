@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
 <title>Journal d'Epika</title>
 <meta name="description" content="Le journal de bord du développement d'Epika, issue par issue : ce qui a été construit, comment, et pourquoi.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,19 +19,21 @@
   <div class="inner"><a class="brand" href="index.html">Epika<span>.</span> journal</a></div>
 </nav>
 
+<header class="hero single">
+  <div class="inner">
+    <p class="eyebrow">Projet personnel · journal de bord</p>
+    <h1>Journal d'Epika</h1>
+    <p class="lede">Epika, <em>au cœur de l'événement</em>, est une plateforme de découverte d'événements locaux : associations, mairies, entreprises. Ce journal raconte son développement, issue par issue : ce qui a été construit, comment, et surtout pourquoi.</p>
+    <dl class="facts">
+      <div class="fact"><dt>issues racontées</dt><dd>2</dd></div>
+      <div class="fact"><dt>pull requests</dt><dd>4</dd></div>
+      <div class="fact"><dt>captures d'écran</dt><dd>24</dd></div>
+    </dl>
+  </div>
+</header>
+
 <div class="page single">
   <main>
-    <header class="hero">
-      <p class="eyebrow">Projet personnel · journal de bord</p>
-      <h1>Journal d'Epika</h1>
-      <p class="lede">Epika, <em>au cœur de l'événement</em>, est une plateforme de découverte d'événements locaux : associations, mairies, entreprises. Ce journal raconte son développement, issue par issue : ce qui a été construit, comment, et surtout pourquoi.</p>
-      <dl class="facts">
-        <div class="fact"><dt>issues racontées</dt><dd>2</dd></div>
-        <div class="fact"><dt>pull requests</dt><dd>4</dd></div>
-        <div class="fact"><dt>captures d'écran</dt><dd>24</dd></div>
-      </dl>
-    </header>
-
     <section aria-labelledby="stack-titre">
       <hgroup><p class="eyebrow">Le projet</p><h2 id="stack-titre">La stack</h2></hgroup>
       <div class="grid2">
@@ -68,5 +74,6 @@
     <footer class="site">Journal du projet Epika · <a href="https://github.com/flaviemichel-laplateforme/epika-journal">sources sur GitHub</a></footer>
   </main>
 </div>
+<script src="theme.js"></script>
 </body>
 </html>

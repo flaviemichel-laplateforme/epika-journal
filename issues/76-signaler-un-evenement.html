@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
 <title>Signaler un événement (#76) · Journal d'Epika</title>
 <meta name="description" content="Bilan de l'issue #76 d'Epika : signaler un problème sur un événement, l'anti-spam sans CAPTCHA, l'adresse IP jamais gardée, la fenêtre accessible et le formulaire chargé à la demande.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,6 +22,20 @@
     <a href="../index.html">← Toutes les issues</a>
   </div>
 </nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 3 · issue #76 et user story #34 · EF-30 · terminée le 06/11/2026</p>
+    <h1>Signaler un événement</h1>
+    <p class="lede">En bas de chaque fiche, n'importe qui peut signaler un problème : une date fausse, un événement annulé, un contenu déplacé, une arnaque. Sans compte, il suffit d'une adresse e-mail. Les robots sont arrêtés sans CAPTCHA, et l'adresse IP du visiteur n'est jamais enregistrée.</p>
+    <dl class="facts">
+      <div class="fact"><dt>pull requests</dt><dd>2</dd></div>
+      <div class="fact"><dt>sujets proposés</dt><dd>5</dd></div>
+      <div class="fact"><dt>adresse IP gardée</dt><dd>0</dd></div>
+      <div class="fact"><dt>de JavaScript en moins par fiche</dt><dd>47 Kio</dd></div>
+    </dl>
+  </div>
+</header>
 
 <div class="page">
   <nav class="toc" aria-label="Sommaire">
@@ -40,18 +58,6 @@
   </nav>
 
   <main>
-    <header class="hero">
-      <p class="eyebrow">Lot 3 · issue #76 et user story #34 · EF-30 · terminée le 06/11/2026</p>
-      <h1>Signaler un événement</h1>
-      <p class="lede">En bas de chaque fiche, n'importe qui peut signaler un problème : une date fausse, un événement annulé, un contenu déplacé, une arnaque. Sans compte, il suffit d'une adresse e-mail. Les robots sont arrêtés sans CAPTCHA, et l'adresse IP du visiteur n'est jamais enregistrée.</p>
-      <dl class="facts">
-        <div class="fact"><dt>pull requests</dt><dd>2</dd></div>
-        <div class="fact"><dt>sujets proposés</dt><dd>5</dd></div>
-        <div class="fact"><dt>adresse IP gardée</dt><dd>0</dd></div>
-        <div class="fact"><dt>de JavaScript en moins par fiche</dt><dd>47 Kio</dd></div>
-      </dl>
-    </header>
-
     <section id="parcours" aria-labelledby="parcours-titre">
       <h2 id="parcours-titre">Le parcours, de la fiche à la confirmation</h2>
       <ol class="pipeline">
@@ -269,6 +275,7 @@
     </nav>
   </main>
 </div>
+<script src="../theme.js"></script>
 <script src="../toc.js"></script>
 <script src="../gallery.js"></script>
 </body>
