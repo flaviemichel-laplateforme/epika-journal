@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>Espace participant (#78) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #78 d'Epika : modifier ses informations, changer son mot de passe et supprimer son compte en l'anonymisant, sans IDOR possible, avec la confirmation du mot de passe et un bug du React Compiler attrapé dans le navigateur.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a class="home" href="../index.html">Accueil</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 3 · issue #78, user stories #10 et #11 · EF-08 · EF-09 · RG-08 · RG-17 · terminée le 10/11/2026</p>
+    <h1>L'espace participant</h1>
+    <p class="lede">Dans « Mon espace », une personne modifie ses informations, change son mot de passe et peut supprimer son compte : son droit à l'oubli. Supprimer, c'est anonymiser : le compte ne dit plus rien de la personne, mais l'historique qui le désigne garde son sens.</p>
+    <dl class="facts">
+      <div class="fact"><dt>pull requests</dt><dd>2</dd></div>
+      <div class="fact"><dt>cadres dans « Mon espace »</dt><dd>3</dd></div>
+      <div class="fact"><dt>donnée personnelle gardée après suppression</dt><dd>0</dd></div>
+      <div class="fact"><dt>essais de mot de passe par 15 min</dt><dd>5</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#parcours">Le parcours</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#anonymiser">Supprimer, c'est anonymiser</a></li>
+        <li><a href="#refus">Les refus</a></li>
+        <li><a href="#securite">La sécurité</a></li>
+        <li><a href="#mon-espace">« Mon espace »</a></li>
+        <li><a href="#confirmation">La confirmation du mot de passe</a></li>
+        <li><a href="#compilateur">Un bug du React Compiler</a></li>
+        <li><a href="#tests">Les tests</a></li>
+        <li><a href="#livraison">Les deux PR</a></li>
+        <li><a href="#limites">Limites et suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="parcours" aria-labelledby="parcours-titre">
+      <h2 id="parcours-titre">Le parcours, de « Mon espace » à l'oubli</h2>
+      <ol class="pipeline">
+        <li><div><strong>La personne ouvre « Mon espace »</strong><span>Une seule page, un cadre par tâche : « Mes informations », « Mot de passe », « Supprimer mon compte ». Tout se voit d'un coup d'œil.</span></div></li>
+        <li><div><strong>Elle modifie ses informations</strong><span>Prénom, nom, téléphone et ville par défaut, pré-remplis. L'enregistrement est annoncé sans déplacer le focus, et le salut change aussitôt.</span></div></li>
+        <li><div><strong>Elle change son mot de passe</strong><span>L'actuel, puis le nouveau, demandé deux fois. La page prévient avant : tous les appareils seront déconnectés, celui-ci compris. Elle mène ensuite à la connexion.</span></div></li>
+        <li><div><strong>Elle supprime son compte</strong><span>Une fenêtre dit ce qui est effacé et ce qui reste, puis demande le mot de passe. Après « Supprimer définitivement mon compte », une page statique le confirme, et un e-mail part à l'ancienne adresse.</span></div></li>
+      </ol>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <p class="prose muted">Captures prises par Playwright sur Epika en production, l'API du compte simulée : la personne est fictive. Sur ordinateur à gauche, sur téléphone à droite.</p>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #78">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/78/01-mes-informations-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page « Mon espace » de Camille, avec le cadre « Mes informations » : prénom, nom, téléphone, ville par défaut et adresse e-mail. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/78/01-mes-informations-mobile.jpg" width="360" height="740" loading="lazy" alt="La page « Mon espace » de Camille, avec le cadre « Mes informations » : prénom, nom, téléphone, ville par défaut et adresse e-mail. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> « Mon espace » : une seule page, un cadre par tâche. « Mes informations » est pré-rempli, le téléphone écrit comme on le lit ; l'e-mail est affiché, pas modifiable.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/78/02-enregistre-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le message « Vos informations sont enregistrées. » au-dessus du formulaire, et « Bonjour Cam ! » en haut de la page. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/78/02-enregistre-mobile.jpg" width="360" height="740" loading="lazy" alt="Le message « Vos informations sont enregistrées. » au-dessus du formulaire, et « Bonjour Cam ! » en haut de la page. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> Enregistré : le message est annoncé sans déplacer le focus, et le salut change aussitôt. Il disparaît dès qu'un champ est modifié, puisqu'il ne serait plus vrai.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/78/03-mot-de-passe-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le cadre « Mot de passe » rempli : mot de passe actuel, nouveau mot de passe avec la jauge « forte », et sa confirmation. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/78/03-mot-de-passe-mobile.jpg" width="360" height="740" loading="lazy" alt="Le cadre « Mot de passe » rempli : mot de passe actuel, nouveau mot de passe avec la jauge « forte », et sa confirmation. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> « Mot de passe » : la page prévient avant que tous les appareils seront déconnectés. Le nouveau mot de passe a sa jauge de force, et il est demandé deux fois.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/78/04-confirmation-differente-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le message « Les deux mots de passe ne sont pas identiques. » sous le champ de confirmation. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/78/04-confirmation-differente-mobile.jpg" width="360" height="740" loading="lazy" alt="Le message « Les deux mots de passe ne sont pas identiques. » sous le champ de confirmation. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">4</span> Une confirmation différente : rien n'est envoyé, l'erreur est sous la confirmation, qui reçoit le focus. Seuls l'actuel et le nouveau partent vers l'API.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/78/05-suppression-desktop.jpg" width="1280" height="800" loading="lazy" alt="La fenêtre « Supprimer mon compte » : ce qui est effacé, ce qui reste, le champ mot de passe, « Supprimer définitivement mon compte » et « Annuler ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/78/05-suppression-mobile.jpg" width="360" height="740" loading="lazy" alt="La fenêtre « Supprimer mon compte » : ce qui est effacé, ce qui reste, le champ mot de passe, « Supprimer définitivement mon compte » et « Annuler ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">5</span> « Supprimer mon compte » ouvre une fenêtre qui dit ce qui est effacé et ce qui reste sans rien qui vous désigne, puis demande le mot de passe. Sur un téléphone, elle monte du bas.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/78/06-suppression-refusee-desktop.jpg" width="1280" height="800" loading="lazy" alt="Dans la fenêtre, l'alerte « Votre structure a des événements à venir : votre compte ne peut pas être supprimé… ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/78/06-suppression-refusee-mobile.jpg" width="360" height="740" loading="lazy" alt="Dans la fenêtre, l'alerte « Votre structure a des événements à venir : votre compte ne peut pas être supprimé… ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">6</span> Un refus de l'API (une structure avec des événements à venir, RG-17) : la raison s'affiche dans la fenêtre, en alerte, et reçoit le focus.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/78/07-administrateur-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le cadre « Supprimer mon compte » d'un administrateur : l'explication, sans bouton. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/78/07-administrateur-mobile.jpg" width="360" height="740" loading="lazy" alt="Le cadre « Supprimer mon compte » d'un administrateur : l'explication, sans bouton. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">7</span> Un administrateur lit pourquoi il ne peut pas supprimer son compte ici : ses décisions de modération gardent leur auteur, et Epika ne doit jamais rester sans administrateur.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/78/08-compte-supprime-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page « Votre compte a été supprimé », avec le lien « Retour à l'accueil ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/78/08-compte-supprime-mobile.jpg" width="360" height="740" loading="lazy" alt="La page « Votre compte a été supprimé », avec le lien « Retour à l'accueil ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">8</span> Après la suppression : une page statique, sans aucune donnée. Le compte est anonymisé, les appareils déconnectés, et un e-mail part à l'ancienne adresse.</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="anonymiser" aria-labelledby="anonymiser-titre">
+      <hgroup><p class="eyebrow">Le cœur de l'issue · PR #180</p><h2 id="anonymiser-titre">Supprimer, c'est anonymiser</h2></hgroup>
+      <div class="note key">
+        <p>Supprimer la ligne du compte aurait cassé l'historique : un signalement, une décision de modération pointent vers un compte. Toutes les clés étrangères du projet sont en <strong>NO ACTION</strong> : la base refuse de supprimer une ligne encore désignée, et c'est le code qui décide. Le cahier des charges tranche donc : <strong>la ligne reste, mais elle ne dit plus rien de la personne</strong>.</p>
+      </div>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Ce que devient un compte supprimé, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Donnée</th><th scope="col">Devient</th></tr></thead>
+          <tbody>
+            <tr><td>Adresse e-mail</td><td><code>anonyme-{id}@epika.invalid</code> : unique, et le domaine <code>.invalid</code> (RFC 2606) ne peut jamais recevoir de courrier. L'ancienne adresse est libre pour une nouvelle inscription.</td></tr>
+            <tr><td>Prénom, nom</td><td>« Compte » « supprimé » : la vérité, sans nom.</td></tr>
+            <tr><td>Téléphone, ville</td><td>Effacés.</td></tr>
+            <tr><td>Mot de passe</td><td>L'empreinte d'un secret aléatoire aussitôt oublié : aucun mot de passe ne peut plus la reproduire.</td></tr>
+            <tr><td>Sessions et liens reçus par e-mail</td><td>Révoqués et supprimés, <strong>avant</strong> le changement d'e-mail : les sessions sont retrouvées par lui.</td></tr>
+            <tr><td>Signalements envoyés</td><td>Leur e-mail et leur empreinte IP effacés tout de suite, même en attente. Ils gardent un auteur : le compte anonymisé.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="prose">Tout se fait dans <strong>une seule transaction</strong> : jamais un compte à moitié anonymisé. Une migration assouplit une contrainte de la base : un signalement en attente garde son e-mail et son empreinte, <strong>sauf</strong> s'il vient d'un compte, qui suffit alors à dire d'où il vient.</p>
+    </section>
+
+    <section id="refus" aria-labelledby="refus-titre">
+      <h2 id="refus-titre">Deux refus, chacun avec sa raison</h2>
+      <div class="grid2">
+        <div class="box"><h3>Un administrateur</h3><p>Il ne peut pas supprimer son compte depuis « Mon espace » : ses décisions de modération gardent leur auteur, une session volée ne doit pas pouvoir effacer un administrateur, et Epika ne doit jamais rester sans administrateur. Le chemin prévu : un autre administrateur lui retire d'abord le rôle.</p></div>
+        <div class="box"><h3>Une structure avec des événements à venir (RG-17)</h3><p>Tant qu'un événement n'est pas terminé et n'est pas annulé, le compte qui gère la structure reste. Un événement en cours compte ; un brouillon aussi. La structure doit d'abord être transférée ou close.</p></div>
+      </div>
+      <p class="prose muted">L'API répond 409 avec la raison, en français ; l'interface l'affiche telle quelle, et l'administrateur la lit avant même d'essayer.</p>
+    </section>
+
+    <section id="securite" aria-labelledby="securite-titre">
+      <h2 id="securite-titre">La sécurité : le compte du JWT, et le mot de passe actuel</h2>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Les routes du compte, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Route</th><th scope="col">Pour quoi</th></tr></thead>
+          <tbody>
+            <tr><td><code>GET /api/me</code></td><td>Qui suis-je, téléphone compris.</td></tr>
+            <tr><td><code>PATCH /api/me</code></td><td>« Mes informations », en JSON Merge Patch : un champ absent garde sa valeur, <code>null</code> efface.</td></tr>
+            <tr><td><code>POST /api/me/password</code></td><td>Changer de mot de passe.</td></tr>
+            <tr><td><code>POST /api/me/deletion</code></td><td>Supprimer son compte. Un POST, pas un DELETE : le corps d'un DELETE n'est jamais lu, et un mot de passe ne va jamais dans l'adresse, qui finit dans les journaux du serveur.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="grid2">
+        <div class="box"><h3>Pas d'IDOR possible</h3><p>L'adresse ne contient aucun identifiant : le compte est celui du JWT, signé par le serveur, que personne ne peut falsifier. Il n'y a rien à changer pour viser le compte d'un autre, et des tests le prouvent : un <code>id</code> glissé dans le corps ne touche aucun autre compte.</p></div>
+        <div class="box"><h3>Le mot de passe actuel</h3><p>Il confirme le changement de mot de passe et la suppression. Une limite de <strong>5 essais par 15 minutes, par compte</strong>, partagée entre les deux, s'applique avant la vérification : une session volée ne peut pas tester des mots de passe sans fin.</p></div>
+        <div class="box"><h3>Tous les appareils déconnectés</h3><p>Après un changement de mot de passe, tous les jetons de renouvellement sont révoqués et les cookies effacés, avec leur bon chemin. Un e-mail prévient : si ce n'était pas vous, quelqu'un connaît votre mot de passe.</p></div>
+        <div class="box"><h3>Un JWT qui ne retrouve plus rien</h3><p>Le JWT désigne le compte par son e-mail. Une fois le compte anonymisé, un JWT encore valide sur un autre appareil ne retrouve plus aucun compte : 401, tout de suite.</p></div>
+      </div>
+    </section>
+
+    <section id="mon-espace" aria-labelledby="mon-espace-titre">
+      <hgroup><p class="eyebrow">Frontend · PR #181</p><h2 id="mon-espace-titre">« Mon espace » : une page, trois cadres</h2></hgroup>
+      <div class="grid2">
+        <div class="box"><h3>Mes informations</h3><ul>
+          <li>Le téléphone affiché comme on le lit, enregistré compacté</li>
+          <li>« (facultatif) » dans le libellé du téléphone et de la ville</li>
+          <li>L'e-mail affiché comme un texte : un champ en lecture seule a l'air cassé</li>
+          <li>Le message « enregistrées » disparaît dès qu'on modifie un champ</li>
+        </ul></div>
+        <div class="box"><h3>Supprimer mon compte</h3><ul>
+          <li>Un bouton rouge en contour, discret, puis une fenêtre native</li>
+          <li>Ce qui est effacé, ce qui reste, puis le mot de passe</li>
+          <li>Un bouton rouge plein pour l'action définitive, et « Annuler »</li>
+          <li>Une page d'arrivée statique, qui ne montre rien de personne</li>
+        </ul></div>
+      </div>
+      <p class="prose">Chaque erreur s'affiche sous son champ et le focus va sur la première ; un refus ou une panne s'affiche dans une alerte qui reçoit le focus. Les deux boutons rouges ont un contraste d'environ 6,6:1, au-dessus des 4,5:1 du RGAA.</p>
+    </section>
+
+    <section id="confirmation" aria-labelledby="confirmation-titre">
+      <h2 id="confirmation-titre">La confirmation du mot de passe</h2>
+      <p class="prose">Au lot 1, nous avions choisi le seul bouton « Afficher le mot de passe », à la place d'un second champ : c'est ce que recommandent le système de design britannique GOV.UK et le critère WCAG 3.3.7, sur la saisie redondante. Pendant #78, la décision a été revue : <strong>chaque formulaire qui choisit un mot de passe le demande deux fois</strong> (la fin d'inscription, la réinitialisation, et le changement depuis « Mon espace »).</p>
+      <ul class="prose">
+        <li><strong>Vérifié dans le navigateur seulement</strong> : l'API reçoit toujours un seul mot de passe, et les tests de bout en bout vérifient ce qui part.</li>
+        <li><strong>Chaque bouton œil porte le nom de son champ</strong>, « Afficher la confirmation du mot de passe » par exemple : avec deux boutons nommés pareil, un lecteur d'écran ne saurait pas lequel est lequel (RGAA 6.1).</li>
+      </ul>
+    </section>
+
+    <section id="compilateur" aria-labelledby="compilateur-titre">
+      <h2 id="compilateur-titre">Un bug du React Compiler, trouvé dans le navigateur</h2>
+      <div class="note warn">
+        <h3>Ce qu'on voyait n'était pas ce qui partait</h3>
+        <p>Après un enregistrement réussi, le formulaire est remis à jour avec ce que l'API a gardé. Ensuite, on vidait le prénom : l'écran le montrait vide, mais le formulaire <strong>envoyait l'ancien prénom</strong>, sans aucune erreur.</p>
+      </div>
+      <ul class="prose">
+        <li><strong>La cause</strong> : le React Compiler, activé dans Next.js, mémorise des morceaux de l'interface. React Hook Form modifie ses objets sur place, et après sa remise à jour, le compilateur ne suivait plus.</li>
+        <li><strong>Pourquoi les tests unitaires ne l'ont pas vu</strong> : Vitest ne passe pas par le compilateur. Seul un vrai navigateur, sur le build compilé, le montrait.</li>
+        <li><strong>La preuve</strong> : en retirant ce seul composant du compilateur, avec la directive <code>"use no memo"</code>, le bug disparaît.</li>
+        <li><strong>La correction</strong> : cette directive, avec un commentaire qui dit pourquoi, et un test de bout en bout qui enregistre, corrige et enregistre encore. Contre-épreuve : sans la directive, ce test échoue.</li>
+      </ul>
+    </section>
+
+    <section id="tests" aria-labelledby="tests-titre">
+      <h2 id="tests-titre">Chaque règle a son test</h2>
+      <div class="grid2">
+        <div class="box"><h3>Backend (PHPUnit, 4 028 tests)</h3><ul>
+          <li>L'anonymisation relue en SQL : signalements en attente et traités, sessions, liens, refus</li>
+          <li>Les trois routes comme l'interface les appelle, tentatives d'IDOR comprises</li>
+          <li>La limite partagée, et les cookies effacés avec leur bon chemin</li>
+          <li>Des mutations : chaque règle cassée exprès est attrapée par son test</li>
+        </ul></div>
+        <div class="box"><h3>Frontend</h3><ul>
+          <li>Vitest : 285 tests, dont les trois cadres</li>
+          <li>Playwright : 83 parcours sur le build de production</li>
+          <li>axe à 360 et 1280 px : les cadres, la fenêtre, ses erreurs, la page d'arrivée</li>
+          <li>Lighthouse : accessibilité à 100</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section id="livraison" aria-labelledby="livraison-titre">
+      <h2 id="livraison-titre">Deux PR, l'API puis l'interface</h2>
+      <ul class="prs">
+        <li><span class="num">#180</span><span>Backend : l'anonymisation et ses refus, les trois routes du compte, la limite par compte, l'e-mail de suppression, la documentation.</span></li>
+        <li><span class="num">#181</span><span>Frontend : les trois cadres de « Mon espace », la fenêtre de suppression, la page d'arrivée, la confirmation du mot de passe partout où on le choisit.</span></li>
+      </ul>
+    </section>
+
+    <section id="limites" aria-labelledby="limites-titre">
+      <h2 id="limites-titre">Les limites assumées, et la suite</h2>
+      <p class="limit">Après un changement de mot de passe, un jeton d'accès déjà émis sur un autre appareil reste valable 15 minutes au plus : il ne peut plus être renouvelé. Après une suppression, il est refusé tout de suite.</p>
+      <p class="limit">L'adresse e-mail ne se change pas depuis « Mon espace » : il faudrait une nouvelle vérification, hors du périmètre de la user story.</p>
+      <p class="prose">La suite : les favoris (#77), qui seront effacés avec le compte et cités dans la fenêtre ; le retrait du rôle d'administrateur, avant toute suppression (#92) ; la clôture ou le transfert d'une structure (lots 4 et 5).</p>
+    </section>
+
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="76-signaler-un-evenement.html" rel="prev"><span>← Issue précédente</span><strong>#76 Signaler un événement</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>
