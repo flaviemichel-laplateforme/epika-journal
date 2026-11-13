@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>Images importées (#66) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #66 d'Epika : montrer les photos des événements importés d'OpenAgenda sans jamais les copier, avec leur crédit, une image de remplacement et un interrupteur qui les masque toutes d'un coup.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a class="home" href="../index.html">Accueil</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 2 · issue #66 · IMP-14 · terminée le 10/11/2026</p>
+    <h1>Les images importées</h1>
+    <p class="lede">Les événements importés d'OpenAgenda arrivent avec leurs photos. Epika les montre, avec leur crédit, mais ne les copie jamais : elles restent sur les serveurs d'OpenAgenda, sous les droits de leur auteur. Et une seule commande peut toutes les masquer.</p>
+    <dl class="facts">
+      <div class="fact"><dt>pull request</dt><dd>1</dd></div>
+      <div class="fact"><dt>copie de photo sur nos serveurs</dt><dd>0</dd></div>
+      <div class="fact"><dt>la taille gardée, en pixels</dt><dd>700</dd></div>
+      <div class="fact"><dt>commande pour tout masquer</dt><dd>1</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#probleme">Le problème</a></li>
+        <li><a href="#decision">Aucune copie</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#existant">Ce qui existait déjà</a></li>
+        <li><a href="#optimiseur">L'optimiseur de Next copiait</a></li>
+        <li><a href="#interrupteur">L'interrupteur global</a></li>
+        <li><a href="#remplacement">L'image de remplacement</a></li>
+        <li><a href="#use-client">Le piège du « use client »</a></li>
+        <li><a href="#tests">Les tests</a></li>
+        <li><a href="#vie-privee">Vie privée</a></li>
+        <li><a href="#livraison">La PR #182</a></li>
+        <li><a href="#limites">Limites et suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="probleme" aria-labelledby="probleme-titre">
+      <h2 id="probleme-titre">Le problème : à qui sont ces photos ?</h2>
+      <p class="prose">L'import remplit Epika avec les événements d'OpenAgenda, publiés sous <strong>Licence Ouverte</strong>. Cette licence couvre les <strong>données</strong> des événements : le titre, les dates, le lieu, la description. Les <strong>photos</strong>, elles, restent sous les droits de leur auteur : un photographe, une mairie, une association. Le cahier des charges (IMP-14) demande une confirmation écrite d'OpenAgenda sur leur licence, qui n'est pas encore obtenue.</p>
+      <div class="note key">
+        <p>La question de l'issue : comment montrer ces photos dès maintenant, sans prendre de risque sur des droits qui ne sont pas les nôtres ?</p>
+      </div>
+    </section>
+
+    <section id="decision" aria-labelledby="decision-titre">
+      <hgroup><p class="eyebrow">Décidé le 10/11/2026</p><h2 id="decision-titre">La décision : aucune copie</h2></hgroup>
+      <p class="prose">Deux chemins étaient possibles : copier les photos sur nos serveurs, ou les laisser chez OpenAgenda et les afficher de là. Le second a été retenu.</p>
+      <div class="grid2">
+        <div class="box"><h3>Les droits ne sont pas confirmés</h3><p>Copier une photo, c'est la reproduire. Tant que la licence n'est pas claire, Epika ne garde aucune copie : la photo reste là où son auteur l'a publiée.</p></div>
+        <div class="box"><h3>Un retrait est suivi tout seul</h3><p>Si l'auteur retire sa photo d'OpenAgenda, elle disparaît d'Epika au même moment. Avec une copie, il faudrait la retrouver et l'effacer à la main.</p></div>
+        <div class="box"><h3>Rien à stocker</h3><p>Pas de disque qui grossit avec chaque import, pas de sauvegarde à faire, pas de nettoyage quand un événement est supprimé.</p></div>
+        <div class="box"><h3>Les photos déposées, elles, restent chez nous</h3><p>Au lot 4, les organisations déposeront leurs propres photos, en attestant qu'elles en ont les droits. Celles-là seront stockées sur nos serveurs, comme prévu.</p></div>
+      </div>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <p class="prose muted">Captures prises par Playwright sur Epika en production, avec une fausse API. La photo est une image d'exemple, dessinée pour la capture : elle le dit. Le terminal est une reconstitution, avec les messages exacts de la commande. Sur ordinateur à gauche, sur téléphone à droite.</p>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #66">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/66/01-photo-directe-desktop.jpg" width="1280" height="800" loading="lazy" alt="La fiche « Plongée sous-marine » avec sa photo d'exemple venue d'OpenAgenda et le crédit « © Club de plongée ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/66/01-photo-directe-mobile.jpg" width="360" height="740" loading="lazy" alt="La fiche « Plongée sous-marine » avec sa photo d'exemple venue d'OpenAgenda et le crédit « © Club de plongée ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> La photo d'un événement importé est chargée par le navigateur directement depuis OpenAgenda, avec son crédit. Elle ne passe jamais par notre serveur : aucune copie n'est faite.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/66/02-photo-manquante-desktop.jpg" width="1280" height="800" loading="lazy" alt="La fiche « Plongée sous-marine » avec l'image de remplacement d'Epika à la place de la photo. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/66/02-photo-manquante-mobile.jpg" width="360" height="740" loading="lazy" alt="La fiche « Plongée sous-marine » avec l'image de remplacement d'Epika à la place de la photo. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> Une photo qu'OpenAgenda ne sert plus (retirée par son auteur, ou OpenAgenda en panne) : l'image de remplacement d'Epika prend sa place, la page reste propre.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/66/03-interrupteur-desktop.jpg" width="1280" height="800" loading="lazy" alt="Un terminal qui montre la commande app:openagenda:images hide puis show, et leurs messages. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/66/03-interrupteur-mobile.jpg" width="360" height="740" loading="lazy" alt="Un terminal qui montre la commande app:openagenda:images hide puis show, et leurs messages. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> L'interrupteur global, reconstitué ici avec les messages exacts de la commande : « hide » masque toutes les photos importées d'un coup, sans redéployer ; « show » les rend. Rien n'est supprimé.</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="existant" aria-labelledby="existant-titre">
+      <h2 id="existant-titre">Ce qui existait déjà, et ce qui manquait</h2>
+      <p class="prose">Une bonne partie d'IMP-14 avait été construite avec l'import lui-même. L'issue a commencé par un inventaire.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Les règles d'IMP-14 et leur état, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Règle</th><th scope="col">Avant #66</th></tr></thead>
+          <tbody>
+            <tr><td>L'adresse d'origine, chez OpenAgenda</td><td>Déjà là : l'import garde l'adresse, pas le fichier.</td></tr>
+            <tr><td>Une taille intermédiaire</td><td>Déjà là : la version « base » de 700 px, confirmée par le support d'OpenAgenda.</td></tr>
+            <tr><td>Le crédit de l'auteur</td><td>Déjà là : « © … » posé sur la photo.</td></tr>
+            <tr><td>Masquer une photo précise</td><td>Déjà là : une photo masquée n'apparaît nulle part.</td></tr>
+            <tr><td>Une image quand il n'y a pas de photo</td><td>Déjà là, sur les cartes et pour les partages.</td></tr>
+            <tr><td><strong>Ne jamais copier</strong></td><td><strong>Manquait</strong> : l'optimiseur d'images de Next.js en faisait une copie (voir plus bas).</td></tr>
+            <tr><td><strong>Tout masquer d'un coup</strong></td><td><strong>Manquait</strong> : il aurait fallu masquer les photos une par une.</td></tr>
+            <tr><td><strong>Une photo qui ne charge plus</strong></td><td><strong>Manquait</strong> : une image cassée restait à l'écran.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="optimiseur" aria-labelledby="optimiseur-titre">
+      <hgroup><p class="eyebrow">La découverte de l'issue</p><h2 id="optimiseur-titre">L'optimiseur de Next copiait sans le dire</h2></hgroup>
+      <p class="prose">Le composant <code>&lt;Image&gt;</code> de Next.js ne montre pas la photo telle quelle : il passe par l'adresse <code>/_next/image</code> de notre serveur, qui la télécharge, la redimensionne et la renvoie. Sa documentation le dit : il <strong>« écrit les images optimisées sur le disque »</strong>. Chaque photo d'OpenAgenda affichée finissait donc copiée chez nous, en silence.</p>
+      <div class="grid2">
+        <div class="box"><h3>Les photos importées : <code>unoptimized</code></h3><p>Un composant <code>EventImage</code>, partagé par les cartes et la fiche, leur donne l'option <code>unoptimized</code> : le navigateur les charge directement depuis <code>img.openagenda.com</code>. Notre image de remplacement, elle, reste optimisée.</p></div>
+        <div class="box"><h3>Un oubli qui casse bruyamment</h3><p>La configuration n'autorise plus aucune adresse extérieure à l'optimiseur (<code>remotePatterns</code> retiré). Si un jour quelqu'un affiche une photo d'OpenAgenda sans passer par <code>EventImage</code>, l'optimiseur refuse (400) : une image cassée se voit tout de suite, une copie silencieuse jamais.</p></div>
+      </div>
+    </section>
+
+    <section id="interrupteur" aria-labelledby="interrupteur-titre">
+      <hgroup><p class="eyebrow">Backend</p><h2 id="interrupteur-titre">L'interrupteur global</h2></hgroup>
+      <p class="prose">Une question de droits, une demande de retrait, une réponse défavorable d'OpenAgenda : il faut pouvoir <strong>tout masquer d'un coup, sans redéployer</strong>. L'interrupteur vit dans la base, sur la ligne unique de l'état de l'import (<code>ImportState.importedImagesShown</code>, vrai par défaut), et une commande le bascule :</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="La commande de l'interrupteur, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Commande</th><th scope="col">Effet</th></tr></thead>
+          <tbody>
+            <tr><td><code>app:openagenda:images hide</code></td><td>Plus aucune photo importée ne sort de l'API.</td></tr>
+            <tr><td><code>app:openagenda:images show</code></td><td>Elles reviennent, toutes, telles qu'elles étaient.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="grid2">
+        <div class="box"><h3>Ce qui disparaît</h3><ul>
+          <li>La photo de la fiche, donc aussi l'image des partages (Open Graph) et des données structurées</li>
+          <li>Les photos des cartes, partout où il y a des cartes</li>
+          <li>Les événements « à la une » choisis parce qu'ils ont une photo</li>
+        </ul></div>
+        <div class="box"><h3>Ce qui ne bouge pas</h3><ul>
+          <li>Les photos restent enregistrées : rien n'est supprimé</li>
+          <li>L'import continue comme avant</li>
+          <li>Les photos déposées par les organisations ne sont jamais concernées</li>
+        </ul></div>
+      </div>
+      <p class="prose">La règle des cartes est écrite <strong>une seule fois</strong>, dans la requête qui les cherche : elle lit l'interrupteur dans la base elle-même, par une sous-requête. Aucune page ne peut l'oublier. L'écran d'administration qui fera la même chose d'un clic viendra au lot 5 (#91).</p>
+    </section>
+
+    <section id="remplacement" aria-labelledby="remplacement-titre">
+      <hgroup><p class="eyebrow">Frontend</p><h2 id="remplacement-titre">L'image de remplacement</h2></hgroup>
+      <p class="prose">Une photo chargée depuis OpenAgenda peut ne plus exister : son auteur l'a retirée, ou OpenAgenda est en panne. Sans rien faire, le navigateur afficherait une image cassée.</p>
+      <ul class="prose">
+        <li><strong><code>onError</code></strong> : quand la photo ne charge pas, <code>EventImage</code> affiche l'image de remplacement d'Epika, avec un texte alternatif vide, car elle n'apprend rien à personne.</li>
+        <li><strong>L'adresse en échec est retenue, pas un simple « en erreur »</strong> : dans le carrousel de la fiche, quand on passe à la photo suivante, celle-ci a sa propre chance de charger.</li>
+      </ul>
+    </section>
+
+    <section id="use-client" aria-labelledby="use-client-titre">
+      <h2 id="use-client-titre">Le piège du module <code>"use client"</code></h2>
+      <div class="note warn">
+        <h3>Une chaîne de caractères devenue une fonction</h3>
+        <p>L'adresse de l'image de remplacement était d'abord exportée par <code>EventImage</code>, un composant client. La page de l'événement, un composant serveur, l'importait pour l'image des partages. Résultat : la page sans photo plantait, avec « Received function » et l'erreur React 441.</p>
+      </div>
+      <ul class="prose">
+        <li><strong>La cause</strong> : tout ce qu'un composant serveur importe d'un module <code>"use client"</code> devient une <em>référence client</em>, pas la valeur elle-même. Le serveur recevait une fonction là où il attendait une adresse.</li>
+        <li><strong>Qui l'a vu</strong> : Playwright, sur le build de production (10 parcours en échec). Vitest, qui ne fait pas la différence entre serveur et client, était vert.</li>
+        <li><strong>La correction</strong> : la constante a déménagé dans un petit module neutre, <code>placeholder.ts</code>, importé par les deux côtés.</li>
+      </ul>
+      <div class="note key">
+        <p><strong>La règle à retenir</strong> : une valeur partagée entre serveur et client ne vit jamais dans un module <code>"use client"</code>.</p>
+      </div>
+    </section>
+
+    <section id="tests" aria-labelledby="tests-titre">
+      <h2 id="tests-titre">Chaque règle a son test</h2>
+      <div class="grid2">
+        <div class="box"><h3>Backend (PHPUnit)</h3><ul>
+          <li>L'interrupteur sur la fiche, les cartes et « à la une »</li>
+          <li>La commande : ses deux sens et ses messages</li>
+          <li>Les photos déposées jamais concernées</li>
+          <li>Des mutations : la règle cassée exprès est attrapée</li>
+        </ul></div>
+        <div class="box"><h3>Frontend</h3><ul>
+          <li>Vitest : <code>EventImage</code>, l'adresse d'origine, le remplacement, la photo suivante</li>
+          <li>Playwright : aucune requête par <code>/_next/image</code> pour une photo importée, une 404 remplacée</li>
+          <li>Aucun test ne dépend d'internet : les photos d'OpenAgenda sont simulées</li>
+          <li>Lighthouse : accessibilité à 100, aucun décalage de mise en page (CLS 0)</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section id="vie-privee" aria-labelledby="vie-privee-titre">
+      <h2 id="vie-privee-titre">Vie privée : le revers de « aucune copie »</h2>
+      <p class="prose">Puisque le navigateur du visiteur charge la photo directement chez OpenAgenda, <strong>OpenAgenda voit son adresse IP</strong>, comme pour n'importe quelle image d'un autre site. Ce n'est pas un problème en soi, mais la politique de confidentialité devra le dire : la note est ajoutée à l'issue #93.</p>
+    </section>
+
+    <section id="livraison" aria-labelledby="livraison-titre">
+      <h2 id="livraison-titre">Une PR, en quatre commits</h2>
+      <ul class="prs">
+        <li><span class="num">#182</span><span>L'interrupteur global et sa commande ; l'API qui ne sert plus aucune photo importée quand il est coupé ; les photos montrées directement depuis OpenAgenda, jamais copiées, avec l'image de remplacement ; la documentation.</span></li>
+      </ul>
+    </section>
+
+    <section id="limites" aria-labelledby="limites-titre">
+      <h2 id="limites-titre">Les limites assumées, et la suite</h2>
+      <p class="limit">La confirmation écrite d'OpenAgenda sur la licence des images sera demandée en fin de projet : non bloquant. D'ici là, la règle « aucune copie » s'applique, et c'est justement elle qui permet d'attendre sans risque.</p>
+      <p class="limit">L'interrupteur se bascule en ligne de commande pour l'instant : il faut un accès au serveur.</p>
+      <p class="prose">La suite : la politique de confidentialité, qui citera OpenAgenda (#93) ; l'écran d'administration de l'interrupteur (#91) ; les photos déposées par les organisations, stockées chez nous (lot 4).</p>
+    </section>
+
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="78-espace-participant.html" rel="prev"><span>← Issue précédente</span><strong>#78 L'espace participant</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>
