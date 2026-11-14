@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>L'organisateur sur la carte (#157) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #157 d'Epika : le nom de la structure sur chaque carte d'événement, lu dans la même requête SQL que les cartes, mesuré sur 54 000 événements.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a class="home" href="../index.html">Accueil</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 3 · issue #157 · EF-01 · EF-02 · terminée le 13/11/2026</p>
+    <h1>L'organisateur sur la carte</h1>
+    <p class="lede">Chaque carte d'événement dit maintenant qui l'organise : « Par Association des concerts du Var », sous le titre. Un petit changement à l'écran, avec une exigence derrière : ne jamais ralentir la recherche.</p>
+    <dl class="facts">
+      <div class="fact"><dt>pull request</dt><dd>1</dd></div>
+      <div class="fact"><dt>requête SQL par page de cartes</dt><dd>1</dd></div>
+      <div class="fact"><dt>événements pour la mesure</dt><dd>54 000</dd></div>
+      <div class="fact"><dt>lien par carte, toujours</dt><dd>1</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#pourquoi">Pourquoi</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#requete">Une seule requête</a></li>
+        <li><a href="#mesure">La mesure</a></li>
+        <li><a href="#carte">Sur la carte</a></li>
+        <li><a href="#tests">Les tests</a></li>
+        <li><a href="#suite">La suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="pourquoi" aria-labelledby="pourquoi-titre">
+      <h2 id="pourquoi-titre">Pourquoi</h2>
+      <p class="prose">La maquette montrait le nom de la structure sur chaque carte. Savoir qui organise aide à choisir : un club qu'on connaît, la mairie de sa ville, une association de son quartier. La fiche le disait déjà (« Organisé par ») ; les cartes, non.</p>
+      <p class="prose">Une même carte sert à quatre endroits : la recherche, « à la une » sur l'accueil, la page d'une structure et « Mes favoris ». Ajouter le nom à la carte l'ajoute partout d'un coup.</p>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <p class="prose muted">Captures prises par Playwright sur Epika en production, avec une fausse API : les structures et les événements sont fictifs. Sur ordinateur à gauche, sur téléphone à droite.</p>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #157">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/157/01-cartes-desktop.jpg" width="1280" height="800" loading="lazy" alt="Les résultats de la recherche à Toulon : chaque carte dit « Par Association des concerts du Var » sous son titre. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/157/01-cartes-mobile.jpg" width="360" height="740" loading="lazy" alt="Les résultats de la recherche à Toulon : chaque carte dit « Par Association des concerts du Var » sous son titre. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> Sous le titre de chaque carte, « Par » et le nom de la structure : en texte simple, pas en lien, pour que la carte garde un seul lien, son titre.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/157/02-nom-long-desktop.jpg" width="1280" height="800" loading="lazy" alt="Une carte de « Mes favoris » dont la structure s'appelle « Association culturelle et sportive des habitants du quartier Saint-Jean-du-Var », écrit en entier sur plusieurs lignes. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/157/02-nom-long-mobile.jpg" width="360" height="740" loading="lazy" alt="Une carte de « Mes favoris » dont la structure s'appelle « Association culturelle et sportive des habitants du quartier Saint-Jean-du-Var », écrit en entier sur plusieurs lignes. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> Un nom long n'est jamais coupé : il passe à la ligne, et laisse la place du cœur.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/157/03-page-structure-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page du club de plongée et ses événements à venir, dont les cartes n'ont pas de ligne « Par ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/157/03-page-structure-mobile.jpg" width="360" height="740" loading="lazy" alt="La page du club de plongée et ses événements à venir, dont les cartes n'ont pas de ligne « Par ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> Sur la page d'une structure, ses cartes ne répètent pas son nom : on sait déjà qui organise.</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="requete" aria-labelledby="requete-titre">
+      <hgroup><p class="eyebrow">Backend</p><h2 id="requete-titre">Une seule requête, jamais une par carte</h2></hgroup>
+      <div class="note key">
+        <p>Le piège classique s'appelle <strong>N+1</strong> : une requête pour la liste, puis une de plus pour chaque carte, pour aller chercher le nom de sa structure. Vingt cartes, vingt et une requêtes ; la page ralentit à mesure qu'elle s'allonge.</p>
+      </div>
+      <p class="prose">La requête des cartes travaille en deux temps, depuis la mesure de #67 : d'abord choisir les 20 événements de la page, ensuite construire leurs cartes. Le nom de la structure est joint dans ce second temps, <strong>sur les 20 cartes seulement</strong>, par la clé primaire de la structure. Toute la page tient en une requête.</p>
+    </section>
+
+    <section id="mesure" aria-labelledby="mesure-titre">
+      <h2 id="mesure-titre">La mesure, avant et après</h2>
+      <p class="prose">Sur les 54 000 événements de la base de développement, la médiane de 30 pages de 20 cartes :</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="La mesure de la requête des cartes, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Recherche</th><th scope="col">Avant</th><th scope="col">Après</th></tr></thead>
+          <tbody>
+            <tr><td>Toulon, 20 km, par date</td><td>122,3 ms</td><td>123,9 ms</td></tr>
+            <tr><td>Toute la France, par date</td><td>102,5 ms</td><td>97,6 ms</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="prose muted">Les écarts vont dans les deux sens : ils sont dans le bruit de la mesure. La jointure ne coûte rien de visible.</p>
+    </section>
+
+    <section id="carte" aria-labelledby="carte-titre">
+      <hgroup><p class="eyebrow">Frontend</p><h2 id="carte-titre">Sur la carte</h2></hgroup>
+      <div class="grid2">
+        <div class="box"><h3>Du texte, pas un lien</h3><p>Toute la carte est cliquable par son titre, et un lecteur d'écran n'y entend qu'un lien. Faire du nom un second lien, vers la page de la structure, aurait cassé cette règle. Le mot « Par » dit à chacun ce que ce nom désigne.</p></div>
+        <div class="box"><h3>Jamais coupé</h3><p>Un nom long passe à la ligne au lieu d'être tronqué par des points de suspension : il reste lisible en entier, et ne glisse jamais sous le cœur.</p></div>
+        <div class="box"><h3>Pas sur la page de la structure</h3><p>Sur la page d'un club, chacune de ses cartes aurait répété son nom. Une option de la carte, <code>showOrganizer</code>, l'y retire.</p></div>
+        <div class="box"><h3>Un type strict</h3><p>Le champ ajouté au type de la carte, TypeScript a aussitôt signalé les quatre cartes de test qui ne l'avaient pas : rien n'est oublié en silence.</p></div>
+      </div>
+    </section>
+
+    <section id="tests" aria-labelledby="tests-titre">
+      <h2 id="tests-titre">Les tests</h2>
+      <ul class="prose">
+        <li><strong>Une requête par page</strong> : un test crée trois événements de trois structures, vérifie le nom sur chaque carte et compte les requêtes SQL. Contre-épreuve : avec une requête de plus par carte, il en compte quatre au lieu d'une, et échoue.</li>
+        <li><strong>L'API</strong> renvoie bien <code>organizerName</code>. Suite backend au vert, en heure de Paris et en UTC.</li>
+        <li><strong>L'écran</strong> : la ligne est là, n'est pas un lien, la carte garde un seul lien ; aucune ligne « Par » sur la page d'une structure. Playwright sur le build de production, axe à 360 et 1280 px.</li>
+      </ul>
+    </section>
+
+    <section id="suite" aria-labelledby="suite-titre">
+      <h2 id="suite-titre">La suite</h2>
+      <p class="limit">La base de développement ne contient que le catalogue fictif : ses structures s'appellent « Association exemple 1 » à « 200 ». Les vrais noms arriveront avec le premier import réel d'OpenAgenda (#148).</p>
+      <p class="prose">La prochaine issue du lot 3 : plusieurs tranches d'âge dans la recherche (#158).</p>
+    </section>
+
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="77-favoris.html" rel="prev"><span>← Issue précédente</span><strong>#77 Les favoris</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>
