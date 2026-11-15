@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>La bande de jours (#156) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #156 d'Epika : les 14 prochains jours au-dessus des résultats, un jour en un toucher, accessible au clavier et au lecteur d'écran, d'accord avec le filtre Date.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a class="home" href="../index.html">Accueil</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 3 · issue #156 · EF-03 · terminée le 15/11/2026</p>
+    <h1>La bande de jours</h1>
+    <p class="lede">Au-dessus des résultats, les 14 prochains jours sur une ligne : un toucher, et la recherche ne garde que ce jour. Une idée de la maquette « modes d'affichage », bâtie sur les dates de #161.</p>
+    <dl class="facts">
+      <div class="fact"><dt>pull request, frontend seulement</dt><dd>1</dd></div>
+      <div class="fact"><dt>jours dans la bande</dt><dd>14</dd></div>
+      <div class="fact"><dt>toucher pour choisir un jour</dt><dd>1</dd></div>
+      <div class="fact"><dt>choix de date à la fois</dt><dd>1</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#principe">Le principe</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#accord">D'accord avec le filtre Date</a></li>
+        <li><a href="#accessible">Accessible</a></li>
+        <li><a href="#un-jour">« Un jour : », utile ?</a></li>
+        <li><a href="#firefox">Le calendrier qui ne s'ouvrait pas</a></li>
+        <li><a href="#tests">Les tests</a></li>
+        <li><a href="#suite">La suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="principe" aria-labelledby="principe-titre">
+      <h2 id="principe-titre">Le principe</h2>
+      <p class="prose">Toucher un jour, c'est choisir ce jour « du » et « au » : la même recherche que « Choisir des dates » de #161, avec un seul jour. Le toucher de nouveau revient à toutes les dates. Rien de nouveau côté serveur : l'API savait déjà chercher un jour seul.</p>
+      <ul class="prose">
+        <li><strong>Les 14 jours partent d'aujourd'hui, en heure de Paris</strong>, calculés par le serveur : le serveur et le navigateur sont toujours d'accord sur la date.</li>
+        <li><strong>Le mois s'affiche au premier jour et à chaque 1er</strong> : on ne confond jamais le 30 novembre et le 1er décembre.</li>
+        <li><strong>La pastille d'un seul jour dit « Le 17/11 »</strong>, et non plus « Du 17/11 au 17/11 ».</li>
+      </ul>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <p class="prose muted">Captures prises par Playwright sur Epika en production, avec une fausse API : les événements sont fictifs, et cette fausse API ne filtre pas les dates, d'où le même nombre d'événements. Les jours sont ceux de la capture. Sur ordinateur à gauche, sur téléphone à droite.</p>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #156">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/156/01-bande-desktop.jpg" width="1280" height="800" loading="lazy" alt="Les résultats autour de Toulon avec, au-dessus, la bande des jours : « dim. 15 nov. », « lun. 16 », « mar. 17 »… Sur ordinateur.">
+              <img class="shot-mobile" src="../images/156/01-bande-mobile.jpg" width="360" height="740" loading="lazy" alt="Les résultats autour de Toulon avec, au-dessus, la bande des jours : « dim. 15 nov. », « lun. 16 », « mar. 17 »… Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> Les 14 prochains jours au-dessus des résultats, sur une ligne qui défile sur le côté : un jour en un toucher, sans ouvrir les filtres. Le mois s'affiche au premier jour et à chaque 1er.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/156/02-jour-choisi-desktop.jpg" width="1280" height="800" loading="lazy" alt="La bande avec le troisième jour pressé en navy, et la pastille « Le … » au-dessus. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/156/02-jour-choisi-mobile.jpg" width="360" height="740" loading="lazy" alt="La bande avec le troisième jour pressé en navy, et la pastille « Le … » au-dessus. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> Le jour touché est pressé, en navy plein, et devient une pastille « Le … ». Le filtre Date dit la même chose : jamais deux choix de date à la fois. Le toucher de nouveau revient à toutes les dates.</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="accord" aria-labelledby="accord-titre">
+      <h2 id="accord-titre">D'accord avec le filtre Date</h2>
+      <p class="prose">La bande et le filtre « Date » disent toujours la même chose : il n'y a jamais deux choix de date à la fois.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Ce que montre la bande selon le filtre Date, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Dans le filtre Date</th><th scope="col">Dans la bande</th></tr></thead>
+          <tbody>
+            <tr><td>Un seul jour choisi (du = au)</td><td>Ce jour pressé</td></tr>
+            <tr><td>« Aujourd'hui »</td><td>Le premier jour pressé</td></tr>
+            <tr><td>« Demain »</td><td>Le deuxième jour pressé</td></tr>
+            <tr><td>Une plage de plusieurs jours, « Ce week-end »…</td><td>Aucun jour pressé</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="prose">Toucher un jour remplace la période ou les dates déjà choisies, et revient à la page 1 : les résultats ne sont plus les mêmes.</p>
+    </section>
+
+    <section id="accessible" aria-labelledby="accessible-titre">
+      <h2 id="accessible-titre">Accessible</h2>
+      <div class="grid2">
+        <div class="box"><h3>De vrais boutons, un vrai état</h3><p>Chaque jour est un bouton qui dit s'il est pressé (<code>aria-pressed</code>). Le jour choisi est en navy plein, texte blanc : il se voit par le contraste et par l'état, pas par la couleur seule.</p></div>
+        <div class="box"><h3>Un nom complet</h3><p>À l'écran, « mar. 17 » ; pour un lecteur d'écran, « mardi 17 novembre » : seul, « mar. 17 » ne dirait pas le mois.</p></div>
+        <div class="box"><h3>Une ligne qui défile</h3><p>Comme les pastilles de filtres : la ligne défile sur le côté, sans masque dégradé qui baisserait le contraste. Tab l'amène tout seul au jour qui a le focus, et la page, elle, ne défile jamais en largeur (RGAA 10.11).</p></div>
+        <div class="box"><h3>Le jour choisi bien en vue</h3><p>Au chargement, le jour choisi est amené au centre de la ligne, par le défilement de la ligne seule : la page ne saute pas.</p></div>
+      </div>
+    </section>
+
+    <section id="un-jour" aria-labelledby="un-jour-titre">
+      <hgroup><p class="eyebrow">Décidé le 15/11/2026</p><h2 id="un-jour-titre">« Un jour : », utile ?</h2></hgroup>
+      <p class="prose">Flavie a posé la question en voyant la bande. Le texte a deux rôles : nommer le groupe pour les lecteurs d'écran (indispensable, sinon on entend quatorze dates sans savoir à quoi elles servent), et expliquer la bande à l'œil. Sur téléphone, il prenait un quart de la largeur, pour des jours qui se comprennent seuls.</p>
+      <div class="note key">
+        <p>Décision : <strong>lu partout, affiché à partir de 1024 px seulement</strong>. Les lecteurs d'écran l'entendent toujours ; sur téléphone, la bande montre un jour de plus.</p>
+      </div>
+    </section>
+
+    <section id="firefox" aria-labelledby="firefox-titre">
+      <h2 id="firefox-titre">Le calendrier qui ne s'ouvrait pas</h2>
+      <p class="prose">Pendant ses essais, Flavie a vu que le calendrier de « Choisir des dates » ne s'ouvrait plus. Ni Chromium ni Firefox ne reproduisaient le problème dans les tests. La cause : la <strong>vue adaptative</strong> de Firefox, qui imite un téléphone et transforme les clics en touchers simulés, que le calendrier natif ignore. En vue normale, il s'ouvre ; sur un vrai téléphone, c'est le calendrier du téléphone qui s'ouvre. La date reste de toute façon saisissable au clavier.</p>
+    </section>
+
+    <section id="tests" aria-labelledby="tests-titre">
+      <h2 id="tests-titre">Les tests</h2>
+      <div class="grid2">
+        <div class="box"><h3>Vitest</h3><ul>
+          <li>Les 14 jours, à travers un mois, une année et le changement d'heure</li>
+          <li>Le jour choisi selon le filtre Date, la pastille « Le … »</li>
+          <li>La bande : son nom, l'état pressé, choisir puis retirer</li>
+        </ul></div>
+        <div class="box"><h3>Playwright et axe</h3><ul>
+          <li>Un jour en un toucher : l'adresse, la pastille, l'API, le filtre Date d'accord, puis retiré</li>
+          <li>À 360 px, Tab fait défiler la bande ; la page ne défile pas en largeur</li>
+          <li>axe sans défaut</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section id="suite" aria-labelledby="suite-titre">
+      <h2 id="suite-titre">La suite</h2>
+      <p class="prose">La prochaine issue du lot 3 : proposer les villes pendant la saisie (#159), avec une page qui expliquera en détail comment fonctionne l'autocomplétion.</p>
+    </section>
+
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="161-choisir-des-dates.html" rel="prev"><span>← Issue précédente</span><strong>#161 Choisir des dates</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>

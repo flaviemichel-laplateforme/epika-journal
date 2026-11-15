@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>Choisir des dates (#161) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #161 d'Epika : choisir ses dates dans le filtre Date, avec des champs date natifs, les règles de l'API vérifiées avant tout envoi, et trois défauts attrapés en chemin.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a class="home" href="../index.html">Accueil</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 3 · issue #161 · EF-03 · terminée le 15/11/2026</p>
+    <h1>Choisir des dates</h1>
+    <p class="lede">Le filtre « Date » ne connaissait que « Aujourd'hui », « Demain », « Ce week-end » et « 7 prochains jours ». Quelqu'un qui part du 20 au 27 peut maintenant le dire, et une recherche impossible n'est jamais envoyée.</p>
+    <dl class="facts">
+      <div class="fact"><dt>pull request, frontend seulement</dt><dd>1</dd></div>
+      <div class="fact"><dt>jours au plus, les deux comptés</dt><dd>366</dd></div>
+      <div class="fact"><dt>bibliothèque de calendrier</dt><dd>0</dd></div>
+      <div class="fact"><dt>défauts attrapés en chemin</dt><dd>3</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#deja">Ce qui existait déjà</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#natif">Des champs date natifs</a></li>
+        <li><a href="#regles">Les règles, avant tout envoi</a></li>
+        <li><a href="#colonne">Colonne et panneau</a></li>
+        <li><a href="#defauts">Trois défauts attrapés</a></li>
+        <li><a href="#tests">Les tests</a></li>
+        <li><a href="#suite">La suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="deja" aria-labelledby="deja-titre">
+      <h2 id="deja-titre">Ce qui existait déjà</h2>
+      <p class="prose">L'API savait chercher entre deux dates depuis #67 (<code>from</code>, <code>to</code>, 366 jours au plus), l'adresse du site les écrivait déjà (<code>?du=</code>, <code>?au=</code>), et la pastille « Du … au … » existait. Il ne manquait que le moyen de les choisir : l'issue n'a touché que le frontend.</p>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <p class="prose muted">Captures prises par Playwright sur Epika en production, avec une fausse API : les événements sont fictifs, et cette fausse API ne filtre pas les dates, d'où le même nombre d'événements. Les dates sont celles de la semaine suivant la capture. Sur ordinateur à gauche, sur téléphone à droite.</p>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #161">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/161/01-champs-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le groupe « Date » des filtres, « Choisir des dates » coché, et les champs « Du » et « Au » remplis. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/161/01-champs-mobile.jpg" width="360" height="740" loading="lazy" alt="Le groupe « Date » des filtres, « Choisir des dates » coché, et les champs « Du » et « Au » remplis. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> « Choisir des dates » ouvre deux champs, « Du » et « Au » : les champs date du navigateur, utilisables au clavier, avec le calendrier du téléphone. Un seul jour suffit aussi (« Dès le », « Jusqu'au »).</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/161/02-erreur-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le champ « Au » encadré de rouge, avec le message « La date de fin est avant la date de début. ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/161/02-erreur-mobile.jpg" width="360" height="740" loading="lazy" alt="Le champ « Au » encadré de rouge, avec le message « La date de fin est avant la date de début. ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> Une fin avant le début est dite sous « Au », avec les mots de l'API, et rien n'est envoyé : les résultats restent ceux de la dernière recherche valable.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/161/03-pastille-desktop.jpg" width="1280" height="800" loading="lazy" alt="Les résultats autour de Toulon avec la pastille « Du … au … » au-dessus des cartes. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/161/03-pastille-mobile.jpg" width="360" height="740" loading="lazy" alt="Les résultats autour de Toulon avec la pastille « Du … au … » au-dessus des cartes. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> Les dates choisies deviennent une pastille, « Du … au … », et une adresse qu'on peut partager. La retirer revient à « Toutes les dates ».</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="natif" aria-labelledby="natif-titre">
+      <hgroup><p class="eyebrow">Décidé le 15/11/2026</p><h2 id="natif-titre">Des champs date natifs</h2></hgroup>
+      <p class="prose">« Du » et « Au » sont des <code>&lt;input type="date"&gt;</code>, les champs date du navigateur. Le clavier, les lecteurs d'écran et le calendrier du téléphone fonctionnent sans bibliothèque, et la date peut toujours être tapée. C'est le choix du DSFR, le système de design de l'État.</p>
+      <div class="note key">
+        <p>En voyant le calendrier de Firefox, Flavie s'est demandé s'il était conforme. Les jours grisés sont les jours <strong>avant aujourd'hui</strong>, désactivés exprès : la recherche ne regarde jamais dans le passé. Un élément inactif n'a pas d'exigence de contraste (WCAG 1.4.3, RGAA 3.2). Le calendrier lui-même est dessiné par le navigateur : le site ne peut pas l'habiller. Un calendrier aux couleurs d'Epika restait possible, avec une bibliothèque reconnue pour son accessibilité ; Flavie a préféré garder le natif.</p>
+      </div>
+    </section>
+
+    <section id="regles" aria-labelledby="regles-titre">
+      <h2 id="regles-titre">Les règles de l'API, vérifiées avant tout envoi</h2>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Les règles des dates choisies, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Cas</th><th scope="col">Ce qui se passe</th></tr></thead>
+          <tbody>
+            <tr><td>Un seul jour</td><td>Une recherche valable : « Dès le … » ou « Jusqu'au … ».</td></tr>
+            <tr><td>La fin avant le début</td><td>« La date de fin est avant la date de début. », sous « Au ».</td></tr>
+            <tr><td>Plus de 366 jours, les deux comptés</td><td>« Choisissez au plus 366 jours. », sous « Au ».</td></tr>
+            <tr><td>Un lien avec la fin avant le début</td><td>La page s'ouvre avec la seule date de début, au lieu d'une erreur.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="prose">Les messages reprennent <strong>les mots de l'API</strong>, et une recherche impossible n'est jamais envoyée : les résultats affichés restent ceux de la dernière recherche valable. Le message est relié au champ, qui est marqué invalide : un lecteur d'écran les lit ensemble (RGAA 11.10).</p>
+    </section>
+
+    <section id="colonne" aria-labelledby="colonne-titre">
+      <h2 id="colonne-titre">Dans la colonne et dans le panneau</h2>
+      <div class="grid2">
+        <div class="box"><h3>Sur ordinateur</h3><p>Dans la colonne des filtres, une date valable s'applique dès qu'elle est saisie : l'adresse change, la pastille apparaît.</p></div>
+        <div class="box"><h3>Sur téléphone</h3><p>Dans le panneau « Filtres », les dates restent un brouillon, comme tous les filtres, jusqu'à « Voir les N événements », qui compte déjà les résultats.</p></div>
+      </div>
+    </section>
+
+    <section id="defauts" aria-labelledby="defauts-titre">
+      <h2 id="defauts-titre">Trois défauts attrapés en chemin</h2>
+      <ol class="prose">
+        <li><strong>Une date tapée pouvait s'effacer</strong> pendant que la colonne changeait l'adresse : le composant prenait l'ancienne adresse pour un changement venu d'ailleurs. Un test Vitest l'a montré ; il ne réagit plus qu'aux dates reçues qui changent vraiment.</li>
+        <li><strong>« Choisir des dates » restait coché</strong> après le retrait de sa pastille, avec des champs vides. Le parcours Playwright l'a attrapé.</li>
+        <li><strong>Rien ne se passait</strong> quand une période était déjà choisie, par exemple « Ce week-end » en arrivant par un raccourci de l'accueil. Flavie l'a trouvé en essayant à la main. Désormais les champs s'ouvrent, et la première date saisie remplace la période : jamais les deux, que l'API refuse ensemble.</li>
+      </ol>
+    </section>
+
+    <section id="tests" aria-labelledby="tests-titre">
+      <h2 id="tests-titre">Les tests</h2>
+      <div class="grid2">
+        <div class="box"><h3>Vitest</h3><ul>
+          <li>Les règles : 366 jours acceptés, 367 refusés, un seul jour</li>
+          <li>Le calcul des jours, passage d'année et changement d'heure compris</li>
+          <li>L'adresse, la requête de l'API, la pastille</li>
+          <li>Le formulaire, dont les trois défauts ci-dessus</li>
+        </ul></div>
+        <div class="box"><h3>Playwright et axe</h3><ul>
+          <li>La colonne : adresse, pastille, dates reçues par l'API, pastille retirée</li>
+          <li>Depuis « Ce week-end », la première date remplace la période</li>
+          <li>L'erreur : rien n'est envoyé</li>
+          <li>Le brouillon du panneau ; axe sans défaut, champs ouverts et erreur affichée</li>
+        </ul></div>
+      </div>
+      <p class="prose muted">Avec le vrai backend, une recherche entre deux dates répond en 0,65 s autour de Toulon et 0,51 s pour toute la France : pas de lenteur cachée comme celle trouvée pendant #158.</p>
+    </section>
+
+    <section id="suite" aria-labelledby="suite-titre">
+      <h2 id="suite-titre">La suite</h2>
+      <p class="prose">La prochaine issue du lot 3 : une bande de jours en raccourci au-dessus des résultats (#156), qui réutilisera <code>du</code> et <code>au</code>.</p>
+    </section>
+
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="158-plusieurs-tranches-d-age.html" rel="prev"><span>← Issue précédente</span><strong>#158 Plusieurs tranches d'âge</strong></a>
+      <a class="next" href="156-bande-de-jours.html" rel="next"><span>Issue suivante →</span><strong>#156 La bande de jours</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>
