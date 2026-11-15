@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>Plusieurs tranches d'âge (#158) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #158 d'Epika : choisir plusieurs tranches d'âge dans la recherche, et une lenteur de 9 à 13 secondes découverte en chemin, ramenée à 0,3 seconde.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a class="home" href="../index.html">Accueil</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 3 · issue #158 · EF-03 · terminée le 15/11/2026</p>
+    <h1>Plusieurs tranches d'âge</h1>
+    <p class="lede">Une famille avec un enfant de 4 ans et un de 8 coche maintenant « 3-5 ans » et « 6-11 ans ». En chemin, une lenteur cachée depuis longtemps : une recherche par âge autour d'une ville prenait plus de 9 secondes.</p>
+    <dl class="facts">
+      <div class="fact"><dt>pull request</dt><dd>1</dd></div>
+      <div class="fact"><dt>tranches à la fois, au plus</dt><dd>4</dd></div>
+      <div class="fact"><dt>secondes avant, avec deux tranches</dt><dd>12,9</dd></div>
+      <div class="fact"><dt>seconde après</dt><dd>0,33</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#besoin">Le besoin</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#regle">La règle : l'une des tranches</a></li>
+        <li><a href="#adresse">L'adresse et l'API</a></li>
+        <li><a href="#cases">Des cases à cocher</a></li>
+        <li><a href="#lenteur">La lenteur découverte en chemin</a></li>
+        <li><a href="#tests">Les tests</a></li>
+        <li><a href="#suite">La suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="besoin" aria-labelledby="besoin-titre">
+      <h2 id="besoin-titre">Le besoin</h2>
+      <p class="prose">Le 30/10, le filtre « Âge » avait été décidé avec <strong>une seule tranche</strong> : « Moins de 3 ans », « 3-5 ans », « 6-11 ans » ou « 12-17 ans ». Le 04/11, Flavie a revu la règle : une famille a souvent des enfants d'âges différents, et devait pouvoir chercher pour tous à la fois.</p>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <p class="prose muted">Captures prises par Playwright sur Epika en production, avec une fausse API : les événements sont fictifs, et cette fausse API ne filtre pas par âge, d'où le même nombre d'événements. Sur ordinateur à gauche, sur téléphone à droite.</p>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #158">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/158/01-cases-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le groupe « Âge » des filtres, avec l'aide « Une ou plusieurs tranches ; aucune case cochée : tous les âges. » et les cases « 3-5 ans » et « 6-11 ans » cochées. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/158/01-cases-mobile.jpg" width="360" height="740" loading="lazy" alt="Le groupe « Âge » des filtres, avec l'aide « Une ou plusieurs tranches ; aucune case cochée : tous les âges. » et les cases « 3-5 ans » et « 6-11 ans » cochées. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> Les âges deviennent des cases à cocher : une famille avec un enfant de 4 ans et un de 8 coche « 3-5 ans » et « 6-11 ans ». L'aide le dit : aucune case cochée, c'est tous les âges.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/158/02-pastilles-desktop.jpg" width="1280" height="800" loading="lazy" alt="Les résultats autour de Toulon avec deux pastilles, « 3-5 ans » et « 6-11 ans », au-dessus des cartes. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/158/02-pastilles-mobile.jpg" width="360" height="740" loading="lazy" alt="Les résultats autour de Toulon avec deux pastilles, « 3-5 ans » et « 6-11 ans », au-dessus des cartes. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> Une pastille par tranche au-dessus des résultats, chacune avec son bouton « retirer ce filtre ». Un événement s'affiche s'il convient à l'une des tranches.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/158/03-une-retiree-desktop.jpg" width="1280" height="800" loading="lazy" alt="Les résultats autour de Toulon avec une seule pastille, « 6-11 ans ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/158/03-une-retiree-mobile.jpg" width="360" height="740" loading="lazy" alt="Les résultats autour de Toulon avec une seule pastille, « 6-11 ans ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> Retirer « 3-5 ans » ne retire que cette tranche : « 6-11 ans » reste, dans la pastille comme dans l'adresse de la page.</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="regle" aria-labelledby="regle-titre">
+      <hgroup><p class="eyebrow">Backend</p><h2 id="regle-titre">La règle : l'une des tranches</h2></hgroup>
+      <p class="prose">Un événement convient s'il chevauche <strong>l'une</strong> des tranches choisies. En SQL, une condition de chevauchement par tranche, chacune avec ses propres paramètres liés, reliées par <strong>OU</strong>. Deux règles d'avant ne changent pas :</p>
+      <ul class="prose">
+        <li>un âge minimum absent vaut 0, un âge maximum absent veut dire « sans limite » ;</li>
+        <li>un événement sans aucun âge ne convient que s'il est classé « Jeune public » : il est alors dans toutes les tranches.</li>
+      </ul>
+      <div class="note key">
+        <p>Deux tranches éloignées, « Moins de 3 ans » et « 12-17 ans », gardent les bébés lecteurs et le concert des ados, jamais l'atelier des 6-10 ans entre les deux. C'est le test qui le prouve, et une contre-épreuve avec ET à la place de OU le fait échouer.</p>
+      </div>
+    </section>
+
+    <section id="adresse" aria-labelledby="adresse-titre">
+      <h2 id="adresse-titre">L'adresse du site et celle de l'API</h2>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Les adresses avec plusieurs tranches, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Où</th><th scope="col">Forme</th></tr></thead>
+          <tbody>
+            <tr><td>L'adresse du site, en français</td><td><code>/recherche?ville=Toulon&amp;age=3-5&amp;age=6-11</code></td></tr>
+            <tr><td>La requête vers l'API, en anglais</td><td><code>/api/search/events?city=Toulon&amp;age[]=3-5&amp;age[]=6-11</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="prose">
+        <li><strong>Un <code>?age=</code> seul reste accepté</strong> : les anciens liens partagés et le raccourci « En famille (6-11 ans) » de l'accueil continuent de marcher.</li>
+        <li><strong>Toujours le même ordre, sans doublon</strong> : cocher « 6-11 ans » puis « 3-5 ans » donne la même adresse que l'inverse, donc la même page.</li>
+        <li><strong>Une valeur inconnue</strong> dans l'adresse est ignorée par le site (un vieux lien s'ouvre toujours) et refusée par l'API, qui dit laquelle.</li>
+      </ul>
+    </section>
+
+    <section id="cases" aria-labelledby="cases-titre">
+      <hgroup><p class="eyebrow">Frontend</p><h2 id="cases-titre">Des cases à cocher</h2></hgroup>
+      <div class="grid2">
+        <div class="box"><h3>Plus de « Tous les âges »</h3><p>Avec des boutons radio, il fallait une option « Tous les âges ». Avec des cases à cocher, aucune case cochée veut dire tous les âges. Une aide sous la légende le dit, reliée au groupe pour les lecteurs d'écran.</p></div>
+        <div class="box"><h3>Une pastille par tranche</h3><p>Au-dessus des résultats, chaque tranche a sa pastille et son bouton « retirer ce filtre ». Retirer « 3-5 ans » laisse « 6-11 ans », dans la pastille comme dans l'adresse.</p></div>
+      </div>
+    </section>
+
+    <section id="lenteur" aria-labelledby="lenteur-titre">
+      <h2 id="lenteur-titre">La lenteur découverte en chemin</h2>
+      <div class="note warn">
+        <h3>« Je n'arrive pas à changer de page »</h3>
+        <p>En essayant la recherche à la main, Flavie ne pouvait plus passer à la page 2. La page n'était pas cassée : chaque page filtrée par âge mettait <strong>10 à 14 secondes</strong> à arriver. Le défaut existait avant #158 ; personne ne l'avait vu, parce que le banc de mesure combinait l'âge avec « gratuit », qui réduit beaucoup les résultats.</p>
+      </div>
+      <p class="prose">PostgreSQL choisit son plan d'exécution d'après une <strong>estimation</strong> du nombre de lignes. Avec la condition d'âge, il croyait qu'un seul événement correspondait autour de Toulon, alors qu'il y en avait près de 2 000. Il a donc choisi une boucle qui relisait toutes les occurrences, regroupées, une fois pour chaque événement.</p>
+      <p class="prose">La première date de chaque événement, qui trie la page, se trouve désormais de deux façons :</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Les deux façons de trouver la première date, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Recherche</th><th scope="col">Comment</th><th scope="col">Pourquoi</th></tr></thead>
+          <tbody>
+            <tr><td>Autour d'une ville</td><td>Événement par événement, par l'index de ses occurrences (<code>LATERAL</code>)</td><td>Quelques milliers d'événements au plus : toujours plus rapide, et à l'abri d'une mauvaise estimation.</td></tr>
+            <tr><td>Toute la France</td><td>Un seul regroupement de toutes les occurrences</td><td>Des dizaines de milliers d'événements : plus rapide ainsi, comme l'avait mesuré #67.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="La mesure avant et après, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Recherche (requête SQL seule, 54 000 événements)</th><th scope="col">Avant</th><th scope="col">Après</th></tr></thead>
+          <tbody>
+            <tr><td>Toulon, 3-5 ans</td><td>9,2 s</td><td>0,27 s</td></tr>
+            <tr><td>Toulon, 3-5 et 6-11 ans</td><td>12,9 s</td><td>0,33 s</td></tr>
+            <tr><td>Toulon, sans âge</td><td>0,26 s</td><td>0,17 s</td></tr>
+            <tr><td>Toulon, mot-clé « concert »</td><td>0,12 s</td><td>0,05 s</td></tr>
+            <tr><td>Toute la France</td><td colspan="2">Inchangé : la même requête qu'avant</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="prose muted">Avant de choisir, les deux formes ont été comparées sur dix recherches : elles renvoient exactement les mêmes cartes. Une première version, « par événement » partout, ralentissait la recherche nationale de 0,1 à 0,4 s : d'où la règle selon l'endroit cherché.</p>
+    </section>
+
+    <section id="tests" aria-labelledby="tests-titre">
+      <h2 id="tests-titre">Les tests</h2>
+      <div class="grid2">
+        <div class="box"><h3>Backend (4 399 tests)</h3><ul>
+          <li>Les tranches dans le désordre ou en double ressortent une fois chacune, dans l'ordre</li>
+          <li>Une tranche inconnue est refusée et désignée par sa position, et cinq tranches aussi</li>
+          <li>Deux tranches éloignées, avec et sans ville : les deux formes de la requête</li>
+          <li>Contre-épreuves : ET au lieu de OU, puis la première tranche seule</li>
+        </ul></div>
+        <div class="box"><h3>Frontend</h3><ul>
+          <li>Vitest : l'adresse, la requête de l'API, les pastilles, les cases et leur aide</li>
+          <li>Playwright : deux tranches cochées, deux pastilles, <code>age[]</code> bien reçu par l'API, une pastille retirée</li>
+          <li>axe à 360 et 1280 px, sur le panneau et la colonne des filtres</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section id="suite" aria-labelledby="suite-titre">
+      <h2 id="suite-titre">La suite</h2>
+      <p class="limit">Le cahier des charges dit encore « une seule tranche » : la mise à jour attend la prochaine passe groupée.</p>
+      <p class="prose">La prochaine issue du lot 3 : choisir des dates dans le filtre Date (#161).</p>
+    </section>
+
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="157-organisateur-sur-la-carte.html" rel="prev"><span>← Issue précédente</span><strong>#157 L'organisateur sur la carte</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>
