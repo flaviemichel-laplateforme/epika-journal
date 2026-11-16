@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>Les favoris sur l'accueil (#184) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #184 d'Epika : une personne connectée retrouve ses trois prochains favoris sur l'accueil, sans que la page change pour les autres ni que rien ne bouge à l'écran.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a class="home" href="../index.html">Accueil</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 3 · issue #184 · EF-07 · terminée le 16/11/2026</p>
+    <h1>Les favoris sur l'accueil</h1>
+    <p class="lede">Une personne connectée retrouve ses trois prochains favoris en bas de l'accueil. Pour tous les autres, rien ne change : ni la page, ni son poids, ni sa stabilité à l'écran.</p>
+    <dl class="facts">
+      <div class="fact"><dt>pull request, frontend seulement</dt><dd>1</dd></div>
+      <div class="fact"><dt>prochains favoris montrés</dt><dd>3</dd></div>
+      <div class="fact"><dt>décalage causé par le bloc (CLS)</dt><dd>0</dd></div>
+      <div class="fact"><dt>Kio de plus pour un visiteur</dt><dd>2</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#principe">Ce que ça change</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#instant">Pourquoi il arrive après un instant</a></li>
+        <li><a href="#place">Pourquoi tout en bas</a></li>
+        <li><a href="#essais">Trouvé en essayant</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#requetes">Les deux requêtes</a></li>
+            <li><a href="#rien">Rien, dans cinq cas</a></li>
+            <li><a href="#cls">Le décalage mesuré</a></li>
+            <li><a href="#demande">Chargé à la demande</a></li>
+            <li><a href="#tests">Les tests</a></li>
+            <li><a href="#livraison">La pull request</a></li>
+          </ol>
+        </li>
+        <li><a href="#limites">Limites et suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="principe" aria-labelledby="principe-titre">
+      <h2 id="principe-titre">Ce que ça change</h2>
+      <ul class="prose">
+        <li><strong>« Vos prochains favoris »</strong>, sous « À la une » : les trois prochains événements gardés, avec les cartes et les cœurs habituels.</li>
+        <li><strong>« Voir tous mes favoris (5) »</strong> mène à « Mes favoris » ; le nombre n'apparaît que s'il y en a plus que de cartes.</li>
+        <li><strong>Rien pour un visiteur</strong>, ni pour une personne sans favori à venir : pas de bloc vide, pas d'espace réservé.</li>
+        <li><strong>Un cœur retiré dans le bloc garde sa carte</strong> jusqu'à la visite suivante, comme sur « Mes favoris » : on peut changer d'avis.</li>
+      </ul>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <p class="prose muted">Captures prises par Playwright sur Epika en production, avec une fausse API : la personne (Camille Martin) et les événements sont fictifs. Sur ordinateur à gauche, sur téléphone à droite.</p>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #184">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/184/01-prochains-favoris-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le bas de l'accueil : « À la une en ce moment », puis « Vos prochains favoris » avec trois cartes de concerts aux cœurs pleins, et le lien « Voir tous mes favoris (5) ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/184/01-prochains-favoris-mobile.jpg" width="360" height="740" loading="lazy" alt="Le bas de l'accueil : « À la une en ce moment », puis « Vos prochains favoris » avec trois cartes de concerts aux cœurs pleins, et le lien « Voir tous mes favoris (5) ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> Camille est connectée : sous « À la une », ses trois prochains favoris, avec les cartes et les cœurs habituels, et « Voir tous mes favoris (5) ». Le bloc arrive en bas de page : rien de ce qui est déjà affiché ne bouge.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/184/02-visiteur-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le bas de l'accueil d'un visiteur : « À la une en ce moment » avec ses cartes, puis le pied de page. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/184/02-visiteur-mobile.jpg" width="360" height="740" loading="lazy" alt="Le bas de l'accueil d'un visiteur : « À la une en ce moment » avec ses cartes, puis le pied de page. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> Un visiteur : l'accueil s'arrête à « À la une ». Pas de bloc vide, pas d'espace réservé, et pas une ligne de JavaScript du bloc téléchargée.</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="instant" aria-labelledby="instant-titre">
+      <h2 id="instant-titre">Pourquoi il arrive après un instant</h2>
+      <p class="prose">L'accueil est écrit par le serveur, <strong>le même pour tout le monde</strong> : c'est ce qui le rend rapide, et ce que Google lit. Le serveur ne sait donc pas qui regarde la page. Seul le navigateur le sait, et il pose deux questions l'une après l'autre :</p>
+      <ol class="pipeline">
+        <li><div><strong>« Qui est connecté ? »</strong><span>Une question que l'en-tête de la page pose déjà, pour afficher « Mon espace » : sa réponse est partagée, sans requête en plus.</span></div></li>
+        <li><div><strong>« Quels sont ses trois prochains favoris ? »</strong><span>Seulement si quelqu'un est connecté, une fois la première réponse arrivée.</span></div></li>
+        <li><div><strong>Le bloc s'affiche</strong><span>Un instant après la page, tout en bas.</span></div></li>
+      </ol>
+    </section>
+
+    <section id="place" aria-labelledby="place-titre">
+      <hgroup><p class="eyebrow">Décidé le 16/11/2026</p><h2 id="place-titre">Pourquoi tout en bas</h2></hgroup>
+      <p class="prose">Un bloc qui arrive après la page pousse vers le bas tout ce qui est dessous. Placé juste sous la recherche, il aurait fait sauter les catégories et « À la une » au moment où l'on s'apprête à cliquer : c'est ce que mesure le « décalage de mise en page » (CLS), que Google compte dans la qualité d'une page.</p>
+      <div class="note key">
+        <p>Décision de Flavie : <strong>sous « À la une »</strong>. Au moment où il arrive, il est hors de l'écran : rien de visible ne bouge, sur téléphone comme sur ordinateur.</p>
+      </div>
+    </section>
+
+    <section id="essais" aria-labelledby="essais-titre">
+      <h2 id="essais-titre">Trouvé en essayant</h2>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Ce qui a été trouvé pendant les essais, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Ce qui se passait</th><th scope="col">La cause</th><th scope="col">La suite</th></tr></thead>
+          <tbody>
+            <tr><td>Sur téléphone, les cœurs des cartes passaient par-dessus la bande du jour collante des résultats</td><td>Les deux étaient au même niveau d'empilement</td><td>Corrigé : la bande passe au-dessus des cœurs, et sous la barre d'outils</td></tr>
+            <tr><td>Une erreur 401 sur les favoris pendant un essai</td><td>La session avait expiré, alors que la page croyait encore savoir qui était là</td><td>Le bloc ne s'est pas affiché, sans message ni redirection, comme prévu. Le renouvellement automatique de la session est noté dans les limites</td></tr>
+            <tr><td>Sur téléphone, toute la page descend de 20 px pour une personne connectée</td><td>L'en-tête : ses liens passent sur deux lignes à 360 px. Plus ancien que #184</td><td>À traiter avec la barre du bas sur téléphone (#183)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Comment c'est construit : les requêtes, le décalage mesuré, le chargement à la demande, les tests, pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+
+        <section id="requetes" aria-labelledby="requetes-titre">
+          <h2 id="requetes-titre">Les deux requêtes</h2>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les deux requêtes du bloc, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Requête</th><th scope="col">Qui la pose</th><th scope="col">Réponse</th></tr></thead>
+              <tbody>
+                <tr><td><code>GET /api/me</code></td><td>L'en-tête de chaque page (TanStack Query, gardée 5 minutes, partagée)</td><td>La personne connectée, ou 401 pour un visiteur</td></tr>
+                <tr><td><code>GET /api/me/favorites?itemsPerPage=3</code></td><td>Le bloc, seulement si quelqu'un est connecté</td><td><code>{ items, totalItems, page, itemsPerPage }</code> : les cartes à venir, par date</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="prose">Aucun changement côté serveur : la route de « Mes favoris » (#77) acceptait déjà <code>itemsPerPage</code>. Le hook <code>useUpcomingFavorites</code> la demande sans nouvelle tentative après un échec, la garde une minute, et ne la redemande pas quand on revient sur l'onglet : le bloc ne doit jamais apparaître ni disparaître sous les yeux de la personne. Sa clé commence comme celle de « Mes favoris » : un cœur changé n'importe où la marque périmée, sans la recharger.</p>
+        </section>
+
+        <section id="rien" aria-labelledby="rien-titre">
+          <h2 id="rien-titre">Rien, dans cinq cas</h2>
+          <p class="prose">Le composant tient en une règle : <code>if (!data || data.items.length === 0) return null</code>. Il ne rend rien pour un visiteur, pendant le chargement, en cas d'erreur (un 401 compris), et sans favori à venir. Le serveur ne rend rien non plus, puisqu'il ne sait pas qui est là : le HTML de l'accueil est identique pour tous, et le premier rendu dans le navigateur aussi, sans écart d'« hydratation ».</p>
+          <p class="prose">Vérifié dans le code : le client d'API n'a aucun gestionnaire global des 401, ni redirection, ni message, ni déconnexion. Un 401 sur ce bloc ne fait donc rien d'autre que le cacher.</p>
+        </section>
+
+        <section id="cls" aria-labelledby="cls-titre">
+          <h2 id="cls-titre">Le décalage mesuré</h2>
+          <p class="prose">Un observateur des décalages (<code>PerformanceObserver</code>, type <code>layout-shift</code>) est installé avant l'ouverture de la page, et enregistre chaque décalage avec l'élément qui a bougé :</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les décalages mesurés, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Situation</th><th scope="col">Décalage</th><th scope="col">Lecture</th></tr></thead>
+              <tbody>
+                <tr><td>Le bloc arrive, à 360 et 1280 px</td><td class="num">0</td><td>Il s'insère hors de l'écran</td></tr>
+                <tr><td>La personne a déjà tout fait défiler quand il arrive</td><td class="num">0,037</td><td>Le pied de page descend ; sous le seuil « bon » de Google (0,1)</td></tr>
+                <tr><td>L'en-tête d'une personne connectée, sur téléphone</td><td class="num">0,024</td><td>Plus ancien que #184, découvert en mesurant</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="prose">Une prédiction s'est révélée fausse : l'« ancrage du défilement » du navigateur ne protège pas le pied de page. Il garde en place l'élément du haut de l'écran, et le bloc s'insère dessous.</p>
+        </section>
+
+        <section id="demande" aria-labelledby="demande-titre">
+          <h2 id="demande-titre">Chargé à la demande</h2>
+          <p class="prose">La première version ajoutait 5 Kio de JavaScript à l'accueil, téléchargés même par un visiteur qui ne verrait jamais le bloc. Un petit « gardien » regarde maintenant si quelqu'un est connecté, et seulement alors télécharge le bloc, rangé dans son propre fichier (<code>next/dynamic</code>), comme le formulaire de signalement de #76.</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Lighthouse sur l'accueil, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Accueil, visiteur (4 passages)</th><th scope="col">Performance</th><th scope="col">JavaScript</th></tr></thead>
+              <tbody>
+                <tr><td>Avant #184</td><td class="num">97,5</td><td class="num">168 Kio</td></tr>
+                <tr><td>Bloc chargé avec la page</td><td class="num">96,5</td><td class="num">173 Kio</td></tr>
+                <tr><td>Bloc chargé à la demande</td><td class="num">98</td><td class="num">170 Kio</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Les tests</h2>
+          <div class="grid2">
+            <div class="box"><h3>Vitest</h3><ul>
+              <li>Le hook : 3 cartes demandées, rien pour un visiteur, ni nouvelle tentative ni relance au retour sur l'onglet</li>
+              <li>Le bloc : visiteur, 0, 2 et 7 favoris, erreur 500, 401, HTML du serveur, premier rendu avant la réponse de <code>/api/me</code></li>
+              <li>Un cœur retiré garde sa carte, sans redemander la liste</li>
+            </ul></div>
+            <div class="box"><h3>Playwright et axe</h3><ul>
+              <li>Visiteur : pas de bloc et aucune requête de favoris</li>
+              <li>Cinq favoris : trois cartes, le lien, l'ordre des titres</li>
+              <li>Le 401 : ni redirection ni message</li>
+              <li>Le décalage, aux deux largeurs, et le cas du pied de page</li>
+              <li>axe à 360 et 1280 px</li>
+            </ul></div>
+            <div class="box"><h3>Les contre-épreuves</h3><p>Chaque règle a été cassée exprès pour vérifier qu'un test échoue. Un test du retour sur l'onglet passait même sans la protection : il envoyait des événements que TanStack Query ignore. Il a été réécrit avec l'outil prévu pour ça (<code>focusManager</code>).</p></div>
+          </div>
+        </section>
+
+        <section id="livraison" aria-labelledby="livraison-titre">
+          <h2 id="livraison-titre">La pull request</h2>
+          <ul class="prs">
+            <li><span class="num">#195</span><span>Le hook et le bloc, chargé à la demande, en bas de l'accueil ; les cœurs sous la bande du jour ; les outils de session partagés par les tests de bout en bout.</span></li>
+          </ul>
+        </section>
+
+      </div>
+    </details>
+
+    <section id="limites" aria-labelledby="limites-titre">
+      <h2 id="limites-titre">Limites et suite</h2>
+      <ul class="prose">
+        <li><strong>La session expirée</strong> : quand la page croit encore savoir qui est là, une requête peut recevoir un 401. Le bloc se cache sans bruit ; un renouvellement automatique de la session à ce moment-là serait plus propre.</li>
+        <li><strong>L'en-tête connecté sur téléphone</strong> fait descendre la page de 20 px : à régler avec la barre du bas (#183).</li>
+        <li><strong>La suite</strong> : la barre de navigation en bas de l'écran sur téléphone (#183), qui termine le lot 3.</li>
+      </ul>
+    </section>
+
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="159-proposer-les-villes.html" rel="prev"><span>← Issue précédente</span><strong>#159 Proposer les villes pendant la saisie</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>
