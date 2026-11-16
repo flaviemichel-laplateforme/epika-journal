@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>La barre du bas sur téléphone (#183) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #183 d'Epika : une barre de navigation en bas de l'écran du téléphone, à portée de pouce, au-dessus de la zone gestuelle des téléphones récents.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a class="home" href="../index.html">Accueil</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 3 · issue #183 · terminée le 16/11/2026</p>
+    <h1>La barre du bas sur téléphone</h1>
+    <p class="lede">Sur téléphone, les quatre pages les plus utiles sont à portée de pouce, en bas de l'écran : Accueil, Événements, Favoris, Compte. La barre reste au-dessus de la zone gestuelle des téléphones récents, et ne cache jamais rien.</p>
+    <dl class="facts">
+      <div class="fact"><dt>pull request, frontend seulement</dt><dd>1</dd></div>
+      <div class="fact"><dt>entrées, icône et texte</dt><dd>4</dd></div>
+      <div class="fact"><dt>Kio de JavaScript ajoutés</dt><dd>1</dd></div>
+      <div class="fact"><dt>tests de bout en bout</dt><dd>140</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#principe">Ce que ça change</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#couleurs">Les couleurs choisies</a></li>
+        <li><a href="#reserver">« Réserver » et le pied de page</a></li>
+        <li><a href="#essais">Trouvé en essayant</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#zone">La zone gestuelle</a></li>
+            <li><a href="#place">La place réservée</a></li>
+            <li><a href="#courante">La page courante</a></li>
+            <li><a href="#prechargement">Le préchargement</a></li>
+            <li><a href="#tests">Les tests</a></li>
+            <li><a href="#livraison">La pull request</a></li>
+          </ol>
+        </li>
+        <li><a href="#limites">Limites et suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="principe" aria-labelledby="principe-titre">
+      <h2 id="principe-titre">Ce que ça change</h2>
+      <ul class="prose">
+        <li><strong>Quatre entrées en bas de l'écran du téléphone</strong>, chacune avec une icône et son nom : Accueil, Événements, Favoris, Compte. À portée de pouce, sur toutes les pages.</li>
+        <li><strong>L'en-tête du téléphone tient sur une ligne</strong> : « Se connecter », « Mon espace » et « Se déconnecter » sont remplacés par « Compte », en bas. « Se déconnecter » reste dans « Mon espace ».</li>
+        <li><strong>Un visiteur qui touche « Favoris » ou « Compte »</strong> arrive à la connexion, qui le ramène ensuite là où il allait.</li>
+        <li><strong>Sur tablette et ordinateur, rien ne change.</strong> La barre latérale de « Mon espace » sur ordinateur est prévue au début du lot 4.</li>
+      </ul>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <p class="prose muted">Captures prises par Playwright sur Epika en production, avec une fausse API : les événements sont fictifs. Sur ordinateur à gauche, sur téléphone à droite.</p>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #183">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/183/01-accueil-desktop.jpg" width="1280" height="800" loading="lazy" alt="L'accueil, avec en bas de l'écran du téléphone une barre navy à quatre entrées, « Accueil » en turquoise. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/183/01-accueil-mobile.jpg" width="360" height="740" loading="lazy" alt="L'accueil, avec en bas de l'écran du téléphone une barre navy à quatre entrées, « Accueil » en turquoise. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> Sur téléphone, la barre du bas : Accueil, Événements, Favoris, Compte, chacun avec son icône et son nom. La page courante est en turquoise, avec un trait au-dessus et un texte en gras. Sur ordinateur, rien ne change : l'en-tête garde son lien « Se connecter ».</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/183/02-evenements-desktop.jpg" width="1280" height="800" loading="lazy" alt="Les résultats autour de Toulon, avec la barre du bas où « Événements » est en turquoise. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/183/02-evenements-mobile.jpg" width="360" height="740" loading="lazy" alt="Les résultats autour de Toulon, avec la barre du bas où « Événements » est en turquoise. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> Sur la page de résultats, « Événements » est l'entrée courante. L'en-tête du téléphone tient sur une ligne : le coin du compte a laissé sa place à « Compte », en bas.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/183/03-fiche-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le bas d'une fiche d'événement : « Signaler un problème », puis la barre « Gratuit · Voir sur OpenAgenda », posée sur la barre navy à quatre entrées. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/183/03-fiche-mobile.jpg" width="360" height="740" loading="lazy" alt="Le bas d'une fiche d'événement : « Signaler un problème », puis la barre « Gratuit · Voir sur OpenAgenda », posée sur la barre navy à quatre entrées. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> Sur une fiche, la barre « Réserver » reste posée contre la barre de navigation, et le pied de page passe dessous. Aucune entrée n'est courante : la fiche n'est aucune des quatre pages.</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="couleurs" aria-labelledby="couleurs-titre">
+      <hgroup><p class="eyebrow">Décidé le 16/11/2026</p><h2 id="couleurs-titre">Les couleurs choisies</h2></hgroup>
+      <p class="prose">Flavie a choisi une barre <strong>navy</strong>, la couleur de la marque, avec des icônes et des textes blancs. Pour que la page courante se voie bien, elle passe en <strong>turquoise</strong>. Elle n'est jamais signalée par la couleur seule : un trait au-dessus, un texte en gras et une icône plus épaisse la distinguent aussi, pour les personnes qui voient mal les couleurs.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Les contrastes de la barre, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Élément, sur navy</th><th scope="col">Contraste</th><th scope="col">Minimum (RGAA)</th></tr></thead>
+          <tbody>
+            <tr><td>Entrées, en blanc à 80 %</td><td class="num">10,3:1</td><td class="num">4,5:1</td></tr>
+            <tr><td>Entrée courante, en turquoise</td><td class="num">7,5:1</td><td class="num">4,5:1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="prose muted">Une variante est gardée en réserve : une pastille blanche derrière l'icône active. On la jugera sur les retours des utilisateurs.</p>
+    </section>
+
+    <section id="reserver" aria-labelledby="reserver-titre">
+      <hgroup><p class="eyebrow">Demandé par Flavie le 16/11/2026</p><h2 id="reserver-titre">« Réserver » et le pied de page</h2></hgroup>
+      <p class="prose">Sur une fiche, la barre « Réserver » remontait en fin de page, et le pied de page apparaissait entre elle et la barre de navigation. Elle reste maintenant <strong>posée contre la barre de navigation</strong>, comme dans les applications que tout le monde connaît, et le pied de page passe dessous.</p>
+    </section>
+
+    <section id="essais" aria-labelledby="essais-titre">
+      <h2 id="essais-titre">Trouvé en essayant</h2>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Ce qui a été trouvé pendant les essais, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Ce qui se passait</th><th scope="col">La correction</th></tr></thead>
+          <tbody>
+            <tr><td>Une bande blanche entre le pied de page et la barre</td><td>La place gardée pour la barre appartient au pied de page : son navy passe dessous</td></tr>
+            <tr><td>La barre « Réserver » se « promenait » au-dessus du bas de l'écran</td><td>Elle est fixée contre la barre de navigation</td></tr>
+            <tr><td>L'entrée courante ne se voyait pas assez</td><td>Elle passe en turquoise</td></tr>
+            <tr><td>Chaque visiteur téléchargeait le code de « Mon espace » (52 Kio)</td><td>Les entrées « Favoris » et « Compte » ne le chargent plus d'avance</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Comment c'est construit : la zone gestuelle, la place réservée, la page courante, le préchargement, les tests, pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+
+        <section id="zone" aria-labelledby="zone-titre">
+          <h2 id="zone-titre">La zone gestuelle</h2>
+          <p class="prose">Les téléphones récents ont une zone en bas de l'écran pour les gestes du système (la barre de l'iPhone, la navigation par gestes d'Android). Flavie a posé la question dès le plan : la barre ne doit pas la chevaucher.</p>
+          <ul class="prose">
+            <li><strong>Un manque trouvé en vérifiant</strong> : le site utilisait déjà les « zones de sécurité » (<code>env(safe-area-inset-bottom)</code>) à six endroits, mais sans <code>viewport-fit=cover</code>. Sans cette déclaration, ces zones valent 0 : ces protections ne servaient à rien. Elle est maintenant déclarée dans <code>layout.tsx</code>.</li>
+            <li><strong>Le procédé de Chrome</strong> (guide « edge-to-edge », 28/02/2025) : sur Android, Chrome 135 montre un « menton » qui glisse au défilement, et la zone de sécurité change pendant ce temps. La barre est donc plus haute que ce qu'on voit, de la zone la plus grande (M), et décalée vers le bas de ce qui n'est pas utilisé (<code>bottom: E − M</code>). Seule sa position bouge quand le menton glisse : la page n'est pas recalculée.</li>
+            <li><strong>Deux variables seulement</strong>, <code>--safe-bottom</code> (E) et <code>--safe-max-bottom</code> (M, 36 px par défaut, la valeur de l'iPhone), lues à un seul endroit : les tests peuvent les remplacer.</li>
+            <li><strong>En paysage</strong>, l'encoche du téléphone peut passer sur le côté de la page : l'en-tête, le contenu, le pied de page, la barre « Réserver » et les fenêtres gardent leur texte à l'écart.</li>
+          </ul>
+        </section>
+
+        <section id="place" aria-labelledby="place-titre">
+          <h2 id="place-titre">La place réservée</h2>
+          <p class="prose">Pour que la barre ne cache jamais la fin d'une page, ni un lien qui reçoit le focus au clavier (WCAG 2.4.11), la page lui garde sa place : la hauteur de la barre plus la zone la plus grande, <strong>jamais la valeur du moment</strong>, qui bougerait avec le menton. Cette place est une seule valeur, qui ne s'additionne jamais deux fois : celle de la barre, plus celle de la barre « Réserver » sur une fiche.</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Où la place est gardée, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Où</th><th scope="col">Pourquoi</th></tr></thead>
+              <tbody>
+                <tr><td>En bas du pied de page</td><td>Son navy passe sous les barres : jamais de bande blanche</td></tr>
+                <tr><td><code>scroll-padding-bottom</code> de la page</td><td>Un élément qui reçoit le focus s'arrête au-dessus des barres</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="courante" aria-labelledby="courante-titre">
+          <h2 id="courante-titre">La page courante</h2>
+          <p class="prose">Une entrée correspond à sa propre page et aux pages en dessous (<code>/mon-espace/…</code>), et la plus longue l'emporte : « /mon-espace/favoris » est « Favoris », pas « Compte ». Une fiche d'événement n'est aucune des quatre. Un test vérifie cette règle avec la liste des entrées à l'envers : sans la règle, le bon résultat ne venait que de l'ordre de la liste, et la contre-épreuve ne voyait rien.</p>
+        </section>
+
+        <section id="prechargement" aria-labelledby="prechargement-titre">
+          <h2 id="prechargement-titre">Le préchargement</h2>
+          <p class="prose">Un lien de Next.js visible à l'écran télécharge d'avance le code de la page où il mène. La barre étant sur toutes les pages, ses liens « Favoris » et « Compte » faisaient télécharger à chaque visiteur le code de « Mon espace », avec la validation de ses formulaires. Lighthouse l'a montré :</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Le JavaScript téléchargé, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">JavaScript téléchargé</th><th scope="col">Avant #183</th><th scope="col">Première version</th><th scope="col">Corrigée</th></tr></thead>
+              <tbody>
+                <tr><td>Accueil</td><td class="num">170 Kio</td><td class="num">223 Kio</td><td class="num">171 Kio</td></tr>
+                <tr><td>Une fiche</td><td class="num">192 Kio</td><td class="num">242 Kio</td><td class="num">190 Kio</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="prose">Ces deux entrées ne préchargent plus leur page (<code>prefetch={false}</code>) : leur code arrive quand on les touche. « Accueil » et « Événements », pages publiques très utilisées, gardent le leur.</p>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Les tests</h2>
+          <div class="grid2">
+            <div class="box"><h3>Vitest</h3><ul>
+              <li>Les quatre entrées, leurs noms et leurs adresses</li>
+              <li>La page courante, quel que soit l'ordre des entrées</li>
+              <li>Pas de préchargement pour « Favoris » et « Compte »</li>
+            </ul></div>
+            <div class="box"><h3>Playwright et axe</h3><ul>
+              <li>Une zone d'iPhone simulée : les entrées au-dessus, la fin de la page au-dessus de la barre</li>
+              <li>La barre « Réserver » contre la navigation, même tout en bas d'une fiche</li>
+              <li>La carte, un lien qui reçoit le focus, les fenêtres et les filtres</li>
+              <li>axe sur quatre pages, sans défaut</li>
+            </ul></div>
+            <div class="box"><h3>Les contre-épreuves</h3><p>Chaque règle a été retirée exprès pour vérifier qu'un test échoue. La carte a montré qu'un test peut se tromper : le bouton « + » de la carte est lui aussi un lien, et le test le prenait pour une entrée de la barre. Il vérifie maintenant le nom exact de l'entrée touchée ; sans le cadre qui enferme la carte, un toucher sur « Accueil » atteint « Zoom in ».</p></div>
+          </div>
+        </section>
+
+        <section id="livraison" aria-labelledby="livraison-titre">
+          <h2 id="livraison-titre">La pull request</h2>
+          <ul class="prs">
+            <li><span class="num">#196</span><span>La barre du bas, la zone gestuelle et la place réservée, la barre « Réserver » contre la navigation, l'en-tête du téléphone sur une ligne, et une attente commune pour les tests de bout en bout.</span></li>
+          </ul>
+        </section>
+
+      </div>
+    </details>
+
+    <section id="limites" aria-labelledby="limites-titre">
+      <h2 id="limites-titre">Limites et suite</h2>
+      <ul class="prose">
+        <li><strong>Pas encore essayée sur un vrai téléphone.</strong> Les tests simulent la zone gestuelle, mais seul un vrai téléphone dit si la barre reste au-dessus, si le clavier la cache déjà, et si elle ne saccade pas au défilement. Ce test est prévu avant le lancement, par câble USB avec un téléphone Android.</li>
+        <li><strong>La suite</strong> : la table des communes (#197), pour que « gre » propose Grenoble et que la recherche par ville ne dépende plus d'un service extérieur ; puis le lot 4, avec la barre latérale de « Mon espace » sur ordinateur.</li>
+      </ul>
+    </section>
+
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="184-favoris-sur-l-accueil.html" rel="prev"><span>← Issue précédente</span><strong>#184 Les favoris sur l'accueil</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>
