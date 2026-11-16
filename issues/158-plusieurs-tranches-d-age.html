@@ -9,6 +9,7 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
 </script>
 <title>Plusieurs tranches d'âge (#158) · Journal d'Epika</title>
 <meta name="description" content="Bilan de l'issue #158 d'Epika : choisir plusieurs tranches d'âge dans la recherche, et une lenteur de 9 à 13 secondes découverte en chemin, ramenée à 0,3 seconde.">
+<meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -46,10 +47,14 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
         <li><a href="#besoin">Le besoin</a></li>
         <li><a href="#images">En images</a></li>
         <li><a href="#regle">La règle : l'une des tranches</a></li>
-        <li><a href="#adresse">L'adresse et l'API</a></li>
         <li><a href="#cases">Des cases à cocher</a></li>
-        <li><a href="#lenteur">La lenteur découverte en chemin</a></li>
-        <li><a href="#tests">Les tests</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#adresse">L'adresse et l'API</a></li>
+            <li><a href="#lenteur">La lenteur découverte en chemin</a></li>
+            <li><a href="#tests">Les tests</a></li>
+          </ol>
+        </li>
         <li><a href="#suite">La suite</a></li>
       </ol>
     </details>
@@ -114,24 +119,6 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </div>
     </section>
 
-    <section id="adresse" aria-labelledby="adresse-titre">
-      <h2 id="adresse-titre">L'adresse du site et celle de l'API</h2>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="Les adresses avec plusieurs tranches, tableau défilant">
-        <table>
-          <thead><tr><th scope="col">Où</th><th scope="col">Forme</th></tr></thead>
-          <tbody>
-            <tr><td>L'adresse du site, en français</td><td><code>/recherche?ville=Toulon&amp;age=3-5&amp;age=6-11</code></td></tr>
-            <tr><td>La requête vers l'API, en anglais</td><td><code>/api/search/events?city=Toulon&amp;age[]=3-5&amp;age[]=6-11</code></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <ul class="prose">
-        <li><strong>Un <code>?age=</code> seul reste accepté</strong> : les anciens liens partagés et le raccourci « En famille (6-11 ans) » de l'accueil continuent de marcher.</li>
-        <li><strong>Toujours le même ordre, sans doublon</strong> : cocher « 6-11 ans » puis « 3-5 ans » donne la même adresse que l'inverse, donc la même page.</li>
-        <li><strong>Une valeur inconnue</strong> dans l'adresse est ignorée par le site (un vieux lien s'ouvre toujours) et refusée par l'API, qui dit laquelle.</li>
-      </ul>
-    </section>
-
     <section id="cases" aria-labelledby="cases-titre">
       <hgroup><p class="eyebrow">Frontend</p><h2 id="cases-titre">Des cases à cocher</h2></hgroup>
       <div class="grid2">
@@ -140,54 +127,82 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </div>
     </section>
 
-    <section id="lenteur" aria-labelledby="lenteur-titre">
-      <h2 id="lenteur-titre">La lenteur découverte en chemin</h2>
-      <div class="note warn">
-        <h3>« Je n'arrive pas à changer de page »</h3>
-        <p>En essayant la recherche à la main, Flavie ne pouvait plus passer à la page 2. La page n'était pas cassée : chaque page filtrée par âge mettait <strong>10 à 14 secondes</strong> à arriver. Le défaut existait avant #158 ; personne ne l'avait vu, parce que le banc de mesure combinait l'âge avec « gratuit », qui réduit beaucoup les résultats.</p>
-      </div>
-      <p class="prose">PostgreSQL choisit son plan d'exécution d'après une <strong>estimation</strong> du nombre de lignes. Avec la condition d'âge, il croyait qu'un seul événement correspondait autour de Toulon, alors qu'il y en avait près de 2 000. Il a donc choisi une boucle qui relisait toutes les occurrences, regroupées, une fois pour chaque événement.</p>
-      <p class="prose">La première date de chaque événement, qui trie la page, se trouve désormais de deux façons :</p>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="Les deux façons de trouver la première date, tableau défilant">
-        <table>
-          <thead><tr><th scope="col">Recherche</th><th scope="col">Comment</th><th scope="col">Pourquoi</th></tr></thead>
-          <tbody>
-            <tr><td>Autour d'une ville</td><td>Événement par événement, par l'index de ses occurrences (<code>LATERAL</code>)</td><td>Quelques milliers d'événements au plus : toujours plus rapide, et à l'abri d'une mauvaise estimation.</td></tr>
-            <tr><td>Toute la France</td><td>Un seul regroupement de toutes les occurrences</td><td>Des dizaines de milliers d'événements : plus rapide ainsi, comme l'avait mesuré #67.</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="La mesure avant et après, tableau défilant">
-        <table>
-          <thead><tr><th scope="col">Recherche (requête SQL seule, 54 000 événements)</th><th scope="col">Avant</th><th scope="col">Après</th></tr></thead>
-          <tbody>
-            <tr><td>Toulon, 3-5 ans</td><td>9,2 s</td><td>0,27 s</td></tr>
-            <tr><td>Toulon, 3-5 et 6-11 ans</td><td>12,9 s</td><td>0,33 s</td></tr>
-            <tr><td>Toulon, sans âge</td><td>0,26 s</td><td>0,17 s</td></tr>
-            <tr><td>Toulon, mot-clé « concert »</td><td>0,12 s</td><td>0,05 s</td></tr>
-            <tr><td>Toute la France</td><td colspan="2">Inchangé : la même requête qu'avant</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="prose muted">Avant de choisir, les deux formes ont été comparées sur dix recherches : elles renvoient exactement les mêmes cartes. Une première version, « par événement » partout, ralentissait la recherche nationale de 0,1 à 0,4 s : d'où la règle selon l'endroit cherché.</p>
-    </section>
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Comment c'est construit : les choix techniques, les tests et les pull requests, pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+        <section id="adresse" aria-labelledby="adresse-titre">
+          <h2 id="adresse-titre">L'adresse du site et celle de l'API</h2>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les adresses avec plusieurs tranches, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Où</th><th scope="col">Forme</th></tr></thead>
+              <tbody>
+                <tr><td>L'adresse du site, en français</td><td><code>/recherche?ville=Toulon&amp;age=3-5&amp;age=6-11</code></td></tr>
+                <tr><td>La requête vers l'API, en anglais</td><td><code>/api/search/events?city=Toulon&amp;age[]=3-5&amp;age[]=6-11</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <ul class="prose">
+            <li><strong>Un <code>?age=</code> seul reste accepté</strong> : les anciens liens partagés et le raccourci « En famille (6-11 ans) » de l'accueil continuent de marcher.</li>
+            <li><strong>Toujours le même ordre, sans doublon</strong> : cocher « 6-11 ans » puis « 3-5 ans » donne la même adresse que l'inverse, donc la même page.</li>
+            <li><strong>Une valeur inconnue</strong> dans l'adresse est ignorée par le site (un vieux lien s'ouvre toujours) et refusée par l'API, qui dit laquelle.</li>
+          </ul>
+        </section>
 
-    <section id="tests" aria-labelledby="tests-titre">
-      <h2 id="tests-titre">Les tests</h2>
-      <div class="grid2">
-        <div class="box"><h3>Backend (4 399 tests)</h3><ul>
-          <li>Les tranches dans le désordre ou en double ressortent une fois chacune, dans l'ordre</li>
-          <li>Une tranche inconnue est refusée et désignée par sa position, et cinq tranches aussi</li>
-          <li>Deux tranches éloignées, avec et sans ville : les deux formes de la requête</li>
-          <li>Contre-épreuves : ET au lieu de OU, puis la première tranche seule</li>
-        </ul></div>
-        <div class="box"><h3>Frontend</h3><ul>
-          <li>Vitest : l'adresse, la requête de l'API, les pastilles, les cases et leur aide</li>
-          <li>Playwright : deux tranches cochées, deux pastilles, <code>age[]</code> bien reçu par l'API, une pastille retirée</li>
-          <li>axe à 360 et 1280 px, sur le panneau et la colonne des filtres</li>
-        </ul></div>
+        <section id="lenteur" aria-labelledby="lenteur-titre">
+          <h2 id="lenteur-titre">La lenteur découverte en chemin</h2>
+          <div class="note warn">
+            <h3>« Je n'arrive pas à changer de page »</h3>
+            <p>En essayant la recherche à la main, Flavie ne pouvait plus passer à la page 2. La page n'était pas cassée : chaque page filtrée par âge mettait <strong>10 à 14 secondes</strong> à arriver. Le défaut existait avant #158 ; personne ne l'avait vu, parce que le banc de mesure combinait l'âge avec « gratuit », qui réduit beaucoup les résultats.</p>
+          </div>
+          <p class="prose">PostgreSQL choisit son plan d'exécution d'après une <strong>estimation</strong> du nombre de lignes. Avec la condition d'âge, il croyait qu'un seul événement correspondait autour de Toulon, alors qu'il y en avait près de 2 000. Il a donc choisi une boucle qui relisait toutes les occurrences, regroupées, une fois pour chaque événement.</p>
+          <p class="prose">La première date de chaque événement, qui trie la page, se trouve désormais de deux façons :</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les deux façons de trouver la première date, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Recherche</th><th scope="col">Comment</th><th scope="col">Pourquoi</th></tr></thead>
+              <tbody>
+                <tr><td>Autour d'une ville</td><td>Événement par événement, par l'index de ses occurrences (<code>LATERAL</code>)</td><td>Quelques milliers d'événements au plus : toujours plus rapide, et à l'abri d'une mauvaise estimation.</td></tr>
+                <tr><td>Toute la France</td><td>Un seul regroupement de toutes les occurrences</td><td>Des dizaines de milliers d'événements : plus rapide ainsi, comme l'avait mesuré #67.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="La mesure avant et après, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Recherche (requête SQL seule, 54 000 événements)</th><th scope="col">Avant</th><th scope="col">Après</th></tr></thead>
+              <tbody>
+                <tr><td>Toulon, 3-5 ans</td><td>9,2 s</td><td>0,27 s</td></tr>
+                <tr><td>Toulon, 3-5 et 6-11 ans</td><td>12,9 s</td><td>0,33 s</td></tr>
+                <tr><td>Toulon, sans âge</td><td>0,26 s</td><td>0,17 s</td></tr>
+                <tr><td>Toulon, mot-clé « concert »</td><td>0,12 s</td><td>0,05 s</td></tr>
+                <tr><td>Toute la France</td><td colspan="2">Inchangé : la même requête qu'avant</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="prose muted">Avant de choisir, les deux formes ont été comparées sur dix recherches : elles renvoient exactement les mêmes cartes. Une première version, « par événement » partout, ralentissait la recherche nationale de 0,1 à 0,4 s : d'où la règle selon l'endroit cherché.</p>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Les tests</h2>
+          <div class="grid2">
+            <div class="box"><h3>Backend (4 399 tests)</h3><ul>
+              <li>Les tranches dans le désordre ou en double ressortent une fois chacune, dans l'ordre</li>
+              <li>Une tranche inconnue est refusée et désignée par sa position, et cinq tranches aussi</li>
+              <li>Deux tranches éloignées, avec et sans ville : les deux formes de la requête</li>
+              <li>Contre-épreuves : ET au lieu de OU, puis la première tranche seule</li>
+            </ul></div>
+            <div class="box"><h3>Frontend</h3><ul>
+              <li>Vitest : l'adresse, la requête de l'API, les pastilles, les cases et leur aide</li>
+              <li>Playwright : deux tranches cochées, deux pastilles, <code>age[]</code> bien reçu par l'API, une pastille retirée</li>
+              <li>axe à 360 et 1280 px, sur le panneau et la colonne des filtres</li>
+            </ul></div>
+          </div>
+        </section>
+
       </div>
-    </section>
+    </details>
 
     <section id="suite" aria-labelledby="suite-titre">
       <h2 id="suite-titre">La suite</h2>

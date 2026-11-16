@@ -9,6 +9,7 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
 </script>
 <title>Résultats et filtres (#72) · Journal d'Epika</title>
 <meta name="description" content="Bilan de l'issue #72 d'Epika : la page de résultats, ses filtres en colonne ou en panneau, le rayon réellement cherché, une adresse par recherche et une pagination en vrais liens.">
+<meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -45,13 +46,17 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       <ol>
         <li><a href="#parcours">Le parcours</a></li>
         <li><a href="#images">En images</a></li>
-        <li><a href="#adresse">Une adresse, une recherche</a></li>
-        <li><a href="#filtres">Les filtres</a></li>
         <li><a href="#rayon">Le rayon, dit en toutes lettres</a></li>
         <li><a href="#affichage">Liste, cartes et agenda</a></li>
-        <li><a href="#accessibilite">Accessibilité</a></li>
-        <li><a href="#tests">Les tests</a></li>
-        <li><a href="#livraison">La PR</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#adresse">Une adresse, une recherche</a></li>
+            <li><a href="#filtres">Les filtres</a></li>
+            <li><a href="#accessibilite">Accessibilité</a></li>
+            <li><a href="#tests">Les tests</a></li>
+            <li><a href="#livraison">La PR</a></li>
+          </ol>
+        </li>
         <li><a href="#limites">Limites et suite</a></li>
       </ol>
     </details>
@@ -155,32 +160,6 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </div>
     </section>
 
-    <section id="adresse" aria-labelledby="adresse-titre">
-      <hgroup><p class="eyebrow">Frontend · PR #163</p><h2 id="adresse-titre">Une adresse, une recherche</h2></hgroup>
-      <div class="prose">
-        <p>Le site parle français dans ses adresses (<code>ville</code>, <code>periode</code>, <code>gratuit</code>, <code>categorie</code>…), l'API parle anglais. La traduction se fait à un seul endroit, <code>services/search-params.ts</code>. Une valeur inconnue est simplement ignorée : un vieux lien partagé s'ouvre toujours.</p>
-        <p>Chaque filtre est donc une nouvelle adresse. C'est ce qui rend une recherche partageable, et le bouton « Retour » du navigateur cohérent. La page est en <code>noindex, follow</code> (décidé le 03/11/2026) : les combinaisons de filtres ne sont pas indexées, mais leurs liens vers les fiches sont suivis. Le <code>robots.txt</code> ne la bloque pas, sinon Google ne verrait pas le <code>noindex</code>.</p>
-      </div>
-    </section>
-
-    <section id="filtres" aria-labelledby="filtres-titre">
-      <h2 id="filtres-titre">Les filtres : colonne ou panneau</h2>
-      <div class="grid2">
-        <div class="box"><h3>Sur ordinateur (dès 1024 px)</h3><ul>
-          <li>Une colonne collée à gauche, qui s'applique tout de suite (<code>useOptimistic</code> : l'écran réagit avant la réponse du serveur)</li>
-          <li>Cinq familles : Date, Catégories, Prix, Âge, Distance</li>
-          <li>Les catégories sont des accordéons, avec une pastille « Toute la catégorie », la catégorie ouverte collée en haut et « Tout ouvrir / Tout fermer »</li>
-        </ul></div>
-        <div class="box"><h3>Sur téléphone</h3><ul>
-          <li>Un panneau en bas, un <code>&lt;dialog&gt;</code> natif</li>
-          <li>Les choix sont un brouillon : rien ne change tant qu'on n'a pas validé</li>
-          <li>Le bouton dit combien d'événements il va montrer (« Voir les 12 événements »), compté avant de valider avec TanStack Query</li>
-          <li>Échap ferme le panneau et rend le focus au bouton « Filtres »</li>
-        </ul></div>
-      </div>
-      <p class="prose">Les filtres actifs sont rappelés au-dessus des résultats, en pastilles que l'on retire d'un clic (une seule ligne qui défile sur téléphone).</p>
-    </section>
-
     <section id="rayon" aria-labelledby="rayon-titre">
       <hgroup><p class="eyebrow">RG-20 à RG-23</p><h2 id="rayon-titre">Le rayon, dit en toutes lettres</h2></hgroup>
       <div class="table-scroll" tabindex="0" role="region" aria-label="Règles de rayon, tableau défilant">
@@ -206,44 +185,80 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </ul>
     </section>
 
-    <section id="accessibilite" aria-labelledby="accessibilite-titre">
-      <h2 id="accessibilite-titre">Accessibilité (RGAA 4.1.2)</h2>
-      <div class="grid2">
-        <div class="box"><h3>Les composants</h3><ul>
-          <li>De vraies cases et de vrais boutons radio, dessinés en pastilles : clavier et lecteurs d'écran fonctionnent</li>
-          <li>Des <code>fieldset</code> avec leur <code>legend</code></li>
-          <li>Les bascules en <code>aria-pressed</code></li>
-          <li>Les nombres annoncés dans un <code>role="status"</code></li>
-        </ul></div>
-        <div class="box"><h3>Ce qui ne repose pas sur la couleur</h3><ul>
-          <li>Une coche et un mot, jamais la couleur seule</li>
-          <li>Du texte navy sur le turquoise (7,5:1), jamais du blanc</li>
-          <li>Des cibles de 44 px, un focus visible (blanc sur le pied de page navy)</li>
-          <li>axe : 0 défaut à 360 et 1280 px, panneau ouvert compris ; aucun débordement horizontal</li>
-        </ul></div>
-      </div>
-    </section>
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Comment c'est construit : les choix techniques, les tests et les pull requests, pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+        <section id="adresse" aria-labelledby="adresse-titre">
+          <hgroup><p class="eyebrow">Frontend · PR #163</p><h2 id="adresse-titre">Une adresse, une recherche</h2></hgroup>
+          <div class="prose">
+            <p>Le site parle français dans ses adresses (<code>ville</code>, <code>periode</code>, <code>gratuit</code>, <code>categorie</code>…), l'API parle anglais. La traduction se fait à un seul endroit, <code>services/search-params.ts</code>. Une valeur inconnue est simplement ignorée : un vieux lien partagé s'ouvre toujours.</p>
+            <p>Chaque filtre est donc une nouvelle adresse. C'est ce qui rend une recherche partageable, et le bouton « Retour » du navigateur cohérent. La page est en <code>noindex, follow</code> (décidé le 03/11/2026) : les combinaisons de filtres ne sont pas indexées, mais leurs liens vers les fiches sont suivis. Le <code>robots.txt</code> ne la bloque pas, sinon Google ne verrait pas le <code>noindex</code>.</p>
+          </div>
+        </section>
 
-    <section id="tests" aria-labelledby="tests-titre">
-      <h2 id="tests-titre">Chaque critère a son test</h2>
-      <div class="grid2">
-        <div class="box"><h3>Vitest : 157 tests</h3><ul>
-          <li>La traduction des adresses, les services, chaque composant de la recherche</li>
-        </ul></div>
-        <div class="box"><h3>Playwright : 32 tests, dont 9 pour cette page</h3><ul>
-          <li>Joués contre la fausse API <code>e2e/mock-api.mjs</code> : la page est dessinée par le serveur Next.js, que <code>page.route()</code> ne peut pas atteindre</li>
-          <li>Le serveur de test écoute sur le port 3100, pour ne jamais réutiliser le serveur de développement</li>
-          <li><code>tsc</code>, ESLint et <code>next build</code> propres</li>
-        </ul></div>
-      </div>
-    </section>
+        <section id="filtres" aria-labelledby="filtres-titre">
+          <h2 id="filtres-titre">Les filtres : colonne ou panneau</h2>
+          <div class="grid2">
+            <div class="box"><h3>Sur ordinateur (dès 1024 px)</h3><ul>
+              <li>Une colonne collée à gauche, qui s'applique tout de suite (<code>useOptimistic</code> : l'écran réagit avant la réponse du serveur)</li>
+              <li>Cinq familles : Date, Catégories, Prix, Âge, Distance</li>
+              <li>Les catégories sont des accordéons, avec une pastille « Toute la catégorie », la catégorie ouverte collée en haut et « Tout ouvrir / Tout fermer »</li>
+            </ul></div>
+            <div class="box"><h3>Sur téléphone</h3><ul>
+              <li>Un panneau en bas, un <code>&lt;dialog&gt;</code> natif</li>
+              <li>Les choix sont un brouillon : rien ne change tant qu'on n'a pas validé</li>
+              <li>Le bouton dit combien d'événements il va montrer (« Voir les 12 événements »), compté avant de valider avec TanStack Query</li>
+              <li>Échap ferme le panneau et rend le focus au bouton « Filtres »</li>
+            </ul></div>
+          </div>
+          <p class="prose">Les filtres actifs sont rappelés au-dessus des résultats, en pastilles que l'on retire d'un clic (une seule ligne qui défile sur téléphone).</p>
+        </section>
 
-    <section id="livraison" aria-labelledby="livraison-titre">
-      <h2 id="livraison-titre">Une PR</h2>
-      <ul class="prs">
-        <li><span class="num">#163</span><span>Frontend : l'ouverture de la page et sa barre de recherche, les filtres (colonne et panneau), les pastilles, le rayon réel, « Liste / Cartes », l'agenda par jour, la pagination, les tests de bout en bout.</span></li>
-      </ul>
-    </section>
+        <section id="accessibilite" aria-labelledby="accessibilite-titre">
+          <h2 id="accessibilite-titre">Accessibilité (RGAA 4.1.2)</h2>
+          <div class="grid2">
+            <div class="box"><h3>Les composants</h3><ul>
+              <li>De vraies cases et de vrais boutons radio, dessinés en pastilles : clavier et lecteurs d'écran fonctionnent</li>
+              <li>Des <code>fieldset</code> avec leur <code>legend</code></li>
+              <li>Les bascules en <code>aria-pressed</code></li>
+              <li>Les nombres annoncés dans un <code>role="status"</code></li>
+            </ul></div>
+            <div class="box"><h3>Ce qui ne repose pas sur la couleur</h3><ul>
+              <li>Une coche et un mot, jamais la couleur seule</li>
+              <li>Du texte navy sur le turquoise (7,5:1), jamais du blanc</li>
+              <li>Des cibles de 44 px, un focus visible (blanc sur le pied de page navy)</li>
+              <li>axe : 0 défaut à 360 et 1280 px, panneau ouvert compris ; aucun débordement horizontal</li>
+            </ul></div>
+          </div>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Chaque critère a son test</h2>
+          <div class="grid2">
+            <div class="box"><h3>Vitest : 157 tests</h3><ul>
+              <li>La traduction des adresses, les services, chaque composant de la recherche</li>
+            </ul></div>
+            <div class="box"><h3>Playwright : 32 tests, dont 9 pour cette page</h3><ul>
+              <li>Joués contre la fausse API <code>e2e/mock-api.mjs</code> : la page est dessinée par le serveur Next.js, que <code>page.route()</code> ne peut pas atteindre</li>
+              <li>Le serveur de test écoute sur le port 3100, pour ne jamais réutiliser le serveur de développement</li>
+              <li><code>tsc</code>, ESLint et <code>next build</code> propres</li>
+            </ul></div>
+          </div>
+        </section>
+
+        <section id="livraison" aria-labelledby="livraison-titre">
+          <h2 id="livraison-titre">Une PR</h2>
+          <ul class="prs">
+            <li><span class="num">#163</span><span>Frontend : l'ouverture de la page et sa barre de recherche, les filtres (colonne et panneau), les pastilles, le rayon réel, « Liste / Cartes », l'agenda par jour, la pagination, les tests de bout en bout.</span></li>
+          </ul>
+        </section>
+
+      </div>
+    </details>
 
     <section id="limites" aria-labelledby="limites-titre">
       <h2 id="limites-titre">Les limites assumées, et la suite</h2>

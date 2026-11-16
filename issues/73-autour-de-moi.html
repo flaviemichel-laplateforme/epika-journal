@@ -9,6 +9,7 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
 </script>
 <title>Autour de moi (#73) · Journal d'Epika</title>
 <meta name="description" content="Bilan de l'issue #73 (et #68) d'Epika : le parcours, la vie privée, l'API, les états d'échec, les tests et la limite assumée.">
+<meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -46,9 +47,13 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
         <li><a href="#parcours">Le parcours</a></li>
         <li><a href="#images">En images</a></li>
         <li><a href="#vie-privee">Vie privée</a></li>
-        <li><a href="#api">La route de l'API</a></li>
         <li><a href="#echecs">Chaque échec a son message</a></li>
-        <li><a href="#livraison">Les deux PR</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#api">La route de l'API</a></li>
+            <li><a href="#livraison">Les deux PR</a></li>
+          </ol>
+        </li>
         <li><a href="#limite">La limite assumée</a></li>
       </ol>
     </details>
@@ -138,32 +143,6 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </div>
     </section>
 
-    <section id="api" aria-labelledby="api-titre">
-      <hgroup><p class="eyebrow">Backend · #68 · PR #172</p><h2 id="api-titre">La route <code>GET /api/geo/commune</code></h2></hgroup>
-      <p class="prose">Publique, sans compte. Une Resource API Platform et son Provider, sans controller.</p>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="Réponses de la route, tableau défilant">
-        <table>
-          <thead><tr><th scope="col">Réponse</th><th scope="col">Quand</th></tr></thead>
-          <tbody>
-            <tr><td><span class="pill done">200</span></td><td><code>{ "city": "Toulon", "postcode": "83200" }</code> : la commune et le code postal de l'adresse la plus proche.</td></tr>
-            <tr><td><span class="pill todo">404</span></td><td>Aucune adresse française à proximité (en mer, à l'étranger).</td></tr>
-            <tr><td><span class="pill bad">422</span></td><td><code>lat</code> (-90 à 90) ou <code>lon</code> (-180 à 180) absent ou non numérique : une erreur par champ.</td></tr>
-            <tr><td><span class="pill part">429</span></td><td>Plus de 30 requêtes par minute depuis la même IP (<code>geo_commune_ip</code>) : Epika n'est pas un géocodeur gratuit pour les scripts.</td></tr>
-            <tr><td><span class="pill bad">503</span></td><td>La Géoplateforme ne répond pas.</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="grid2">
-        <div class="box"><h3>Les pièces</h3><ul>
-          <li><code>CommuneFinder</code> : le géocodage inverse</li>
-          <li><code>PositionQuery</code> : le DTO, des chaînes jusqu'à validation</li>
-          <li><code>CommuneProvider</code> et <code>CommuneResource</code></li>
-          <li><code>Commune</code> : un objet-valeur, ville et code postal</li>
-        </ul></div>
-        <div class="box"><h3>Le piège évité</h3><p>La première version demandait <code>type=municipality</code>. Elle renvoyait le centre de la commune, souvent trop loin pour le cercle de recherche : un point dans Toulon ne trouvait rien. La requête finale cherche l'adresse la plus proche (<code>index=address</code>, <code>limit=1</code>).</p></div>
-      </div>
-    </section>
-
     <section id="echecs" aria-labelledby="echecs-titre">
       <hgroup><p class="eyebrow">Frontend · #73 · PR #173</p><h2 id="echecs-titre">Chaque échec a son message</h2></hgroup>
       <div class="table-scroll" tabindex="0" role="region" aria-label="Messages d'échec, tableau défilant">
@@ -193,13 +172,49 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </div>
     </section>
 
-    <section id="livraison" aria-labelledby="livraison-titre">
-      <h2 id="livraison-titre">Deux PR, l'API puis l'interface</h2>
-      <ul class="prs">
-        <li><span class="num">#172</span><span>Backend : <code>CommuneFinder</code>, la route avec sa limite par IP, la section « Around me » de <code>docs/search.md</code>.</span></li>
-        <li><span class="num">#173</span><span>Frontend : <code>services/geo.ts</code>, <code>useGeolocation</code>, <code>AroundMeButton</code>, les tests de bout en bout.</span></li>
-      </ul>
-    </section>
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Comment c'est construit : les choix techniques, les tests et les pull requests, pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+        <section id="api" aria-labelledby="api-titre">
+          <hgroup><p class="eyebrow">Backend · #68 · PR #172</p><h2 id="api-titre">La route <code>GET /api/geo/commune</code></h2></hgroup>
+          <p class="prose">Publique, sans compte. Une Resource API Platform et son Provider, sans controller.</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Réponses de la route, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Réponse</th><th scope="col">Quand</th></tr></thead>
+              <tbody>
+                <tr><td><span class="pill done">200</span></td><td><code>{ "city": "Toulon", "postcode": "83200" }</code> : la commune et le code postal de l'adresse la plus proche.</td></tr>
+                <tr><td><span class="pill todo">404</span></td><td>Aucune adresse française à proximité (en mer, à l'étranger).</td></tr>
+                <tr><td><span class="pill bad">422</span></td><td><code>lat</code> (-90 à 90) ou <code>lon</code> (-180 à 180) absent ou non numérique : une erreur par champ.</td></tr>
+                <tr><td><span class="pill part">429</span></td><td>Plus de 30 requêtes par minute depuis la même IP (<code>geo_commune_ip</code>) : Epika n'est pas un géocodeur gratuit pour les scripts.</td></tr>
+                <tr><td><span class="pill bad">503</span></td><td>La Géoplateforme ne répond pas.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="grid2">
+            <div class="box"><h3>Les pièces</h3><ul>
+              <li><code>CommuneFinder</code> : le géocodage inverse</li>
+              <li><code>PositionQuery</code> : le DTO, des chaînes jusqu'à validation</li>
+              <li><code>CommuneProvider</code> et <code>CommuneResource</code></li>
+              <li><code>Commune</code> : un objet-valeur, ville et code postal</li>
+            </ul></div>
+            <div class="box"><h3>Le piège évité</h3><p>La première version demandait <code>type=municipality</code>. Elle renvoyait le centre de la commune, souvent trop loin pour le cercle de recherche : un point dans Toulon ne trouvait rien. La requête finale cherche l'adresse la plus proche (<code>index=address</code>, <code>limit=1</code>).</p></div>
+          </div>
+        </section>
+
+        <section id="livraison" aria-labelledby="livraison-titre">
+          <h2 id="livraison-titre">Deux PR, l'API puis l'interface</h2>
+          <ul class="prs">
+            <li><span class="num">#172</span><span>Backend : <code>CommuneFinder</code>, la route avec sa limite par IP, la section « Around me » de <code>docs/search.md</code>.</span></li>
+            <li><span class="num">#173</span><span>Frontend : <code>services/geo.ts</code>, <code>useGeolocation</code>, <code>AroundMeButton</code>, les tests de bout en bout.</span></li>
+          </ul>
+        </section>
+
+      </div>
+    </details>
 
     <section id="limite" aria-labelledby="limite-titre">
       <h2 id="limite-titre">La limite assumée</h2>

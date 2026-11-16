@@ -9,6 +9,7 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
 </script>
 <title>Signaler un événement (#76) · Journal d'Epika</title>
 <meta name="description" content="Bilan de l'issue #76 d'Epika : signaler un problème sur un événement, l'anti-spam sans CAPTCHA, l'adresse IP jamais gardée, la fenêtre accessible et le formulaire chargé à la demande.">
+<meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -47,11 +48,15 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
         <li><a href="#images">En images</a></li>
         <li><a href="#drapeau">Pas de drapeau sur les cartes</a></li>
         <li><a href="#vie-privee">Vie privée</a></li>
-        <li><a href="#api">La route de l'API</a></li>
         <li><a href="#fenetre">La fenêtre</a></li>
-        <li><a href="#performance">Chargé à la demande</a></li>
-        <li><a href="#tests">Les tests</a></li>
-        <li><a href="#livraison">Les deux PR</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#api">La route de l'API</a></li>
+            <li><a href="#performance">Chargé à la demande</a></li>
+            <li><a href="#tests">Les tests</a></li>
+            <li><a href="#livraison">Les deux PR</a></li>
+          </ol>
+        </li>
         <li><a href="#limites">Limites et suite</a></li>
       </ol>
     </details>
@@ -170,38 +175,6 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </div>
     </section>
 
-    <section id="api" aria-labelledby="api-titre">
-      <hgroup><p class="eyebrow">Backend · PR #174</p><h2 id="api-titre">La route <code>POST /api/events/{slug}/reports</code></h2></hgroup>
-      <p class="prose">Une Resource API Platform et son Processor, sans controller. Le client n'envoie que le sujet, le message, l'e-mail et le champ piège : le statut, l'empreinte et le compte ne peuvent pas être imposés.</p>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="Réponses de la route, tableau défilant">
-        <table>
-          <thead><tr><th scope="col">Réponse</th><th scope="col">Quand</th></tr></thead>
-          <tbody>
-            <tr><td><span class="pill done">201</span></td><td>Signalement enregistré. Aussi quand le champ piège est rempli, ou quand un visiteur a déjà signalé cet événement avec cette adresse : rien n'est enregistré, mais rien ne le dit.</td></tr>
-            <tr><td><span class="pill bad">409</span></td><td>Un compte connecté signale à nouveau le même événement : « Vous avez déjà signalé cet événement. »</td></tr>
-            <tr><td><span class="pill bad">422</span></td><td>Formulaire invalide : une erreur par champ.</td></tr>
-            <tr><td><span class="pill todo">404</span></td><td>Événement inconnu, ou que le public ne peut pas voir (brouillon, masqué, suspendu) : la même réponse que sa fiche.</td></tr>
-            <tr><td><span class="pill part">429</span></td><td>Trop d'envois, avec <code>Retry-After</code>.</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="grid2">
-        <div class="box"><h3>L'anti-spam, dans l'ordre</h3><ul>
-          <li>10 signalements par heure et par réseau, comptés sur l'empreinte</li>
-          <li>Le champ piège <code>website</code>, invisible pour les humains</li>
-          <li>5 signalements par heure et par e-mail, quelle que soit l'IP</li>
-          <li>Un seul signalement par événement et par e-mail, garanti aussi par un index unique en base</li>
-        </ul></div>
-        <div class="box"><h3>Pourquoi pas de 409 pour un visiteur</h3><p>Une 409 permettrait à n'importe qui de taper l'adresse de quelqu'un d'autre et d'apprendre si cette personne a signalé un événement. Un compte, lui, ne peut interroger que sa propre adresse : il reçoit donc la 409.</p></div>
-        <div class="box"><h3>La base de données se défend aussi</h3><ul>
-          <li>Des contraintes CHECK : le sujet, le statut, le message de 2000 caractères au plus, l'empreinte en 64 caractères hexadécimaux</li>
-          <li>Un signalement en attente garde toujours son e-mail et son empreinte</li>
-          <li>Des clés étrangères NO ACTION : on ne peut pas supprimer un événement qui a des signalements sans décider d'abord ce qu'ils deviennent</li>
-        </ul></div>
-        <div class="box"><h3>Au déploiement</h3><p>Deux réglages sont obligatoires : la clé des empreintes, qu'il ne faudra jamais changer, et les proxys de confiance. Derrière un reverse proxy mal réglé, tous les visiteurs partageraient la même IP, donc la même limite de 10 signalements par heure.</p></div>
-      </div>
-    </section>
-
     <section id="fenetre" aria-labelledby="fenetre-titre">
       <hgroup><p class="eyebrow">Frontend · PR #179</p><h2 id="fenetre-titre">Une fenêtre accessible</h2></hgroup>
       <div class="grid2">
@@ -221,47 +194,89 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </div>
     </section>
 
-    <section id="performance" aria-labelledby="performance-titre">
-      <h2 id="performance-titre">Le formulaire, chargé à la demande</h2>
-      <p class="prose">Lighthouse a montré un vrai problème. Avec la fenêtre, chaque fiche téléchargeait React Hook Form et Zod, alors que presque personne ne signale rien. Le formulaire est maintenant chargé à la demande, avec <code>next/dynamic</code>, et son téléchargement commence dès que la souris survole le bouton.</p>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="Mesures de performance, tableau défilant">
-        <table>
-          <thead><tr><th scope="col">Fiche d'un événement</th><th scope="col">JavaScript</th><th scope="col">Temps de blocage (mobile)</th></tr></thead>
-          <tbody>
-            <tr><td>Sans la fenêtre</td><td class="num">181 Kio</td><td>330 à 510 ms</td></tr>
-            <tr><td>Formulaire dans la page</td><td class="num"><span class="pill bad">229 Kio</span></td><td>900 à 1 040 ms</td></tr>
-            <tr><td>Formulaire chargé à la demande</td><td class="num"><span class="pill done">182 Kio</span></td><td>200 à 640 ms</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="prose muted">Trois mesures par ligne, sur le build de production. Le temps de blocage varie beaucoup d'une mesure à l'autre ; le poids du JavaScript ne varie pas, c'est lui la preuve.</p>
-    </section>
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Comment c'est construit : les choix techniques, les tests et les pull requests, pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+        <section id="api" aria-labelledby="api-titre">
+          <hgroup><p class="eyebrow">Backend · PR #174</p><h2 id="api-titre">La route <code>POST /api/events/{slug}/reports</code></h2></hgroup>
+          <p class="prose">Une Resource API Platform et son Processor, sans controller. Le client n'envoie que le sujet, le message, l'e-mail et le champ piège : le statut, l'empreinte et le compte ne peuvent pas être imposés.</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Réponses de la route, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Réponse</th><th scope="col">Quand</th></tr></thead>
+              <tbody>
+                <tr><td><span class="pill done">201</span></td><td>Signalement enregistré. Aussi quand le champ piège est rempli, ou quand un visiteur a déjà signalé cet événement avec cette adresse : rien n'est enregistré, mais rien ne le dit.</td></tr>
+                <tr><td><span class="pill bad">409</span></td><td>Un compte connecté signale à nouveau le même événement : « Vous avez déjà signalé cet événement. »</td></tr>
+                <tr><td><span class="pill bad">422</span></td><td>Formulaire invalide : une erreur par champ.</td></tr>
+                <tr><td><span class="pill todo">404</span></td><td>Événement inconnu, ou que le public ne peut pas voir (brouillon, masqué, suspendu) : la même réponse que sa fiche.</td></tr>
+                <tr><td><span class="pill part">429</span></td><td>Trop d'envois, avec <code>Retry-After</code>.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="grid2">
+            <div class="box"><h3>L'anti-spam, dans l'ordre</h3><ul>
+              <li>10 signalements par heure et par réseau, comptés sur l'empreinte</li>
+              <li>Le champ piège <code>website</code>, invisible pour les humains</li>
+              <li>5 signalements par heure et par e-mail, quelle que soit l'IP</li>
+              <li>Un seul signalement par événement et par e-mail, garanti aussi par un index unique en base</li>
+            </ul></div>
+            <div class="box"><h3>Pourquoi pas de 409 pour un visiteur</h3><p>Une 409 permettrait à n'importe qui de taper l'adresse de quelqu'un d'autre et d'apprendre si cette personne a signalé un événement. Un compte, lui, ne peut interroger que sa propre adresse : il reçoit donc la 409.</p></div>
+            <div class="box"><h3>La base de données se défend aussi</h3><ul>
+              <li>Des contraintes CHECK : le sujet, le statut, le message de 2000 caractères au plus, l'empreinte en 64 caractères hexadécimaux</li>
+              <li>Un signalement en attente garde toujours son e-mail et son empreinte</li>
+              <li>Des clés étrangères NO ACTION : on ne peut pas supprimer un événement qui a des signalements sans décider d'abord ce qu'ils deviennent</li>
+            </ul></div>
+            <div class="box"><h3>Au déploiement</h3><p>Deux réglages sont obligatoires : la clé des empreintes, qu'il ne faudra jamais changer, et les proxys de confiance. Derrière un reverse proxy mal réglé, tous les visiteurs partageraient la même IP, donc la même limite de 10 signalements par heure.</p></div>
+          </div>
+        </section>
 
-    <section id="tests" aria-labelledby="tests-titre">
-      <h2 id="tests-titre">Chaque règle a son test</h2>
-      <div class="grid2">
-        <div class="box"><h3>Backend (PHPUnit)</h3><ul>
-          <li>La route de bout en bout : réponses, validation, doublons, piège, limites, aucune IP en clair</li>
-          <li>Les règles anti-spam, dont deux envois au même instant</li>
-          <li>L'empreinte : IPv4, IPv6 /64, IPv4 écrite en IPv6, clé trop courte</li>
-          <li>Les contraintes de la base et les clés étrangères NO ACTION</li>
-        </ul></div>
-        <div class="box"><h3>Frontend</h3><ul>
-          <li>Vitest : le service, le schéma, la fenêtre (14 tests)</li>
-          <li>Playwright : 7 parcours, visiteur, compte connecté, Échap, 409, 429</li>
-          <li>axe à 360 et 1280 px : fenêtre ouverte, avec ses erreurs, puis confirmée</li>
-          <li>Vérifié aussi contre la vraie API : l'empreinte en base, aucune IP</li>
-        </ul></div>
-      </div>
-    </section>
+        <section id="performance" aria-labelledby="performance-titre">
+          <h2 id="performance-titre">Le formulaire, chargé à la demande</h2>
+          <p class="prose">Lighthouse a montré un vrai problème. Avec la fenêtre, chaque fiche téléchargeait React Hook Form et Zod, alors que presque personne ne signale rien. Le formulaire est maintenant chargé à la demande, avec <code>next/dynamic</code>, et son téléchargement commence dès que la souris survole le bouton.</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Mesures de performance, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Fiche d'un événement</th><th scope="col">JavaScript</th><th scope="col">Temps de blocage (mobile)</th></tr></thead>
+              <tbody>
+                <tr><td>Sans la fenêtre</td><td class="num">181 Kio</td><td>330 à 510 ms</td></tr>
+                <tr><td>Formulaire dans la page</td><td class="num"><span class="pill bad">229 Kio</span></td><td>900 à 1 040 ms</td></tr>
+                <tr><td>Formulaire chargé à la demande</td><td class="num"><span class="pill done">182 Kio</span></td><td>200 à 640 ms</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="prose muted">Trois mesures par ligne, sur le build de production. Le temps de blocage varie beaucoup d'une mesure à l'autre ; le poids du JavaScript ne varie pas, c'est lui la preuve.</p>
+        </section>
 
-    <section id="livraison" aria-labelledby="livraison-titre">
-      <h2 id="livraison-titre">Deux PR, l'API puis l'interface</h2>
-      <ul class="prs">
-        <li><span class="num">#174</span><span>Backend : l'entité <code>Report</code> et ses contraintes, l'empreinte de l'IP, la route avec son anti-spam, la documentation.</span></li>
-        <li><span class="num">#179</span><span>Frontend : le service, le schéma, la fenêtre et son formulaire chargé à la demande, les tests de bout en bout.</span></li>
-      </ul>
-    </section>
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Chaque règle a son test</h2>
+          <div class="grid2">
+            <div class="box"><h3>Backend (PHPUnit)</h3><ul>
+              <li>La route de bout en bout : réponses, validation, doublons, piège, limites, aucune IP en clair</li>
+              <li>Les règles anti-spam, dont deux envois au même instant</li>
+              <li>L'empreinte : IPv4, IPv6 /64, IPv4 écrite en IPv6, clé trop courte</li>
+              <li>Les contraintes de la base et les clés étrangères NO ACTION</li>
+            </ul></div>
+            <div class="box"><h3>Frontend</h3><ul>
+              <li>Vitest : le service, le schéma, la fenêtre (14 tests)</li>
+              <li>Playwright : 7 parcours, visiteur, compte connecté, Échap, 409, 429</li>
+              <li>axe à 360 et 1280 px : fenêtre ouverte, avec ses erreurs, puis confirmée</li>
+              <li>Vérifié aussi contre la vraie API : l'empreinte en base, aucune IP</li>
+            </ul></div>
+          </div>
+        </section>
+
+        <section id="livraison" aria-labelledby="livraison-titre">
+          <h2 id="livraison-titre">Deux PR, l'API puis l'interface</h2>
+          <ul class="prs">
+            <li><span class="num">#174</span><span>Backend : l'entité <code>Report</code> et ses contraintes, l'empreinte de l'IP, la route avec son anti-spam, la documentation.</span></li>
+            <li><span class="num">#179</span><span>Frontend : le service, le schéma, la fenêtre et son formulaire chargé à la demande, les tests de bout en bout.</span></li>
+          </ul>
+        </section>
+
+      </div>
+    </details>
 
     <section id="limites" aria-labelledby="limites-titre">
       <h2 id="limites-titre">Les limites assumées, et la suite</h2>

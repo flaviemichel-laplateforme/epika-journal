@@ -9,6 +9,7 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
 </script>
 <title>La page d'accueil (#71) · Journal d'Epika</title>
 <meta name="description" content="Bilan de l'issue #71 d'Epika : la page d'accueil, une recherche « Quoi ? / Où ? » qui marche sans JavaScript, des raccourcis, les catégories et les six événements à la une.">
+<meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -45,13 +46,17 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       <ol>
         <li><a href="#parcours">Le parcours</a></li>
         <li><a href="#images">En images</a></li>
-        <li><a href="#recherche">Une recherche qui marche sans JavaScript</a></li>
         <li><a href="#raccourcis">Des raccourcis, pas de filtres</a></li>
         <li><a href="#une">À la une, et d'où ça vient</a></li>
-        <li><a href="#accessibilite">Accessibilité</a></li>
-        <li><a href="#referencement">Référencement</a></li>
-        <li><a href="#tests">Les tests</a></li>
-        <li><a href="#livraison">La PR</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#recherche">Une recherche qui marche sans JavaScript</a></li>
+            <li><a href="#accessibilite">Accessibilité</a></li>
+            <li><a href="#referencement">Référencement</a></li>
+            <li><a href="#tests">Les tests</a></li>
+            <li><a href="#livraison">La PR</a></li>
+          </ol>
+        </li>
         <li><a href="#limites">Limites et suite</a></li>
       </ol>
     </details>
@@ -137,14 +142,6 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </div>
     </section>
 
-    <section id="recherche" aria-labelledby="recherche-titre">
-      <hgroup><p class="eyebrow">Frontend · PR #171</p><h2 id="recherche-titre">Une recherche qui marche sans JavaScript</h2></hgroup>
-      <div class="prose">
-        <p>Les champs « Quoi ? » et « Où ? » sont ceux de la page de résultats, mais dans un vrai <code>&lt;form method="get" action="/recherche"&gt;</code>. Le navigateur construit lui-même l'adresse, <code>/recherche?q=concert&amp;ville=Toulon</code>, sans qu'un script ne soit nécessaire. Un test de bout en bout désactive JavaScript pour le prouver.</p>
-        <p>Le bandeau est un dégradé navy, avec du texte blanc à 15,8:1 de contraste (du blanc sur le turquoise n'aurait que 2,1:1). Il est prêt à recevoir une photo plus tard, et il est compact sur téléphone, pour que les événements se voient dès le premier écran.</p>
-      </div>
-    </section>
-
     <section id="raccourcis" aria-labelledby="raccourcis-titre">
       <hgroup><p class="eyebrow">Une décision du 05/11/2026</p><h2 id="raccourcis-titre">Des raccourcis, pas de filtres</h2></hgroup>
       <div class="grid2">
@@ -193,55 +190,73 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </div>
     </section>
 
-    <section id="accessibilite" aria-labelledby="accessibilite-titre">
-      <h2 id="accessibilite-titre">Accessibilité (RGAA 4.1.2)</h2>
-      <div class="grid2">
-        <div class="box"><h3>Structure</h3><ul>
-          <li>Un seul <code>h1</code>, un <code>h2</code> par section, un <code>h3</code> par carte</li>
-          <li>Des champs avec une étiquette visible</li>
-          <li>Les icônes décoratives sont cachées aux lecteurs d'écran</li>
-          <li>Des liens explicites : « Voir tous les événements », pas « Voir tout »</li>
-        </ul></div>
-        <div class="box"><h3>Mesures</h3><ul>
-          <li>axe (WCAG 2.0, 2.1 et 2.2, A et AA) : 0 défaut à 360 et 1280 px</li>
-          <li>Des cibles d'au moins 44 px</li>
-          <li>Pas de défilement horizontal de la page sur téléphone : seule la rangée des cartes défile</li>
-          <li>Lighthouse, mobile, build de production : accessibilité 100</li>
-        </ul></div>
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Comment c'est construit : les choix techniques, les tests et les pull requests, pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+        <section id="recherche" aria-labelledby="recherche-titre">
+          <hgroup><p class="eyebrow">Frontend · PR #171</p><h2 id="recherche-titre">Une recherche qui marche sans JavaScript</h2></hgroup>
+          <div class="prose">
+            <p>Les champs « Quoi ? » et « Où ? » sont ceux de la page de résultats, mais dans un vrai <code>&lt;form method="get" action="/recherche"&gt;</code>. Le navigateur construit lui-même l'adresse, <code>/recherche?q=concert&amp;ville=Toulon</code>, sans qu'un script ne soit nécessaire. Un test de bout en bout désactive JavaScript pour le prouver.</p>
+            <p>Le bandeau est un dégradé navy, avec du texte blanc à 15,8:1 de contraste (du blanc sur le turquoise n'aurait que 2,1:1). Il est prêt à recevoir une photo plus tard, et il est compact sur téléphone, pour que les événements se voient dès le premier écran.</p>
+          </div>
+        </section>
+
+        <section id="accessibilite" aria-labelledby="accessibilite-titre">
+          <h2 id="accessibilite-titre">Accessibilité (RGAA 4.1.2)</h2>
+          <div class="grid2">
+            <div class="box"><h3>Structure</h3><ul>
+              <li>Un seul <code>h1</code>, un <code>h2</code> par section, un <code>h3</code> par carte</li>
+              <li>Des champs avec une étiquette visible</li>
+              <li>Les icônes décoratives sont cachées aux lecteurs d'écran</li>
+              <li>Des liens explicites : « Voir tous les événements », pas « Voir tout »</li>
+            </ul></div>
+            <div class="box"><h3>Mesures</h3><ul>
+              <li>axe (WCAG 2.0, 2.1 et 2.2, A et AA) : 0 défaut à 360 et 1280 px</li>
+              <li>Des cibles d'au moins 44 px</li>
+              <li>Pas de défilement horizontal de la page sur téléphone : seule la rangée des cartes défile</li>
+              <li>Lighthouse, mobile, build de production : accessibilité 100</li>
+            </ul></div>
+          </div>
+        </section>
+
+        <section id="referencement" aria-labelledby="referencement-titre">
+          <h2 id="referencement-titre">Référencement</h2>
+          <ul class="prose">
+            <li>Une description propre à l'accueil et une adresse canonique, <code>/</code></li>
+            <li>Des données structurées JSON-LD : <code>WebSite</code> et <code>Organization</code></li>
+            <li>Pas de <code>SearchAction</code> : Google a retiré la boîte de recherche des résultats en novembre 2024</li>
+            <li>Lighthouse : référencement 100, performance 94, bonnes pratiques 96 ; plus grand élément affiché en 2,0 s, aucun décalage de mise en page (CLS 0)</li>
+          </ul>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Chaque critère a son test</h2>
+          <div class="grid2">
+            <div class="box"><h3>Vitest</h3><ul>
+              <li>212 tests au total à la fin de la PR</li>
+              <li>Le test de l'ancienne page d'accueil, mis à jour pour une page asynchrone</li>
+            </ul></div>
+            <div class="box"><h3>Playwright et axe</h3><ul>
+              <li>63 tests de bout en bout au total, dont l'accueil contre la fausse API</li>
+              <li>La recherche sans JavaScript, les raccourcis, les catégories, les cartes à la une, le glissement au clavier sur téléphone</li>
+              <li>axe à 360 et 1280 px</li>
+            </ul></div>
+          </div>
+        </section>
+
+        <section id="livraison" aria-labelledby="livraison-titre">
+          <h2 id="livraison-titre">Une PR</h2>
+          <ul class="prs">
+            <li><span class="num">#171</span><span>Frontend : le bandeau et la recherche, les raccourcis, les catégories, les événements à la une et leur provenance, le glissement sur téléphone, les tests de bout en bout. L'issue #167 (favoris) y est fermée comme doublon de #77.</span></li>
+          </ul>
+        </section>
+
       </div>
-    </section>
-
-    <section id="referencement" aria-labelledby="referencement-titre">
-      <h2 id="referencement-titre">Référencement</h2>
-      <ul class="prose">
-        <li>Une description propre à l'accueil et une adresse canonique, <code>/</code></li>
-        <li>Des données structurées JSON-LD : <code>WebSite</code> et <code>Organization</code></li>
-        <li>Pas de <code>SearchAction</code> : Google a retiré la boîte de recherche des résultats en novembre 2024</li>
-        <li>Lighthouse : référencement 100, performance 94, bonnes pratiques 96 ; plus grand élément affiché en 2,0 s, aucun décalage de mise en page (CLS 0)</li>
-      </ul>
-    </section>
-
-    <section id="tests" aria-labelledby="tests-titre">
-      <h2 id="tests-titre">Chaque critère a son test</h2>
-      <div class="grid2">
-        <div class="box"><h3>Vitest</h3><ul>
-          <li>212 tests au total à la fin de la PR</li>
-          <li>Le test de l'ancienne page d'accueil, mis à jour pour une page asynchrone</li>
-        </ul></div>
-        <div class="box"><h3>Playwright et axe</h3><ul>
-          <li>63 tests de bout en bout au total, dont l'accueil contre la fausse API</li>
-          <li>La recherche sans JavaScript, les raccourcis, les catégories, les cartes à la une, le glissement au clavier sur téléphone</li>
-          <li>axe à 360 et 1280 px</li>
-        </ul></div>
-      </div>
-    </section>
-
-    <section id="livraison" aria-labelledby="livraison-titre">
-      <h2 id="livraison-titre">Une PR</h2>
-      <ul class="prs">
-        <li><span class="num">#171</span><span>Frontend : le bandeau et la recherche, les raccourcis, les catégories, les événements à la une et leur provenance, le glissement sur téléphone, les tests de bout en bout. L'issue #167 (favoris) y est fermée comme doublon de #77.</span></li>
-      </ul>
-    </section>
+    </details>
 
     <section id="limites" aria-labelledby="limites-titre">
       <h2 id="limites-titre">Les limites assumées, et la suite</h2>

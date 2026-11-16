@@ -9,6 +9,7 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
 </script>
 <title>Choisir des dates (#161) · Journal d'Epika</title>
 <meta name="description" content="Bilan de l'issue #161 d'Epika : choisir ses dates dans le filtre Date, avec des champs date natifs, les règles de l'API vérifiées avant tout envoi, et trois défauts attrapés en chemin.">
+<meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -46,10 +47,14 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
         <li><a href="#deja">Ce qui existait déjà</a></li>
         <li><a href="#images">En images</a></li>
         <li><a href="#natif">Des champs date natifs</a></li>
-        <li><a href="#regles">Les règles, avant tout envoi</a></li>
-        <li><a href="#colonne">Colonne et panneau</a></li>
         <li><a href="#defauts">Trois défauts attrapés</a></li>
-        <li><a href="#tests">Les tests</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#regles">Les règles, avant tout envoi</a></li>
+            <li><a href="#colonne">Colonne et panneau</a></li>
+            <li><a href="#tests">Les tests</a></li>
+          </ol>
+        </li>
         <li><a href="#suite">La suite</a></li>
       </ol>
     </details>
@@ -110,30 +115,6 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </div>
     </section>
 
-    <section id="regles" aria-labelledby="regles-titre">
-      <h2 id="regles-titre">Les règles de l'API, vérifiées avant tout envoi</h2>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="Les règles des dates choisies, tableau défilant">
-        <table>
-          <thead><tr><th scope="col">Cas</th><th scope="col">Ce qui se passe</th></tr></thead>
-          <tbody>
-            <tr><td>Un seul jour</td><td>Une recherche valable : « Dès le … » ou « Jusqu'au … ».</td></tr>
-            <tr><td>La fin avant le début</td><td>« La date de fin est avant la date de début. », sous « Au ».</td></tr>
-            <tr><td>Plus de 366 jours, les deux comptés</td><td>« Choisissez au plus 366 jours. », sous « Au ».</td></tr>
-            <tr><td>Un lien avec la fin avant le début</td><td>La page s'ouvre avec la seule date de début, au lieu d'une erreur.</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="prose">Les messages reprennent <strong>les mots de l'API</strong>, et une recherche impossible n'est jamais envoyée : les résultats affichés restent ceux de la dernière recherche valable. Le message est relié au champ, qui est marqué invalide : un lecteur d'écran les lit ensemble (RGAA 11.10).</p>
-    </section>
-
-    <section id="colonne" aria-labelledby="colonne-titre">
-      <h2 id="colonne-titre">Dans la colonne et dans le panneau</h2>
-      <div class="grid2">
-        <div class="box"><h3>Sur ordinateur</h3><p>Dans la colonne des filtres, une date valable s'applique dès qu'elle est saisie : l'adresse change, la pastille apparaît.</p></div>
-        <div class="box"><h3>Sur téléphone</h3><p>Dans le panneau « Filtres », les dates restent un brouillon, comme tous les filtres, jusqu'à « Voir les N événements », qui compte déjà les résultats.</p></div>
-      </div>
-    </section>
-
     <section id="defauts" aria-labelledby="defauts-titre">
       <h2 id="defauts-titre">Trois défauts attrapés en chemin</h2>
       <ol class="prose">
@@ -143,24 +124,58 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </ol>
     </section>
 
-    <section id="tests" aria-labelledby="tests-titre">
-      <h2 id="tests-titre">Les tests</h2>
-      <div class="grid2">
-        <div class="box"><h3>Vitest</h3><ul>
-          <li>Les règles : 366 jours acceptés, 367 refusés, un seul jour</li>
-          <li>Le calcul des jours, passage d'année et changement d'heure compris</li>
-          <li>L'adresse, la requête de l'API, la pastille</li>
-          <li>Le formulaire, dont les trois défauts ci-dessus</li>
-        </ul></div>
-        <div class="box"><h3>Playwright et axe</h3><ul>
-          <li>La colonne : adresse, pastille, dates reçues par l'API, pastille retirée</li>
-          <li>Depuis « Ce week-end », la première date remplace la période</li>
-          <li>L'erreur : rien n'est envoyé</li>
-          <li>Le brouillon du panneau ; axe sans défaut, champs ouverts et erreur affichée</li>
-        </ul></div>
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Comment c'est construit : les choix techniques, les tests et les pull requests, pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+        <section id="regles" aria-labelledby="regles-titre">
+          <h2 id="regles-titre">Les règles de l'API, vérifiées avant tout envoi</h2>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les règles des dates choisies, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Cas</th><th scope="col">Ce qui se passe</th></tr></thead>
+              <tbody>
+                <tr><td>Un seul jour</td><td>Une recherche valable : « Dès le … » ou « Jusqu'au … ».</td></tr>
+                <tr><td>La fin avant le début</td><td>« La date de fin est avant la date de début. », sous « Au ».</td></tr>
+                <tr><td>Plus de 366 jours, les deux comptés</td><td>« Choisissez au plus 366 jours. », sous « Au ».</td></tr>
+                <tr><td>Un lien avec la fin avant le début</td><td>La page s'ouvre avec la seule date de début, au lieu d'une erreur.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="prose">Les messages reprennent <strong>les mots de l'API</strong>, et une recherche impossible n'est jamais envoyée : les résultats affichés restent ceux de la dernière recherche valable. Le message est relié au champ, qui est marqué invalide : un lecteur d'écran les lit ensemble (RGAA 11.10).</p>
+        </section>
+
+        <section id="colonne" aria-labelledby="colonne-titre">
+          <h2 id="colonne-titre">Dans la colonne et dans le panneau</h2>
+          <div class="grid2">
+            <div class="box"><h3>Sur ordinateur</h3><p>Dans la colonne des filtres, une date valable s'applique dès qu'elle est saisie : l'adresse change, la pastille apparaît.</p></div>
+            <div class="box"><h3>Sur téléphone</h3><p>Dans le panneau « Filtres », les dates restent un brouillon, comme tous les filtres, jusqu'à « Voir les N événements », qui compte déjà les résultats.</p></div>
+          </div>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Les tests</h2>
+          <div class="grid2">
+            <div class="box"><h3>Vitest</h3><ul>
+              <li>Les règles : 366 jours acceptés, 367 refusés, un seul jour</li>
+              <li>Le calcul des jours, passage d'année et changement d'heure compris</li>
+              <li>L'adresse, la requête de l'API, la pastille</li>
+              <li>Le formulaire, dont les trois défauts ci-dessus</li>
+            </ul></div>
+            <div class="box"><h3>Playwright et axe</h3><ul>
+              <li>La colonne : adresse, pastille, dates reçues par l'API, pastille retirée</li>
+              <li>Depuis « Ce week-end », la première date remplace la période</li>
+              <li>L'erreur : rien n'est envoyé</li>
+              <li>Le brouillon du panneau ; axe sans défaut, champs ouverts et erreur affichée</li>
+            </ul></div>
+          </div>
+          <p class="prose muted">Avec le vrai backend, une recherche entre deux dates répond en 0,65 s autour de Toulon et 0,51 s pour toute la France : pas de lenteur cachée comme celle trouvée pendant #158.</p>
+        </section>
+
       </div>
-      <p class="prose muted">Avec le vrai backend, une recherche entre deux dates répond en 0,65 s autour de Toulon et 0,51 s pour toute la France : pas de lenteur cachée comme celle trouvée pendant #158.</p>
-    </section>
+    </details>
 
     <section id="suite" aria-labelledby="suite-titre">
       <h2 id="suite-titre">La suite</h2>

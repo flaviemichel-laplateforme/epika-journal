@@ -13,6 +13,16 @@ Un site statique en HTML et CSS, sans dépendance ni étape de build.
 - `theme.js` : le choix du thème (Clair / Sombre / Auto), trois boutons ajoutés à droite de la barre du haut, choix gardé dans `localStorage`. **Chaque page** doit aussi avoir, dans son `<head>` avant les feuilles de style, le petit script inline qui applique le choix avant l'affichage (sinon la page clignote) : le copier depuis `index.html`
 - `gallery.css`, `gallery.js` : la galerie de captures (voir plus bas)
 
+## Une page pour le client, une partie pour les développeurs
+
+Le journal sert aussi de présentation au client. Chaque page d'issue montre d'abord ce qui parle à tous (le parcours, les captures, les décisions qui changent l'usage, la vie privée, les limites et la suite), puis **une seule** partie technique pliée : `<details class="tech" id="technique">` (style dans `styles.css`), qui garde les routes de l'API, les choix de code, l'accessibilité détaillée, les tests et les pull requests. Modèle : `issues/159-proposer-les-villes.html`.
+
+Dans le sommaire, les liens de la partie technique sont rangés sous « La partie technique » ; `toc.js` la déplie quand on choisit l'un d'eux, ou quand l'adresse de la page pointe dedans (`…#vitesse`).
+
+## Pas de référencement
+
+Chaque page porte `<meta name="robots" content="noindex">` : le site reste public pour qui a le lien, mais les moteurs de recherche ne le référencent pas. À recopier dans toute nouvelle page. (Ne pas ajouter de `robots.txt` qui bloquerait les pages : un moteur qui ne peut pas lire une page ne voit pas son `noindex`.)
+
 ## Voir le site en local
 
 Ouvrir `index.html` dans un navigateur, ou lancer un petit serveur :

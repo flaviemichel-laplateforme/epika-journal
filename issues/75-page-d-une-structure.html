@@ -9,6 +9,7 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
 </script>
 <title>La page d'une structure (#75) · Journal d'Epika</title>
 <meta name="description" content="Bilan de l'issue #75 d'Epika : la page publique d'une structure, son bandeau, ses liens, ses événements à venir, et ce qu'elle ne montre jamais (rue, gérant, SIRET).">
+<meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -48,10 +49,14 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
         <li><a href="#bandeau">Le bandeau, avec ce qu'on sait</a></li>
         <li><a href="#vie-privee">Vie privée</a></li>
         <li><a href="#evenements">Les événements à venir</a></li>
-        <li><a href="#serveur">Écrite par le serveur, une vraie 404</a></li>
-        <li><a href="#accessibilite">Accessibilité</a></li>
-        <li><a href="#tests">Les tests</a></li>
-        <li><a href="#livraison">La PR</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#serveur">Écrite par le serveur, une vraie 404</a></li>
+            <li><a href="#accessibilite">Accessibilité</a></li>
+            <li><a href="#tests">Les tests</a></li>
+            <li><a href="#livraison">La PR</a></li>
+          </ol>
+        </li>
         <li><a href="#limites">Limites et suite</a></li>
       </ol>
     </details>
@@ -168,51 +173,61 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </ul>
     </section>
 
-    <section id="serveur" aria-labelledby="serveur-titre">
-      <h2 id="serveur-titre">Écrite par le serveur, une vraie 404</h2>
-      <div class="grid2">
-        <div class="box"><h3>Référencement</h3><ul>
-          <li>Un seul appel à l'API pour les balises et pour la page (<code>cache</code> de React)</li>
-          <li>Un titre qui dit l'essentiel : « Club de plongée, association à Saint-Mandrier-sur-Mer »</li>
-          <li>Une description de 160 caractères au plus, une balise canonique par page d'événements (la première sans <code>?page=</code>), Open Graph avec le logo</li>
-          <li>JSON-LD <code>Organization</code> avec ce qui est connu seulement : <code>logo</code>, <code>address</code>, <code>sameAs</code></li>
-        </ul></div>
-        <div class="box"><h3>Des erreurs qui en sont</h3><ul>
-          <li>Une structure absente répond une vraie 404</li>
-          <li>Une page d'événements au-delà de la dernière aussi</li>
-          <li>Une adresse en majuscules redirige (308) vers la page en minuscules</li>
-        </ul></div>
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Comment c'est construit : les choix techniques, les tests et les pull requests, pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+        <section id="serveur" aria-labelledby="serveur-titre">
+          <h2 id="serveur-titre">Écrite par le serveur, une vraie 404</h2>
+          <div class="grid2">
+            <div class="box"><h3>Référencement</h3><ul>
+              <li>Un seul appel à l'API pour les balises et pour la page (<code>cache</code> de React)</li>
+              <li>Un titre qui dit l'essentiel : « Club de plongée, association à Saint-Mandrier-sur-Mer »</li>
+              <li>Une description de 160 caractères au plus, une balise canonique par page d'événements (la première sans <code>?page=</code>), Open Graph avec le logo</li>
+              <li>JSON-LD <code>Organization</code> avec ce qui est connu seulement : <code>logo</code>, <code>address</code>, <code>sameAs</code></li>
+            </ul></div>
+            <div class="box"><h3>Des erreurs qui en sont</h3><ul>
+              <li>Une structure absente répond une vraie 404</li>
+              <li>Une page d'événements au-delà de la dernière aussi</li>
+              <li>Une adresse en majuscules redirige (308) vers la page en minuscules</li>
+            </ul></div>
+          </div>
+        </section>
+
+        <section id="accessibilite" aria-labelledby="accessibilite-titre">
+          <h2 id="accessibilite-titre">Accessibilité (RGAA 4.1.2)</h2>
+          <ul class="prose">
+            <li>axe : 0 défaut à 360 et 1280 px, sur une structure complète, une structure au nom seul et une structure sans événement</li>
+            <li>Une hiérarchie de titres <code>h1</code> puis <code>h2</code> puis <code>h3</code></li>
+            <li>Le logo et les initiales sont décoratifs : le nom est écrit à côté, il n'est pas lu deux fois</li>
+            <li>Des cibles de 44 px, une icône ET un mot sur chaque lien</li>
+          </ul>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Chaque critère a son test</h2>
+          <div class="grid2">
+            <div class="box"><h3>Vitest : 211 tests</h3><ul><li>Le service, le bandeau, la liste des événements</li></ul></div>
+            <div class="box"><h3>Playwright : 57 tests</h3><ul>
+              <li>Les vraies 404 et la pagination</li>
+              <li>La structure au nom seul, et celle sans événement</li>
+              <li>Le parcours fiche, profil, fiche, « Retour »</li>
+            </ul></div>
+          </div>
+        </section>
+
+        <section id="livraison" aria-labelledby="livraison-titre">
+          <h2 id="livraison-titre">Une PR</h2>
+          <ul class="prs">
+            <li><span class="num">#170</span><span>Frontend : la lecture du profil, la page avec ses métadonnées, le bandeau, la liste paginée des événements à venir, les boutons « Retour » et « Partager », les tests de bout en bout.</span></li>
+          </ul>
+        </section>
+
       </div>
-    </section>
-
-    <section id="accessibilite" aria-labelledby="accessibilite-titre">
-      <h2 id="accessibilite-titre">Accessibilité (RGAA 4.1.2)</h2>
-      <ul class="prose">
-        <li>axe : 0 défaut à 360 et 1280 px, sur une structure complète, une structure au nom seul et une structure sans événement</li>
-        <li>Une hiérarchie de titres <code>h1</code> puis <code>h2</code> puis <code>h3</code></li>
-        <li>Le logo et les initiales sont décoratifs : le nom est écrit à côté, il n'est pas lu deux fois</li>
-        <li>Des cibles de 44 px, une icône ET un mot sur chaque lien</li>
-      </ul>
-    </section>
-
-    <section id="tests" aria-labelledby="tests-titre">
-      <h2 id="tests-titre">Chaque critère a son test</h2>
-      <div class="grid2">
-        <div class="box"><h3>Vitest : 211 tests</h3><ul><li>Le service, le bandeau, la liste des événements</li></ul></div>
-        <div class="box"><h3>Playwright : 57 tests</h3><ul>
-          <li>Les vraies 404 et la pagination</li>
-          <li>La structure au nom seul, et celle sans événement</li>
-          <li>Le parcours fiche, profil, fiche, « Retour »</li>
-        </ul></div>
-      </div>
-    </section>
-
-    <section id="livraison" aria-labelledby="livraison-titre">
-      <h2 id="livraison-titre">Une PR</h2>
-      <ul class="prs">
-        <li><span class="num">#170</span><span>Frontend : la lecture du profil, la page avec ses métadonnées, le bandeau, la liste paginée des événements à venir, les boutons « Retour » et « Partager », les tests de bout en bout.</span></li>
-      </ul>
-    </section>
+    </details>
 
     <section id="limites" aria-labelledby="limites-titre">
       <h2 id="limites-titre">Les limites assumées, et la suite</h2>

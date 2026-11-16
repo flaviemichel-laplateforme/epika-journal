@@ -9,6 +9,7 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
 </script>
 <title>L'organisateur sur la carte (#157) · Journal d'Epika</title>
 <meta name="description" content="Bilan de l'issue #157 d'Epika : le nom de la structure sur chaque carte d'événement, lu dans la même requête SQL que les cartes, mesuré sur 54 000 événements.">
+<meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -45,10 +46,14 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       <ol>
         <li><a href="#pourquoi">Pourquoi</a></li>
         <li><a href="#images">En images</a></li>
-        <li><a href="#requete">Une seule requête</a></li>
-        <li><a href="#mesure">La mesure</a></li>
         <li><a href="#carte">Sur la carte</a></li>
-        <li><a href="#tests">Les tests</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#requete">Une seule requête</a></li>
+            <li><a href="#mesure">La mesure</a></li>
+            <li><a href="#tests">Les tests</a></li>
+          </ol>
+        </li>
         <li><a href="#suite">La suite</a></li>
       </ol>
     </details>
@@ -102,29 +107,6 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </div>
     </section>
 
-    <section id="requete" aria-labelledby="requete-titre">
-      <hgroup><p class="eyebrow">Backend</p><h2 id="requete-titre">Une seule requête, jamais une par carte</h2></hgroup>
-      <div class="note key">
-        <p>Le piège classique s'appelle <strong>N+1</strong> : une requête pour la liste, puis une de plus pour chaque carte, pour aller chercher le nom de sa structure. Vingt cartes, vingt et une requêtes ; la page ralentit à mesure qu'elle s'allonge.</p>
-      </div>
-      <p class="prose">La requête des cartes travaille en deux temps, depuis la mesure de #67 : d'abord choisir les 20 événements de la page, ensuite construire leurs cartes. Le nom de la structure est joint dans ce second temps, <strong>sur les 20 cartes seulement</strong>, par la clé primaire de la structure. Toute la page tient en une requête.</p>
-    </section>
-
-    <section id="mesure" aria-labelledby="mesure-titre">
-      <h2 id="mesure-titre">La mesure, avant et après</h2>
-      <p class="prose">Sur les 54 000 événements de la base de développement, la médiane de 30 pages de 20 cartes :</p>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="La mesure de la requête des cartes, tableau défilant">
-        <table>
-          <thead><tr><th scope="col">Recherche</th><th scope="col">Avant</th><th scope="col">Après</th></tr></thead>
-          <tbody>
-            <tr><td>Toulon, 20 km, par date</td><td>122,3 ms</td><td>123,9 ms</td></tr>
-            <tr><td>Toute la France, par date</td><td>102,5 ms</td><td>97,6 ms</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="prose muted">Les écarts vont dans les deux sens : ils sont dans le bruit de la mesure. La jointure ne coûte rien de visible.</p>
-    </section>
-
     <section id="carte" aria-labelledby="carte-titre">
       <hgroup><p class="eyebrow">Frontend</p><h2 id="carte-titre">Sur la carte</h2></hgroup>
       <div class="grid2">
@@ -135,14 +117,47 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </div>
     </section>
 
-    <section id="tests" aria-labelledby="tests-titre">
-      <h2 id="tests-titre">Les tests</h2>
-      <ul class="prose">
-        <li><strong>Une requête par page</strong> : un test crée trois événements de trois structures, vérifie le nom sur chaque carte et compte les requêtes SQL. Contre-épreuve : avec une requête de plus par carte, il en compte quatre au lieu d'une, et échoue.</li>
-        <li><strong>L'API</strong> renvoie bien <code>organizerName</code>. Suite backend au vert, en heure de Paris et en UTC.</li>
-        <li><strong>L'écran</strong> : la ligne est là, n'est pas un lien, la carte garde un seul lien ; aucune ligne « Par » sur la page d'une structure. Playwright sur le build de production, axe à 360 et 1280 px.</li>
-      </ul>
-    </section>
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Comment c'est construit : les choix techniques, les tests et les pull requests, pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+        <section id="requete" aria-labelledby="requete-titre">
+          <hgroup><p class="eyebrow">Backend</p><h2 id="requete-titre">Une seule requête, jamais une par carte</h2></hgroup>
+          <div class="note key">
+            <p>Le piège classique s'appelle <strong>N+1</strong> : une requête pour la liste, puis une de plus pour chaque carte, pour aller chercher le nom de sa structure. Vingt cartes, vingt et une requêtes ; la page ralentit à mesure qu'elle s'allonge.</p>
+          </div>
+          <p class="prose">La requête des cartes travaille en deux temps, depuis la mesure de #67 : d'abord choisir les 20 événements de la page, ensuite construire leurs cartes. Le nom de la structure est joint dans ce second temps, <strong>sur les 20 cartes seulement</strong>, par la clé primaire de la structure. Toute la page tient en une requête.</p>
+        </section>
+
+        <section id="mesure" aria-labelledby="mesure-titre">
+          <h2 id="mesure-titre">La mesure, avant et après</h2>
+          <p class="prose">Sur les 54 000 événements de la base de développement, la médiane de 30 pages de 20 cartes :</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="La mesure de la requête des cartes, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Recherche</th><th scope="col">Avant</th><th scope="col">Après</th></tr></thead>
+              <tbody>
+                <tr><td>Toulon, 20 km, par date</td><td>122,3 ms</td><td>123,9 ms</td></tr>
+                <tr><td>Toute la France, par date</td><td>102,5 ms</td><td>97,6 ms</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="prose muted">Les écarts vont dans les deux sens : ils sont dans le bruit de la mesure. La jointure ne coûte rien de visible.</p>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Les tests</h2>
+          <ul class="prose">
+            <li><strong>Une requête par page</strong> : un test crée trois événements de trois structures, vérifie le nom sur chaque carte et compte les requêtes SQL. Contre-épreuve : avec une requête de plus par carte, il en compte quatre au lieu d'une, et échoue.</li>
+            <li><strong>L'API</strong> renvoie bien <code>organizerName</code>. Suite backend au vert, en heure de Paris et en UTC.</li>
+            <li><strong>L'écran</strong> : la ligne est là, n'est pas un lien, la carte garde un seul lien ; aucune ligne « Par » sur la page d'une structure. Playwright sur le build de production, axe à 360 et 1280 px.</li>
+          </ul>
+        </section>
+
+      </div>
+    </details>
 
     <section id="suite" aria-labelledby="suite-titre">
       <h2 id="suite-titre">La suite</h2>

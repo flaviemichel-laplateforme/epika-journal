@@ -9,6 +9,7 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
 </script>
 <title>Les favoris (#77) · Journal d'Epika</title>
 <meta name="description" content="Bilan de l'issue #77 d'Epika : garder un événement d'un cœur et le retrouver dans « Mes favoris », avec une API sans IDOR, un Voter, un cœur optimiste au nom fixe et une invitation pour les visiteurs.">
+<meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -46,14 +47,18 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
         <li><a href="#parcours">Le parcours</a></li>
         <li><a href="#images">En images</a></li>
         <li><a href="#decisions">Les décisions</a></li>
-        <li><a href="#table">La table des favoris</a></li>
-        <li><a href="#api">Quatre routes, sans IDOR</a></li>
-        <li><a href="#voter">Le Voter décide</a></li>
-        <li><a href="#cache">Des cartes pareilles pour tous</a></li>
         <li><a href="#coeur">Le cœur dans l'interface</a></li>
         <li><a href="#mes-favoris">« Mes favoris »</a></li>
-        <li><a href="#tests">Les tests</a></li>
-        <li><a href="#livraison">Les deux PR</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#table">La table des favoris</a></li>
+            <li><a href="#api">Quatre routes, sans IDOR</a></li>
+            <li><a href="#voter">Le Voter décide</a></li>
+            <li><a href="#cache">Des cartes pareilles pour tous</a></li>
+            <li><a href="#tests">Les tests</a></li>
+            <li><a href="#livraison">Les deux PR</a></li>
+          </ol>
+        </li>
         <li><a href="#limites">Limites et suite</a></li>
       </ol>
     </details>
@@ -139,56 +144,6 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </div>
     </section>
 
-    <section id="table" aria-labelledby="table-titre">
-      <hgroup><p class="eyebrow">Backend · PR #186</p><h2 id="table-titre">La table des favoris</h2></hgroup>
-      <p class="prose">Une table <code>favorites</code>, la 18<sup>e</sup> entité du projet : un compte, un événement, une date d'ajout. Le couple compte × événement est <strong>unique dans la base</strong> : même deux clics au même instant ne font jamais deux lignes.</p>
-      <div class="note key">
-        <p>Les deux clés étrangères sont en <strong>NO ACTION</strong>, comme partout dans Epika : la base ne supprime jamais un favori toute seule, c'est le code qui décide. Supprimer un compte supprime ses favoris, dans la même transaction que l'anonymisation de #78 ; un refus (un administrateur, une structure avec des événements à venir) n'en supprime aucun.</p>
-      </div>
-    </section>
-
-    <section id="api" aria-labelledby="api-titre">
-      <h2 id="api-titre">Quatre routes, sans IDOR possible</h2>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="Les routes des favoris, tableau défilant">
-        <table>
-          <thead><tr><th scope="col">Route</th><th scope="col">Pour quoi</th></tr></thead>
-          <tbody>
-            <tr><td><code>PUT /api/me/favorites/{slug}</code></td><td>Garder un événement. 204, sans corps.</td></tr>
-            <tr><td><code>DELETE /api/me/favorites/{slug}</code></td><td>Ne plus le garder. 204, sans corps.</td></tr>
-            <tr><td><code>GET /api/me/favorites/slugs</code></td><td>Les slugs des événements gardés, pour remplir les cœurs.</td></tr>
-            <tr><td><code>GET /api/me/favorites</code></td><td>« Mes favoris » : une page de cartes, comme la recherche.</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="grid2">
-        <div class="box"><h3>Le compte du JWT, jamais un id</h3><p>Comme <code>/api/me</code> en #78, l'adresse ne nomme jamais un compte : ce sont les favoris du compte connecté. Un test se connecte avec un autre compte et glisse l'identifiant de la première personne dans l'adresse et dans le corps : son favori reste intact.</p></div>
-        <div class="box"><h3>PUT et DELETE, pas POST</h3><p>Ces deux méthodes sont <em>idempotentes</em> : les répéter ne change rien. Un double clic ou un nouvel essai après une coupure réseau est sans risque. En base, un seul <code>INSERT … ON CONFLICT DO NOTHING</code> : l'index unique tranche, là où « regarder puis insérer » laisserait deux clics simultanés échouer.</p></div>
-      </div>
-    </section>
-
-    <section id="voter" aria-labelledby="voter-titre">
-      <h2 id="voter-titre">Le Voter décide, la matrice le prouve</h2>
-      <p class="prose">L'événement est chargé par le même service que toutes les routes d'événement, qui demande au Voter. Une nouvelle ligne, <strong>EF1</strong>, rejoint la matrice d'accès de #60 : tout compte connecté peut garder un événement <strong>publié</strong> que le public voit.</p>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="Les réponses des routes des favoris, tableau défilant">
-        <table>
-          <thead><tr><th scope="col">Cas</th><th scope="col">Réponse</th></tr></thead>
-          <tbody>
-            <tr><td>Pas connecté</td><td>401</td></tr>
-            <tr><td>Brouillon, événement suspendu ou masqué, slug inconnu</td><td>404 « Événement introuvable. », sans dire s'il existe</td></tr>
-            <tr><td>Événement annulé, à garder</td><td>403 : on le voit, mais le garder ne servirait à rien</td></tr>
-            <tr><td>Événement annulé depuis, à retirer</td><td>204 : retirer demande seulement de le voir</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="prose muted">La ligne a été écrite dans la matrice <strong>avant</strong> la règle du Voter : 171 cas ont échoué, puis sont passés au vert avec la règle. Retirer chaque condition à tour de rôle fait échouer la matrice.</p>
-    </section>
-
-    <section id="cache" aria-labelledby="cache-titre">
-      <h2 id="cache-titre">Des cartes pareilles pour tout le monde</h2>
-      <p class="prose">Les cartes publiques ne disent jamais si un événement est gardé : elles restent identiques pour tous les visiteurs, et pourront être mises en cache (#168). Le navigateur demande à part, <strong>une seule fois</strong>, la liste des slugs gardés, et remplit tous les cœurs de la page avec.</p>
-      <p class="prose">« Mes favoris » passe par la requête SQL de la recherche, avec un filtre de plus : mêmes cartes, même règle de visibilité, même photo selon l'interrupteur de #66. Une exception, découverte en relisant la requête : les <strong>animations d'un festival</strong>, écartées de la recherche, y figurent, puisque la personne les a choisies sur leur propre fiche.</p>
-    </section>
-
     <section id="coeur" aria-labelledby="coeur-titre">
       <hgroup><p class="eyebrow">Frontend · PR #188</p><h2 id="coeur-titre">Le cœur dans l'interface</h2></hgroup>
       <div class="grid2">
@@ -213,32 +168,92 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </ul>
     </section>
 
-    <section id="tests" aria-labelledby="tests-titre">
-      <h2 id="tests-titre">Chaque règle a son test</h2>
-      <div class="grid2">
-        <div class="box"><h3>Backend (PHPUnit, 4 393 tests)</h3><ul>
-          <li>Le repository sur la vraie base : idempotence, doublon refusé, visibilité</li>
-          <li>Les routes comme l'interface les appelle, IDOR compris</li>
-          <li>La matrice rejouée sur le Voter et sur les codes de réponse</li>
-          <li>Des mutations : chaque règle cassée exprès est attrapée</li>
-        </ul></div>
-        <div class="box"><h3>Frontend</h3><ul>
-          <li>Vitest : 311 tests, dont le retour en arrière du cœur</li>
-          <li>Playwright : 94 parcours sur le build de production</li>
-          <li>axe à 360 et 1280 px : les cœurs, l'invitation ouverte, « Mes favoris » pleine et vide</li>
-          <li>Lighthouse : accessibilité à 100, CLS à 0</li>
-        </ul></div>
-      </div>
-      <p class="prose muted">Un piège des tests de bout en bout : un clic envoyé avant que React ait pris la main sur la page est perdu. Les tests attendent désormais le lien du compte dans l'en-tête, qui n'apparaît qu'à ce moment-là.</p>
-    </section>
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Comment c'est construit : les choix techniques, les tests et les pull requests, pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+        <section id="table" aria-labelledby="table-titre">
+          <hgroup><p class="eyebrow">Backend · PR #186</p><h2 id="table-titre">La table des favoris</h2></hgroup>
+          <p class="prose">Une table <code>favorites</code>, la 18<sup>e</sup> entité du projet : un compte, un événement, une date d'ajout. Le couple compte × événement est <strong>unique dans la base</strong> : même deux clics au même instant ne font jamais deux lignes.</p>
+          <div class="note key">
+            <p>Les deux clés étrangères sont en <strong>NO ACTION</strong>, comme partout dans Epika : la base ne supprime jamais un favori toute seule, c'est le code qui décide. Supprimer un compte supprime ses favoris, dans la même transaction que l'anonymisation de #78 ; un refus (un administrateur, une structure avec des événements à venir) n'en supprime aucun.</p>
+          </div>
+        </section>
 
-    <section id="livraison" aria-labelledby="livraison-titre">
-      <h2 id="livraison-titre">Deux PR, l'API puis l'interface</h2>
-      <ul class="prs">
-        <li><span class="num">#186</span><span>Backend : la table, le repository idempotent, la ligne EF1 du Voter, les quatre routes, les cartes de « Mes favoris », la suppression avec le compte, la documentation.</span></li>
-        <li><span class="num">#188</span><span>Frontend : le cœur sur les cartes et la fiche, l'invitation des visiteurs, la page « Mes favoris », la fenêtre de suppression du compte qui cite les favoris.</span></li>
-      </ul>
-    </section>
+        <section id="api" aria-labelledby="api-titre">
+          <h2 id="api-titre">Quatre routes, sans IDOR possible</h2>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les routes des favoris, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Route</th><th scope="col">Pour quoi</th></tr></thead>
+              <tbody>
+                <tr><td><code>PUT /api/me/favorites/{slug}</code></td><td>Garder un événement. 204, sans corps.</td></tr>
+                <tr><td><code>DELETE /api/me/favorites/{slug}</code></td><td>Ne plus le garder. 204, sans corps.</td></tr>
+                <tr><td><code>GET /api/me/favorites/slugs</code></td><td>Les slugs des événements gardés, pour remplir les cœurs.</td></tr>
+                <tr><td><code>GET /api/me/favorites</code></td><td>« Mes favoris » : une page de cartes, comme la recherche.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="grid2">
+            <div class="box"><h3>Le compte du JWT, jamais un id</h3><p>Comme <code>/api/me</code> en #78, l'adresse ne nomme jamais un compte : ce sont les favoris du compte connecté. Un test se connecte avec un autre compte et glisse l'identifiant de la première personne dans l'adresse et dans le corps : son favori reste intact.</p></div>
+            <div class="box"><h3>PUT et DELETE, pas POST</h3><p>Ces deux méthodes sont <em>idempotentes</em> : les répéter ne change rien. Un double clic ou un nouvel essai après une coupure réseau est sans risque. En base, un seul <code>INSERT … ON CONFLICT DO NOTHING</code> : l'index unique tranche, là où « regarder puis insérer » laisserait deux clics simultanés échouer.</p></div>
+          </div>
+        </section>
+
+        <section id="voter" aria-labelledby="voter-titre">
+          <h2 id="voter-titre">Le Voter décide, la matrice le prouve</h2>
+          <p class="prose">L'événement est chargé par le même service que toutes les routes d'événement, qui demande au Voter. Une nouvelle ligne, <strong>EF1</strong>, rejoint la matrice d'accès de #60 : tout compte connecté peut garder un événement <strong>publié</strong> que le public voit.</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les réponses des routes des favoris, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Cas</th><th scope="col">Réponse</th></tr></thead>
+              <tbody>
+                <tr><td>Pas connecté</td><td>401</td></tr>
+                <tr><td>Brouillon, événement suspendu ou masqué, slug inconnu</td><td>404 « Événement introuvable. », sans dire s'il existe</td></tr>
+                <tr><td>Événement annulé, à garder</td><td>403 : on le voit, mais le garder ne servirait à rien</td></tr>
+                <tr><td>Événement annulé depuis, à retirer</td><td>204 : retirer demande seulement de le voir</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="prose muted">La ligne a été écrite dans la matrice <strong>avant</strong> la règle du Voter : 171 cas ont échoué, puis sont passés au vert avec la règle. Retirer chaque condition à tour de rôle fait échouer la matrice.</p>
+        </section>
+
+        <section id="cache" aria-labelledby="cache-titre">
+          <h2 id="cache-titre">Des cartes pareilles pour tout le monde</h2>
+          <p class="prose">Les cartes publiques ne disent jamais si un événement est gardé : elles restent identiques pour tous les visiteurs, et pourront être mises en cache (#168). Le navigateur demande à part, <strong>une seule fois</strong>, la liste des slugs gardés, et remplit tous les cœurs de la page avec.</p>
+          <p class="prose">« Mes favoris » passe par la requête SQL de la recherche, avec un filtre de plus : mêmes cartes, même règle de visibilité, même photo selon l'interrupteur de #66. Une exception, découverte en relisant la requête : les <strong>animations d'un festival</strong>, écartées de la recherche, y figurent, puisque la personne les a choisies sur leur propre fiche.</p>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Chaque règle a son test</h2>
+          <div class="grid2">
+            <div class="box"><h3>Backend (PHPUnit, 4 393 tests)</h3><ul>
+              <li>Le repository sur la vraie base : idempotence, doublon refusé, visibilité</li>
+              <li>Les routes comme l'interface les appelle, IDOR compris</li>
+              <li>La matrice rejouée sur le Voter et sur les codes de réponse</li>
+              <li>Des mutations : chaque règle cassée exprès est attrapée</li>
+            </ul></div>
+            <div class="box"><h3>Frontend</h3><ul>
+              <li>Vitest : 311 tests, dont le retour en arrière du cœur</li>
+              <li>Playwright : 94 parcours sur le build de production</li>
+              <li>axe à 360 et 1280 px : les cœurs, l'invitation ouverte, « Mes favoris » pleine et vide</li>
+              <li>Lighthouse : accessibilité à 100, CLS à 0</li>
+            </ul></div>
+          </div>
+          <p class="prose muted">Un piège des tests de bout en bout : un clic envoyé avant que React ait pris la main sur la page est perdu. Les tests attendent désormais le lien du compte dans l'en-tête, qui n'apparaît qu'à ce moment-là.</p>
+        </section>
+
+        <section id="livraison" aria-labelledby="livraison-titre">
+          <h2 id="livraison-titre">Deux PR, l'API puis l'interface</h2>
+          <ul class="prs">
+            <li><span class="num">#186</span><span>Backend : la table, le repository idempotent, la ligne EF1 du Voter, les quatre routes, les cartes de « Mes favoris », la suppression avec le compte, la documentation.</span></li>
+            <li><span class="num">#188</span><span>Frontend : le cœur sur les cartes et la fiche, l'invitation des visiteurs, la page « Mes favoris », la fenêtre de suppression du compte qui cite les favoris.</span></li>
+          </ul>
+        </section>
+
+      </div>
+    </details>
 
     <section id="limites" aria-labelledby="limites-titre">
       <h2 id="limites-titre">Les limites assumées, et la suite</h2>

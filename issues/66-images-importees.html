@@ -9,6 +9,7 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
 </script>
 <title>Images importées (#66) · Journal d'Epika</title>
 <meta name="description" content="Bilan de l'issue #66 d'Epika : montrer les photos des événements importés d'OpenAgenda sans jamais les copier, avec leur crédit, une image de remplacement et un interrupteur qui les masque toutes d'un coup.">
+<meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -46,14 +47,18 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
         <li><a href="#probleme">Le problème</a></li>
         <li><a href="#decision">Aucune copie</a></li>
         <li><a href="#images">En images</a></li>
-        <li><a href="#existant">Ce qui existait déjà</a></li>
-        <li><a href="#optimiseur">L'optimiseur de Next copiait</a></li>
-        <li><a href="#interrupteur">L'interrupteur global</a></li>
-        <li><a href="#remplacement">L'image de remplacement</a></li>
-        <li><a href="#use-client">Le piège du « use client »</a></li>
-        <li><a href="#tests">Les tests</a></li>
         <li><a href="#vie-privee">Vie privée</a></li>
-        <li><a href="#livraison">La PR #182</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#existant">Ce qui existait déjà</a></li>
+            <li><a href="#optimiseur">L'optimiseur de Next copiait</a></li>
+            <li><a href="#interrupteur">L'interrupteur global</a></li>
+            <li><a href="#remplacement">L'image de remplacement</a></li>
+            <li><a href="#use-client">Le piège du « use client »</a></li>
+            <li><a href="#tests">Les tests</a></li>
+            <li><a href="#livraison">La PR #182</a></li>
+          </ol>
+        </li>
         <li><a href="#limites">Limites et suite</a></li>
       </ol>
     </details>
@@ -120,116 +125,126 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </div>
     </section>
 
-    <section id="existant" aria-labelledby="existant-titre">
-      <h2 id="existant-titre">Ce qui existait déjà, et ce qui manquait</h2>
-      <p class="prose">Une bonne partie d'IMP-14 avait été construite avec l'import lui-même. L'issue a commencé par un inventaire.</p>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="Les règles d'IMP-14 et leur état, tableau défilant">
-        <table>
-          <thead><tr><th scope="col">Règle</th><th scope="col">Avant #66</th></tr></thead>
-          <tbody>
-            <tr><td>L'adresse d'origine, chez OpenAgenda</td><td>Déjà là : l'import garde l'adresse, pas le fichier.</td></tr>
-            <tr><td>Une taille intermédiaire</td><td>Déjà là : la version « base » de 700 px, confirmée par le support d'OpenAgenda.</td></tr>
-            <tr><td>Le crédit de l'auteur</td><td>Déjà là : « © … » posé sur la photo.</td></tr>
-            <tr><td>Masquer une photo précise</td><td>Déjà là : une photo masquée n'apparaît nulle part.</td></tr>
-            <tr><td>Une image quand il n'y a pas de photo</td><td>Déjà là, sur les cartes et pour les partages.</td></tr>
-            <tr><td><strong>Ne jamais copier</strong></td><td><strong>Manquait</strong> : l'optimiseur d'images de Next.js en faisait une copie (voir plus bas).</td></tr>
-            <tr><td><strong>Tout masquer d'un coup</strong></td><td><strong>Manquait</strong> : il aurait fallu masquer les photos une par une.</td></tr>
-            <tr><td><strong>Une photo qui ne charge plus</strong></td><td><strong>Manquait</strong> : une image cassée restait à l'écran.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section id="optimiseur" aria-labelledby="optimiseur-titre">
-      <hgroup><p class="eyebrow">La découverte de l'issue</p><h2 id="optimiseur-titre">L'optimiseur de Next copiait sans le dire</h2></hgroup>
-      <p class="prose">Le composant <code>&lt;Image&gt;</code> de Next.js ne montre pas la photo telle quelle : il passe par l'adresse <code>/_next/image</code> de notre serveur, qui la télécharge, la redimensionne et la renvoie. Sa documentation le dit : il <strong>« écrit les images optimisées sur le disque »</strong>. Chaque photo d'OpenAgenda affichée finissait donc copiée chez nous, en silence.</p>
-      <div class="grid2">
-        <div class="box"><h3>Les photos importées : <code>unoptimized</code></h3><p>Un composant <code>EventImage</code>, partagé par les cartes et la fiche, leur donne l'option <code>unoptimized</code> : le navigateur les charge directement depuis <code>img.openagenda.com</code>. Notre image de remplacement, elle, reste optimisée.</p></div>
-        <div class="box"><h3>Un oubli qui casse bruyamment</h3><p>La configuration n'autorise plus aucune adresse extérieure à l'optimiseur (<code>remotePatterns</code> retiré). Si un jour quelqu'un affiche une photo d'OpenAgenda sans passer par <code>EventImage</code>, l'optimiseur refuse (400) : une image cassée se voit tout de suite, une copie silencieuse jamais.</p></div>
-      </div>
-    </section>
-
-    <section id="interrupteur" aria-labelledby="interrupteur-titre">
-      <hgroup><p class="eyebrow">Backend</p><h2 id="interrupteur-titre">L'interrupteur global</h2></hgroup>
-      <p class="prose">Une question de droits, une demande de retrait, une réponse défavorable d'OpenAgenda : il faut pouvoir <strong>tout masquer d'un coup, sans redéployer</strong>. L'interrupteur vit dans la base, sur la ligne unique de l'état de l'import (<code>ImportState.importedImagesShown</code>, vrai par défaut), et une commande le bascule :</p>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="La commande de l'interrupteur, tableau défilant">
-        <table>
-          <thead><tr><th scope="col">Commande</th><th scope="col">Effet</th></tr></thead>
-          <tbody>
-            <tr><td><code>app:openagenda:images hide</code></td><td>Plus aucune photo importée ne sort de l'API.</td></tr>
-            <tr><td><code>app:openagenda:images show</code></td><td>Elles reviennent, toutes, telles qu'elles étaient.</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="grid2">
-        <div class="box"><h3>Ce qui disparaît</h3><ul>
-          <li>La photo de la fiche, donc aussi l'image des partages (Open Graph) et des données structurées</li>
-          <li>Les photos des cartes, partout où il y a des cartes</li>
-          <li>Les événements « à la une » choisis parce qu'ils ont une photo</li>
-        </ul></div>
-        <div class="box"><h3>Ce qui ne bouge pas</h3><ul>
-          <li>Les photos restent enregistrées : rien n'est supprimé</li>
-          <li>L'import continue comme avant</li>
-          <li>Les photos déposées par les organisations ne sont jamais concernées</li>
-        </ul></div>
-      </div>
-      <p class="prose">La règle des cartes est écrite <strong>une seule fois</strong>, dans la requête qui les cherche : elle lit l'interrupteur dans la base elle-même, par une sous-requête. Aucune page ne peut l'oublier. L'écran d'administration qui fera la même chose d'un clic viendra au lot 5 (#91).</p>
-    </section>
-
-    <section id="remplacement" aria-labelledby="remplacement-titre">
-      <hgroup><p class="eyebrow">Frontend</p><h2 id="remplacement-titre">L'image de remplacement</h2></hgroup>
-      <p class="prose">Une photo chargée depuis OpenAgenda peut ne plus exister : son auteur l'a retirée, ou OpenAgenda est en panne. Sans rien faire, le navigateur afficherait une image cassée.</p>
-      <ul class="prose">
-        <li><strong><code>onError</code></strong> : quand la photo ne charge pas, <code>EventImage</code> affiche l'image de remplacement d'Epika, avec un texte alternatif vide, car elle n'apprend rien à personne.</li>
-        <li><strong>L'adresse en échec est retenue, pas un simple « en erreur »</strong> : dans le carrousel de la fiche, quand on passe à la photo suivante, celle-ci a sa propre chance de charger.</li>
-      </ul>
-    </section>
-
-    <section id="use-client" aria-labelledby="use-client-titre">
-      <h2 id="use-client-titre">Le piège du module <code>"use client"</code></h2>
-      <div class="note warn">
-        <h3>Une chaîne de caractères devenue une fonction</h3>
-        <p>L'adresse de l'image de remplacement était d'abord exportée par <code>EventImage</code>, un composant client. La page de l'événement, un composant serveur, l'importait pour l'image des partages. Résultat : la page sans photo plantait, avec « Received function » et l'erreur React 441.</p>
-      </div>
-      <ul class="prose">
-        <li><strong>La cause</strong> : tout ce qu'un composant serveur importe d'un module <code>"use client"</code> devient une <em>référence client</em>, pas la valeur elle-même. Le serveur recevait une fonction là où il attendait une adresse.</li>
-        <li><strong>Qui l'a vu</strong> : Playwright, sur le build de production (10 parcours en échec). Vitest, qui ne fait pas la différence entre serveur et client, était vert.</li>
-        <li><strong>La correction</strong> : la constante a déménagé dans un petit module neutre, <code>placeholder.ts</code>, importé par les deux côtés.</li>
-      </ul>
-      <div class="note key">
-        <p><strong>La règle à retenir</strong> : une valeur partagée entre serveur et client ne vit jamais dans un module <code>"use client"</code>.</p>
-      </div>
-    </section>
-
-    <section id="tests" aria-labelledby="tests-titre">
-      <h2 id="tests-titre">Chaque règle a son test</h2>
-      <div class="grid2">
-        <div class="box"><h3>Backend (PHPUnit)</h3><ul>
-          <li>L'interrupteur sur la fiche, les cartes et « à la une »</li>
-          <li>La commande : ses deux sens et ses messages</li>
-          <li>Les photos déposées jamais concernées</li>
-          <li>Des mutations : la règle cassée exprès est attrapée</li>
-        </ul></div>
-        <div class="box"><h3>Frontend</h3><ul>
-          <li>Vitest : <code>EventImage</code>, l'adresse d'origine, le remplacement, la photo suivante</li>
-          <li>Playwright : aucune requête par <code>/_next/image</code> pour une photo importée, une 404 remplacée</li>
-          <li>Aucun test ne dépend d'internet : les photos d'OpenAgenda sont simulées</li>
-          <li>Lighthouse : accessibilité à 100, aucun décalage de mise en page (CLS 0)</li>
-        </ul></div>
-      </div>
-    </section>
-
     <section id="vie-privee" aria-labelledby="vie-privee-titre">
       <h2 id="vie-privee-titre">Vie privée : le revers de « aucune copie »</h2>
       <p class="prose">Puisque le navigateur du visiteur charge la photo directement chez OpenAgenda, <strong>OpenAgenda voit son adresse IP</strong>, comme pour n'importe quelle image d'un autre site. Ce n'est pas un problème en soi, mais la politique de confidentialité devra le dire : la note est ajoutée à l'issue #93.</p>
     </section>
 
-    <section id="livraison" aria-labelledby="livraison-titre">
-      <h2 id="livraison-titre">Une PR, en quatre commits</h2>
-      <ul class="prs">
-        <li><span class="num">#182</span><span>L'interrupteur global et sa commande ; l'API qui ne sert plus aucune photo importée quand il est coupé ; les photos montrées directement depuis OpenAgenda, jamais copiées, avec l'image de remplacement ; la documentation.</span></li>
-      </ul>
-    </section>
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Comment c'est construit : les choix techniques, les tests et les pull requests, pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+        <section id="existant" aria-labelledby="existant-titre">
+          <h2 id="existant-titre">Ce qui existait déjà, et ce qui manquait</h2>
+          <p class="prose">Une bonne partie d'IMP-14 avait été construite avec l'import lui-même. L'issue a commencé par un inventaire.</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les règles d'IMP-14 et leur état, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Règle</th><th scope="col">Avant #66</th></tr></thead>
+              <tbody>
+                <tr><td>L'adresse d'origine, chez OpenAgenda</td><td>Déjà là : l'import garde l'adresse, pas le fichier.</td></tr>
+                <tr><td>Une taille intermédiaire</td><td>Déjà là : la version « base » de 700 px, confirmée par le support d'OpenAgenda.</td></tr>
+                <tr><td>Le crédit de l'auteur</td><td>Déjà là : « © … » posé sur la photo.</td></tr>
+                <tr><td>Masquer une photo précise</td><td>Déjà là : une photo masquée n'apparaît nulle part.</td></tr>
+                <tr><td>Une image quand il n'y a pas de photo</td><td>Déjà là, sur les cartes et pour les partages.</td></tr>
+                <tr><td><strong>Ne jamais copier</strong></td><td><strong>Manquait</strong> : l'optimiseur d'images de Next.js en faisait une copie (voir plus bas).</td></tr>
+                <tr><td><strong>Tout masquer d'un coup</strong></td><td><strong>Manquait</strong> : il aurait fallu masquer les photos une par une.</td></tr>
+                <tr><td><strong>Une photo qui ne charge plus</strong></td><td><strong>Manquait</strong> : une image cassée restait à l'écran.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="optimiseur" aria-labelledby="optimiseur-titre">
+          <hgroup><p class="eyebrow">La découverte de l'issue</p><h2 id="optimiseur-titre">L'optimiseur de Next copiait sans le dire</h2></hgroup>
+          <p class="prose">Le composant <code>&lt;Image&gt;</code> de Next.js ne montre pas la photo telle quelle : il passe par l'adresse <code>/_next/image</code> de notre serveur, qui la télécharge, la redimensionne et la renvoie. Sa documentation le dit : il <strong>« écrit les images optimisées sur le disque »</strong>. Chaque photo d'OpenAgenda affichée finissait donc copiée chez nous, en silence.</p>
+          <div class="grid2">
+            <div class="box"><h3>Les photos importées : <code>unoptimized</code></h3><p>Un composant <code>EventImage</code>, partagé par les cartes et la fiche, leur donne l'option <code>unoptimized</code> : le navigateur les charge directement depuis <code>img.openagenda.com</code>. Notre image de remplacement, elle, reste optimisée.</p></div>
+            <div class="box"><h3>Un oubli qui casse bruyamment</h3><p>La configuration n'autorise plus aucune adresse extérieure à l'optimiseur (<code>remotePatterns</code> retiré). Si un jour quelqu'un affiche une photo d'OpenAgenda sans passer par <code>EventImage</code>, l'optimiseur refuse (400) : une image cassée se voit tout de suite, une copie silencieuse jamais.</p></div>
+          </div>
+        </section>
+
+        <section id="interrupteur" aria-labelledby="interrupteur-titre">
+          <hgroup><p class="eyebrow">Backend</p><h2 id="interrupteur-titre">L'interrupteur global</h2></hgroup>
+          <p class="prose">Une question de droits, une demande de retrait, une réponse défavorable d'OpenAgenda : il faut pouvoir <strong>tout masquer d'un coup, sans redéployer</strong>. L'interrupteur vit dans la base, sur la ligne unique de l'état de l'import (<code>ImportState.importedImagesShown</code>, vrai par défaut), et une commande le bascule :</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="La commande de l'interrupteur, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Commande</th><th scope="col">Effet</th></tr></thead>
+              <tbody>
+                <tr><td><code>app:openagenda:images hide</code></td><td>Plus aucune photo importée ne sort de l'API.</td></tr>
+                <tr><td><code>app:openagenda:images show</code></td><td>Elles reviennent, toutes, telles qu'elles étaient.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="grid2">
+            <div class="box"><h3>Ce qui disparaît</h3><ul>
+              <li>La photo de la fiche, donc aussi l'image des partages (Open Graph) et des données structurées</li>
+              <li>Les photos des cartes, partout où il y a des cartes</li>
+              <li>Les événements « à la une » choisis parce qu'ils ont une photo</li>
+            </ul></div>
+            <div class="box"><h3>Ce qui ne bouge pas</h3><ul>
+              <li>Les photos restent enregistrées : rien n'est supprimé</li>
+              <li>L'import continue comme avant</li>
+              <li>Les photos déposées par les organisations ne sont jamais concernées</li>
+            </ul></div>
+          </div>
+          <p class="prose">La règle des cartes est écrite <strong>une seule fois</strong>, dans la requête qui les cherche : elle lit l'interrupteur dans la base elle-même, par une sous-requête. Aucune page ne peut l'oublier. L'écran d'administration qui fera la même chose d'un clic viendra au lot 5 (#91).</p>
+        </section>
+
+        <section id="remplacement" aria-labelledby="remplacement-titre">
+          <hgroup><p class="eyebrow">Frontend</p><h2 id="remplacement-titre">L'image de remplacement</h2></hgroup>
+          <p class="prose">Une photo chargée depuis OpenAgenda peut ne plus exister : son auteur l'a retirée, ou OpenAgenda est en panne. Sans rien faire, le navigateur afficherait une image cassée.</p>
+          <ul class="prose">
+            <li><strong><code>onError</code></strong> : quand la photo ne charge pas, <code>EventImage</code> affiche l'image de remplacement d'Epika, avec un texte alternatif vide, car elle n'apprend rien à personne.</li>
+            <li><strong>L'adresse en échec est retenue, pas un simple « en erreur »</strong> : dans le carrousel de la fiche, quand on passe à la photo suivante, celle-ci a sa propre chance de charger.</li>
+          </ul>
+        </section>
+
+        <section id="use-client" aria-labelledby="use-client-titre">
+          <h2 id="use-client-titre">Le piège du module <code>"use client"</code></h2>
+          <div class="note warn">
+            <h3>Une chaîne de caractères devenue une fonction</h3>
+            <p>L'adresse de l'image de remplacement était d'abord exportée par <code>EventImage</code>, un composant client. La page de l'événement, un composant serveur, l'importait pour l'image des partages. Résultat : la page sans photo plantait, avec « Received function » et l'erreur React 441.</p>
+          </div>
+          <ul class="prose">
+            <li><strong>La cause</strong> : tout ce qu'un composant serveur importe d'un module <code>"use client"</code> devient une <em>référence client</em>, pas la valeur elle-même. Le serveur recevait une fonction là où il attendait une adresse.</li>
+            <li><strong>Qui l'a vu</strong> : Playwright, sur le build de production (10 parcours en échec). Vitest, qui ne fait pas la différence entre serveur et client, était vert.</li>
+            <li><strong>La correction</strong> : la constante a déménagé dans un petit module neutre, <code>placeholder.ts</code>, importé par les deux côtés.</li>
+          </ul>
+          <div class="note key">
+            <p><strong>La règle à retenir</strong> : une valeur partagée entre serveur et client ne vit jamais dans un module <code>"use client"</code>.</p>
+          </div>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Chaque règle a son test</h2>
+          <div class="grid2">
+            <div class="box"><h3>Backend (PHPUnit)</h3><ul>
+              <li>L'interrupteur sur la fiche, les cartes et « à la une »</li>
+              <li>La commande : ses deux sens et ses messages</li>
+              <li>Les photos déposées jamais concernées</li>
+              <li>Des mutations : la règle cassée exprès est attrapée</li>
+            </ul></div>
+            <div class="box"><h3>Frontend</h3><ul>
+              <li>Vitest : <code>EventImage</code>, l'adresse d'origine, le remplacement, la photo suivante</li>
+              <li>Playwright : aucune requête par <code>/_next/image</code> pour une photo importée, une 404 remplacée</li>
+              <li>Aucun test ne dépend d'internet : les photos d'OpenAgenda sont simulées</li>
+              <li>Lighthouse : accessibilité à 100, aucun décalage de mise en page (CLS 0)</li>
+            </ul></div>
+          </div>
+        </section>
+
+        <section id="livraison" aria-labelledby="livraison-titre">
+          <h2 id="livraison-titre">Une PR, en quatre commits</h2>
+          <ul class="prs">
+            <li><span class="num">#182</span><span>L'interrupteur global et sa commande ; l'API qui ne sert plus aucune photo importée quand il est coupé ; les photos montrées directement depuis OpenAgenda, jamais copiées, avec l'image de remplacement ; la documentation.</span></li>
+          </ul>
+        </section>
+
+      </div>
+    </details>
 
     <section id="limites" aria-labelledby="limites-titre">
       <h2 id="limites-titre">Les limites assumées, et la suite</h2>

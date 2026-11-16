@@ -9,6 +9,7 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
 </script>
 <title>La bande de jours (#156) · Journal d'Epika</title>
 <meta name="description" content="Bilan de l'issue #156 d'Epika : les 14 prochains jours au-dessus des résultats, un jour en un toucher, accessible au clavier et au lecteur d'écran, d'accord avec le filtre Date.">
+<meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -45,11 +46,15 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       <ol>
         <li><a href="#principe">Le principe</a></li>
         <li><a href="#images">En images</a></li>
-        <li><a href="#accord">D'accord avec le filtre Date</a></li>
-        <li><a href="#accessible">Accessible</a></li>
         <li><a href="#un-jour">« Un jour : », utile ?</a></li>
-        <li><a href="#firefox">Le calendrier qui ne s'ouvrait pas</a></li>
-        <li><a href="#tests">Les tests</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#accord">D'accord avec le filtre Date</a></li>
+            <li><a href="#accessible">Accessible</a></li>
+            <li><a href="#firefox">Le calendrier qui ne s'ouvrait pas</a></li>
+            <li><a href="#tests">Les tests</a></li>
+          </ol>
+        </li>
         <li><a href="#suite">La suite</a></li>
       </ol>
     </details>
@@ -98,33 +103,6 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </div>
     </section>
 
-    <section id="accord" aria-labelledby="accord-titre">
-      <h2 id="accord-titre">D'accord avec le filtre Date</h2>
-      <p class="prose">La bande et le filtre « Date » disent toujours la même chose : il n'y a jamais deux choix de date à la fois.</p>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="Ce que montre la bande selon le filtre Date, tableau défilant">
-        <table>
-          <thead><tr><th scope="col">Dans le filtre Date</th><th scope="col">Dans la bande</th></tr></thead>
-          <tbody>
-            <tr><td>Un seul jour choisi (du = au)</td><td>Ce jour pressé</td></tr>
-            <tr><td>« Aujourd'hui »</td><td>Le premier jour pressé</td></tr>
-            <tr><td>« Demain »</td><td>Le deuxième jour pressé</td></tr>
-            <tr><td>Une plage de plusieurs jours, « Ce week-end »…</td><td>Aucun jour pressé</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="prose">Toucher un jour remplace la période ou les dates déjà choisies, et revient à la page 1 : les résultats ne sont plus les mêmes.</p>
-    </section>
-
-    <section id="accessible" aria-labelledby="accessible-titre">
-      <h2 id="accessible-titre">Accessible</h2>
-      <div class="grid2">
-        <div class="box"><h3>De vrais boutons, un vrai état</h3><p>Chaque jour est un bouton qui dit s'il est pressé (<code>aria-pressed</code>). Le jour choisi est en navy plein, texte blanc : il se voit par le contraste et par l'état, pas par la couleur seule.</p></div>
-        <div class="box"><h3>Un nom complet</h3><p>À l'écran, « mar. 17 » ; pour un lecteur d'écran, « mardi 17 novembre » : seul, « mar. 17 » ne dirait pas le mois.</p></div>
-        <div class="box"><h3>Une ligne qui défile</h3><p>Comme les pastilles de filtres : la ligne défile sur le côté, sans masque dégradé qui baisserait le contraste. Tab l'amène tout seul au jour qui a le focus, et la page, elle, ne défile jamais en largeur (RGAA 10.11).</p></div>
-        <div class="box"><h3>Le jour choisi bien en vue</h3><p>Au chargement, le jour choisi est amené au centre de la ligne, par le défilement de la ligne seule : la page ne saute pas.</p></div>
-      </div>
-    </section>
-
     <section id="un-jour" aria-labelledby="un-jour-titre">
       <hgroup><p class="eyebrow">Décidé le 15/11/2026</p><h2 id="un-jour-titre">« Un jour : », utile ?</h2></hgroup>
       <p class="prose">Flavie a posé la question en voyant la bande. Le texte a deux rôles : nommer le groupe pour les lecteurs d'écran (indispensable, sinon on entend quatorze dates sans savoir à quoi elles servent), et expliquer la bande à l'œil. Sur téléphone, il prenait un quart de la largeur, pour des jours qui se comprennent seuls.</p>
@@ -133,26 +111,63 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </div>
     </section>
 
-    <section id="firefox" aria-labelledby="firefox-titre">
-      <h2 id="firefox-titre">Le calendrier qui ne s'ouvrait pas</h2>
-      <p class="prose">Pendant ses essais, Flavie a vu que le calendrier de « Choisir des dates » ne s'ouvrait plus. Ni Chromium ni Firefox ne reproduisaient le problème dans les tests. La cause : la <strong>vue adaptative</strong> de Firefox, qui imite un téléphone et transforme les clics en touchers simulés, que le calendrier natif ignore. En vue normale, il s'ouvre ; sur un vrai téléphone, c'est le calendrier du téléphone qui s'ouvre. La date reste de toute façon saisissable au clavier.</p>
-    </section>
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Comment c'est construit : les choix techniques, les tests et les pull requests, pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+        <section id="accord" aria-labelledby="accord-titre">
+          <h2 id="accord-titre">D'accord avec le filtre Date</h2>
+          <p class="prose">La bande et le filtre « Date » disent toujours la même chose : il n'y a jamais deux choix de date à la fois.</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Ce que montre la bande selon le filtre Date, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Dans le filtre Date</th><th scope="col">Dans la bande</th></tr></thead>
+              <tbody>
+                <tr><td>Un seul jour choisi (du = au)</td><td>Ce jour pressé</td></tr>
+                <tr><td>« Aujourd'hui »</td><td>Le premier jour pressé</td></tr>
+                <tr><td>« Demain »</td><td>Le deuxième jour pressé</td></tr>
+                <tr><td>Une plage de plusieurs jours, « Ce week-end »…</td><td>Aucun jour pressé</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="prose">Toucher un jour remplace la période ou les dates déjà choisies, et revient à la page 1 : les résultats ne sont plus les mêmes.</p>
+        </section>
 
-    <section id="tests" aria-labelledby="tests-titre">
-      <h2 id="tests-titre">Les tests</h2>
-      <div class="grid2">
-        <div class="box"><h3>Vitest</h3><ul>
-          <li>Les 14 jours, à travers un mois, une année et le changement d'heure</li>
-          <li>Le jour choisi selon le filtre Date, la pastille « Le … »</li>
-          <li>La bande : son nom, l'état pressé, choisir puis retirer</li>
-        </ul></div>
-        <div class="box"><h3>Playwright et axe</h3><ul>
-          <li>Un jour en un toucher : l'adresse, la pastille, l'API, le filtre Date d'accord, puis retiré</li>
-          <li>À 360 px, Tab fait défiler la bande ; la page ne défile pas en largeur</li>
-          <li>axe sans défaut</li>
-        </ul></div>
+        <section id="accessible" aria-labelledby="accessible-titre">
+          <h2 id="accessible-titre">Accessible</h2>
+          <div class="grid2">
+            <div class="box"><h3>De vrais boutons, un vrai état</h3><p>Chaque jour est un bouton qui dit s'il est pressé (<code>aria-pressed</code>). Le jour choisi est en navy plein, texte blanc : il se voit par le contraste et par l'état, pas par la couleur seule.</p></div>
+            <div class="box"><h3>Un nom complet</h3><p>À l'écran, « mar. 17 » ; pour un lecteur d'écran, « mardi 17 novembre » : seul, « mar. 17 » ne dirait pas le mois.</p></div>
+            <div class="box"><h3>Une ligne qui défile</h3><p>Comme les pastilles de filtres : la ligne défile sur le côté, sans masque dégradé qui baisserait le contraste. Tab l'amène tout seul au jour qui a le focus, et la page, elle, ne défile jamais en largeur (RGAA 10.11).</p></div>
+            <div class="box"><h3>Le jour choisi bien en vue</h3><p>Au chargement, le jour choisi est amené au centre de la ligne, par le défilement de la ligne seule : la page ne saute pas.</p></div>
+          </div>
+        </section>
+
+        <section id="firefox" aria-labelledby="firefox-titre">
+          <h2 id="firefox-titre">Le calendrier qui ne s'ouvrait pas</h2>
+          <p class="prose">Pendant ses essais, Flavie a vu que le calendrier de « Choisir des dates » ne s'ouvrait plus. Ni Chromium ni Firefox ne reproduisaient le problème dans les tests. La cause : la <strong>vue adaptative</strong> de Firefox, qui imite un téléphone et transforme les clics en touchers simulés, que le calendrier natif ignore. En vue normale, il s'ouvre ; sur un vrai téléphone, c'est le calendrier du téléphone qui s'ouvre. La date reste de toute façon saisissable au clavier.</p>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Les tests</h2>
+          <div class="grid2">
+            <div class="box"><h3>Vitest</h3><ul>
+              <li>Les 14 jours, à travers un mois, une année et le changement d'heure</li>
+              <li>Le jour choisi selon le filtre Date, la pastille « Le … »</li>
+              <li>La bande : son nom, l'état pressé, choisir puis retirer</li>
+            </ul></div>
+            <div class="box"><h3>Playwright et axe</h3><ul>
+              <li>Un jour en un toucher : l'adresse, la pastille, l'API, le filtre Date d'accord, puis retiré</li>
+              <li>À 360 px, Tab fait défiler la bande ; la page ne défile pas en largeur</li>
+              <li>axe sans défaut</li>
+            </ul></div>
+          </div>
+        </section>
+
       </div>
-    </section>
+    </details>
 
     <section id="suite" aria-labelledby="suite-titre">
       <h2 id="suite-titre">La suite</h2>

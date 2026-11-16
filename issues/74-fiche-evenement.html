@@ -9,6 +9,7 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
 </script>
 <title>La fiche d'un événement (#74) · Journal d'Epika</title>
 <meta name="description" content="Bilan de l'issue #74 d'Epika : la fiche événement, ses dates, sa carte chargée à la demande, la réservation par contact, la source des événements importés et une vraie erreur 404.">
+<meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -45,14 +46,18 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       <ol>
         <li><a href="#parcours">Le parcours</a></li>
         <li><a href="#images">En images</a></li>
-        <li><a href="#serveur">Écrite par le serveur, une vraie 404</a></li>
         <li><a href="#dates">Les dates</a></li>
         <li><a href="#lieu">Le lieu et sa carte</a></li>
         <li><a href="#reservation">Réserver, sans réservation</a></li>
         <li><a href="#source">La source d'un événement importé</a></li>
-        <li><a href="#accessibilite">Accessibilité et performance</a></li>
-        <li><a href="#tests">Les tests</a></li>
-        <li><a href="#livraison">La PR</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#serveur">Écrite par le serveur, une vraie 404</a></li>
+            <li><a href="#accessibilite">Accessibilité et performance</a></li>
+            <li><a href="#tests">Les tests</a></li>
+            <li><a href="#livraison">La PR</a></li>
+          </ol>
+        </li>
         <li><a href="#limites">Limites et suite</a></li>
       </ol>
     </details>
@@ -138,26 +143,6 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </div>
     </section>
 
-    <section id="serveur" aria-labelledby="serveur-titre">
-      <hgroup><p class="eyebrow">Frontend · PR #166</p><h2 id="serveur-titre">Écrite par le serveur, une vraie 404</h2></hgroup>
-      <div class="grid2">
-        <div class="box"><h3>Référencement</h3><ul>
-          <li>Titre, description, adresse canonique et Open Graph propres à chaque fiche</li>
-          <li>Des données structurées JSON-LD <code>Event</code>, une par prochaine séance (les 5 prochaines), avec le <code>&lt;</code> échappé</li>
-          <li>Une adresse en majuscules redirige (308) vers la page en minuscules</li>
-        </ul></div>
-        <div class="box"><h3>Une erreur qui en est une</h3><ul>
-          <li>Un événement masqué, en brouillon ou inconnu répond une vraie <strong>404</strong>, décidée avant l'envoi de la page, non indexée</li>
-          <li>Pas une page « introuvable » avec un code 200, que les moteurs garderaient</li>
-          <li>La page offre « Chercher un événement » et « Revenir à l'accueil »</li>
-        </ul></div>
-      </div>
-      <div class="note">
-        <h3>Retour et partage</h3>
-        <p>Deux boutons ronds sont posés sur la photo. « Retour » revient en arrière dans l'historique quand on vient d'Epika (les filtres de la recherche et le défilement sont conservés), sinon il mène à la recherche : c'est un vrai lien, qui marche sans JavaScript. « Partager » utilise le partage du téléphone, ou copie le lien et dit « Lien copié ».</p>
-      </div>
-    </section>
-
     <section id="dates" aria-labelledby="dates-titre">
       <hgroup><p class="eyebrow">Décision du 05/11/2026</p><h2 id="dates-titre">Trois dates d'abord</h2></hgroup>
       <ol class="pipeline">
@@ -198,41 +183,71 @@ try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || 
       </div>
     </section>
 
-    <section id="accessibilite" aria-labelledby="accessibilite-titre">
-      <h2 id="accessibilite-titre">Accessibilité et performance</h2>
-      <div class="grid2">
-        <div class="box"><h3>Accessibilité (RGAA 4.1.2)</h3><ul>
-          <li>Des <code>&lt;dialog&gt;</code> et des <code>&lt;details&gt;</code> natifs</li>
-          <li>Un carrousel de photos accessible : boutons, points avec <code>aria-current</code>, « Photo 2 sur 4 » annoncé, balayage, pas de lecture automatique</li>
-          <li>Des cibles de 44 px, 24 px au minimum pour un lien dans du texte (WCAG 2.5.8)</li>
-          <li>axe : 0 défaut à 360 et 1280 px, avec la source et la fenêtre de contact ouvertes</li>
-        </ul></div>
-        <div class="box"><h3>Performance (Lighthouse, mobile, 4G lente)</h3><ul>
-          <li>Performance 98, accessibilité 100, bonnes pratiques 96, référencement 100</li>
-          <li>Plus grand élément affiché : 1,9 s ; blocage total : 110 ms ; décalage de mise en page : 0</li>
-          <li>La première photo est demandée tout de suite, jamais en chargement différé</li>
-        </ul></div>
-      </div>
-    </section>
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Comment c'est construit : les choix techniques, les tests et les pull requests, pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+        <section id="serveur" aria-labelledby="serveur-titre">
+          <hgroup><p class="eyebrow">Frontend · PR #166</p><h2 id="serveur-titre">Écrite par le serveur, une vraie 404</h2></hgroup>
+          <div class="grid2">
+            <div class="box"><h3>Référencement</h3><ul>
+              <li>Titre, description, adresse canonique et Open Graph propres à chaque fiche</li>
+              <li>Des données structurées JSON-LD <code>Event</code>, une par prochaine séance (les 5 prochaines), avec le <code>&lt;</code> échappé</li>
+              <li>Une adresse en majuscules redirige (308) vers la page en minuscules</li>
+            </ul></div>
+            <div class="box"><h3>Une erreur qui en est une</h3><ul>
+              <li>Un événement masqué, en brouillon ou inconnu répond une vraie <strong>404</strong>, décidée avant l'envoi de la page, non indexée</li>
+              <li>Pas une page « introuvable » avec un code 200, que les moteurs garderaient</li>
+              <li>La page offre « Chercher un événement » et « Revenir à l'accueil »</li>
+            </ul></div>
+          </div>
+          <div class="note">
+            <h3>Retour et partage</h3>
+            <p>Deux boutons ronds sont posés sur la photo. « Retour » revient en arrière dans l'historique quand on vient d'Epika (les filtres de la recherche et le défilement sont conservés), sinon il mène à la recherche : c'est un vrai lien, qui marche sans JavaScript. « Partager » utilise le partage du téléphone, ou copie le lien et dit « Lien copié ».</p>
+          </div>
+        </section>
 
-    <section id="tests" aria-labelledby="tests-titre">
-      <h2 id="tests-titre">Chaque critère a son test</h2>
-      <div class="grid2">
-        <div class="box"><h3>Vitest : 201 tests</h3><ul><li>Les services et les composants de la fiche</li></ul></div>
-        <div class="box"><h3>Playwright : 46 tests</h3><ul>
-          <li>La vraie 404, les dates, la fenêtre de contact, la barre collée, la carte à la demande</li>
-          <li>Une vue par onglet, « Retour » après une recherche filtrée, et depuis un lien direct</li>
-          <li>axe à 360 et 1280 px</li>
-        </ul></div>
-      </div>
-    </section>
+        <section id="accessibilite" aria-labelledby="accessibilite-titre">
+          <h2 id="accessibilite-titre">Accessibilité et performance</h2>
+          <div class="grid2">
+            <div class="box"><h3>Accessibilité (RGAA 4.1.2)</h3><ul>
+              <li>Des <code>&lt;dialog&gt;</code> et des <code>&lt;details&gt;</code> natifs</li>
+              <li>Un carrousel de photos accessible : boutons, points avec <code>aria-current</code>, « Photo 2 sur 4 » annoncé, balayage, pas de lecture automatique</li>
+              <li>Des cibles de 44 px, 24 px au minimum pour un lien dans du texte (WCAG 2.5.8)</li>
+              <li>axe : 0 défaut à 360 et 1280 px, avec la source et la fenêtre de contact ouvertes</li>
+            </ul></div>
+            <div class="box"><h3>Performance (Lighthouse, mobile, 4G lente)</h3><ul>
+              <li>Performance 98, accessibilité 100, bonnes pratiques 96, référencement 100</li>
+              <li>Plus grand élément affiché : 1,9 s ; blocage total : 110 ms ; décalage de mise en page : 0</li>
+              <li>La première photo est demandée tout de suite, jamais en chargement différé</li>
+            </ul></div>
+          </div>
+        </section>
 
-    <section id="livraison" aria-labelledby="livraison-titre">
-      <h2 id="livraison-titre">Une PR</h2>
-      <ul class="prs">
-        <li><span class="num">#166</span><span>Frontend : la lecture et les métadonnées, la photo et les boutons, l'en-tête, les dates, le contenu, le lieu et sa carte, la réservation, la source, les vues, les tests de bout en bout.</span></li>
-      </ul>
-    </section>
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Chaque critère a son test</h2>
+          <div class="grid2">
+            <div class="box"><h3>Vitest : 201 tests</h3><ul><li>Les services et les composants de la fiche</li></ul></div>
+            <div class="box"><h3>Playwright : 46 tests</h3><ul>
+              <li>La vraie 404, les dates, la fenêtre de contact, la barre collée, la carte à la demande</li>
+              <li>Une vue par onglet, « Retour » après une recherche filtrée, et depuis un lien direct</li>
+              <li>axe à 360 et 1280 px</li>
+            </ul></div>
+          </div>
+        </section>
+
+        <section id="livraison" aria-labelledby="livraison-titre">
+          <h2 id="livraison-titre">Une PR</h2>
+          <ul class="prs">
+            <li><span class="num">#166</span><span>Frontend : la lecture et les métadonnées, la photo et les boutons, l'en-tête, les dates, le contenu, le lieu et sa carte, la réservation, la source, les vues, les tests de bout en bout.</span></li>
+          </ul>
+        </section>
+
+      </div>
+    </details>
 
     <section id="limites" aria-labelledby="limites-titre">
       <h2 id="limites-titre">Les limites assumées, et la suite</h2>
