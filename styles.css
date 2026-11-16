@@ -202,6 +202,31 @@ td.num { font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 6
 .pager .next { grid-column: 2; text-align: right; }
 @media (max-width: 520px) { .pager { grid-template-columns: minmax(0, 1fr); } .pager .next { grid-column: auto; } }
 
+/*
+ * The technical part of a page, folded by default: the page reads as a presentation, and a developer opens the rest.
+ * A native <details>: a real button for the keyboard and screen readers, which says itself whether it is open, and
+ * works without JavaScript. The word « Afficher » / « Masquer » follows the state (aria-hidden: the state is already said).
+ */
+.tech { border: 2px solid var(--navy); border-radius: 16px; background: var(--surface); }
+.tech > summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 16px; padding: 18px 20px; cursor: pointer; list-style: none; border-radius: 14px; }
+.tech > summary::-webkit-details-marker { display: none; }
+.tech > summary:hover { background: var(--tint); }
+.tech-title { font-size: 1.35rem; font-weight: 800; color: var(--navy); }
+.tech-hint { grid-column: 1; color: var(--muted); font-size: .94rem; }
+.tech-action { grid-column: 2; grid-row: 1 / span 2; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 999px; background: var(--navy); color: var(--surface); font-weight: 700; white-space: nowrap; }
+.tech-action::after { content: "+"; font-size: 1.2rem; line-height: 1; }
+.tech[open] .tech-action::after { content: "–"; }
+.tech .when-open, .tech[open] .when-closed { display: none; }
+.tech[open] .when-open { display: inline; }
+.tech-body { display: grid; gap: 56px; padding: 8px 20px 28px; border-top: 1px solid var(--line); padding-top: 28px; }
+@media (max-width: 520px) {
+  .tech > summary { grid-template-columns: minmax(0, 1fr); }
+  .tech-action { grid-column: 1; grid-row: auto; justify-self: start; margin-top: 8px; }
+  .tech-body { padding-inline: 14px; gap: 44px; }
+}
+/* In the table of contents, the sections of the technical part, set in under it */
+.toc ol ol { border-left: 0; margin: 2px 0 4px 12px; }
+
 footer.site { color: var(--muted); font-size: .85rem; border-top: 1px solid var(--line); padding-top: 18px; }
 
 @media (prefers-reduced-motion: reduce) {

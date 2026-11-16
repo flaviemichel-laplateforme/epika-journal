@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>Proposer les villes pendant la saisie (#159) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #159 d'Epika : le champ « Où ? » propose les communes pendant la saisie, avec leur département. Comment fonctionne l'autocomplétion, de la touche pressée à la ville choisie.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a class="home" href="../index.html">Accueil</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 3 · issue #159 · EF-02 · terminée le 16/11/2026</p>
+    <h1>Proposer les villes pendant la saisie</h1>
+    <p class="lede">Dans « Où ? », trois lettres suffisent : Epika propose les communes qui commencent ainsi, chacune avec son département. Plus de faute de frappe qui ne trouve rien, plus de Saint-Denis tiré au hasard entre la Seine-Saint-Denis et La Réunion.</p>
+    <dl class="facts">
+      <div class="fact"><dt>pull requests, API puis interface</dt><dd>2</dd></div>
+      <div class="fact"><dt>lettres pour voir les villes</dt><dd>3</dd></div>
+      <div class="fact"><dt>villes proposées au plus</dt><dd>6</dd></div>
+      <div class="fact"><dt>ms pour répondre depuis le cache</dt><dd>20</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#principe">Ce que ça change</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#essais">Trouvé en essayant</a></li>
+        <li><a href="#grenoble">Une limite : Grenoble</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#trajet">Le trajet d'une lettre</a></li>
+            <li><a href="#intermediaire">Pourquoi notre API</a></li>
+            <li><a href="#serveur">Les règles du serveur</a></li>
+            <li><a href="#combobox">Le combobox et l'ARIA</a></li>
+            <li><a href="#quand">Quand demander</a></li>
+            <li><a href="#vitesse">L'audit de vitesse</a></li>
+            <li><a href="#tests">Les tests</a></li>
+            <li><a href="#prs">Les pull requests</a></li>
+          </ol>
+        </li>
+        <li><a href="#suite">La suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="principe" aria-labelledby="principe-titre">
+      <h2 id="principe-titre">Ce que ça change</h2>
+      <p class="prose">Avant, « Où ? » était un simple champ de texte : une faute de frappe donnait « Aucune commune ne porte ce nom », et deux communes du même nom étaient départagées au hasard. Maintenant, dès la troisième lettre, une liste propose jusqu'à six communes :</p>
+      <ul class="prose">
+        <li><strong>Chaque ville avec son département</strong> : « Saint-Denis (93) Seine-Saint-Denis · 93200 » et « Saint-Denis (974) La Réunion · 97400 ».</li>
+        <li><strong>La ville choisie part avec son code postal</strong> : la recherche commence au bon endroit, sans ambiguïté.</li>
+        <li><strong>Les grandes villes d'abord</strong> : « mars » propose Marseille avant les deux villages nommés Mars.</li>
+        <li><strong>Au clavier comme à la souris</strong>, et lu par les lecteurs d'écran : « 2 villes proposées. Flèches haut et bas pour choisir. »</li>
+        <li><strong>Rien d'obligatoire</strong> : on peut toujours taper une ville et chercher sans rien choisir. Si le service des suggestions ne répond pas, le champ reste un champ de texte, sans message d'erreur.</li>
+      </ul>
+      <p class="prose">Sur l'accueil comme sur la page de résultats, et sans JavaScript, l'accueil reste un formulaire classique qui fonctionne.</p>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <p class="prose muted">Captures prises par Playwright sur Epika en production, avec une fausse API : les événements sont fictifs, et les communes proposées sont celles que le vrai service répondait le 15/11/2026. Sur ordinateur à gauche, sur téléphone à droite.</p>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #159">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/159/01-homonymes-desktop.jpg" width="1280" height="800" loading="lazy" alt="L'accueil, avec « saint-den » tapé dans « Où ? » et, dessous, la liste : « Saint-Denis (974) La Réunion · 97400 » et « Saint-Denis (93) Seine-Saint-Denis · 93200 », le second surligné. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/159/01-homonymes-mobile.jpg" width="360" height="740" loading="lazy" alt="L'accueil, avec « saint-den » tapé dans « Où ? » et, dessous, la liste : « Saint-Denis (974) La Réunion · 97400 » et « Saint-Denis (93) Seine-Saint-Denis · 93200 », le second surligné. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> Sur l'accueil, « saint-den » : les deux Saint-Denis, chacun avec son département et son code postal. La flèche du bas surligne le second, d'un fond turquoise et d'un contour navy.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/159/02-grandes-villes-d-abord-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page de résultats, avec « toul » tapé dans « Où ? » et la liste : « Toulouse (31) », « Toulon (83) », « Toul (54) », par-dessus la barre de tri. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/159/02-grandes-villes-d-abord-mobile.jpg" width="360" height="740" loading="lazy" alt="La page de résultats, avec « toul » tapé dans « Où ? » et la liste : « Toulouse (31) », « Toulon (83) », « Toul (54) », par-dessus la barre de tri. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> Sur la page de résultats, « toul » : Toulouse et Toulon avant Toul, les noms qui commencent par ce qui est tapé d'abord, les plus importants en tête. La liste passe au-dessus des barres collantes.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/159/03-ville-choisie-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page de résultats « Événements à Saint-Denis », avec « Saint-Denis » dans le champ « Où ? ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/159/03-ville-choisie-mobile.jpg" width="360" height="740" loading="lazy" alt="La page de résultats « Événements à Saint-Denis », avec « Saint-Denis » dans le champ « Où ? ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> Saint-Denis (93) choisi puis cherché : l'adresse garde la ville et son code postal (ville=Saint-Denis&amp;cp=93200), et la recherche part du bon Saint-Denis.</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="essais" aria-labelledby="essais-titre">
+      <hgroup><p class="eyebrow">Les 15 et 16/11/2026</p><h2 id="essais-titre">Trouvé en essayant</h2></hgroup>
+      <p class="prose">Flavie a essayé chaque étape dans le navigateur avant de la valider. Ces essais ont trouvé cinq défauts que les tests automatiques ne voyaient pas encore ; chacun est corrigé, et un test le garde désormais.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Les défauts trouvés pendant les essais, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Ce qui se passait</th><th scope="col">La cause</th><th scope="col">La correction</th></tr></thead>
+          <tbody>
+            <tr><td>Une erreur serveur en cherchant « t »</td><td>Le service de géocodage refuse moins de 3 lettres, et ce refus n'était pas prévu</td><td>Une ville trop courte est « inconnue », sans appel au service</td></tr>
+            <tr><td>« toulon » ne trouvait rien</td><td>Le code postal d'une recherche précédente (83210) restait collé à la nouvelle ville</td><td>Taper une ville efface son ancien code postal</td></tr>
+            <tr><td>La barre de tri passait par-dessus la liste</td><td>La barre collante était au même niveau d'empilement que la liste</td><td>La liste passe au-dessus de tout</td></tr>
+            <tr><td>Les villes de la saisie précédente restaient en tête</td><td>L'ancienne liste restait affichée telle quelle pendant le chargement de la nouvelle</td><td>Elle est aussitôt réduite aux villes qui conviennent encore</td></tr>
+            <tr><td>« mars » proposait Mars avant Marseille</td><td>L'ordre du service favorise le mot exact, pas la taille de la ville</td><td>Les noms qui commencent par le texte d'abord, les plus importants en tête</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="grenoble" aria-labelledby="grenoble-titre">
+      <h2 id="grenoble-titre">Une limite : Grenoble</h2>
+      <p class="prose">En tapant « gre », on attend Grenoble. Or le service public qui fournit les communes ne la renvoie pas : pour « gre », il ne répond que cinq communes nommées « Grès » (Saint-Étienne-du-Grès, Fontaine-les-Grès…), quel que soit le nombre de résultats demandés. Il rapproche « gre » du mot entier « Grès », et Grenoble n'arrive qu'à « gren ». Aucun tri ne peut montrer une ville absente de la réponse.</p>
+      <p class="prose">Un autre service public classe bien (« gre » donne Grenoble), mais il a répondu en 0,1 à 8,7 secondes pendant les essais : trop lent pour des suggestions.</p>
+      <div class="note key">
+        <p>Décision : <strong>une table des communes dans la base d'Epika</strong>, remplie une fois à partir des données officielles, cherchée par le début du nom et triée par population. Environ 5 ms, sans service extérieur. Ce sera une issue à part ; le champ et la liste ne changeront pas.</p>
+      </div>
+    </section>
+
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Comment fonctionne l'autocomplétion, de la touche pressée à la ville choisie : pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+
+        <section id="trajet" aria-labelledby="trajet-titre">
+          <h2 id="trajet-titre">Le trajet d'une lettre</h2>
+          <p class="prose">Ce qui se passe quand on tape « toul » dans « Où ? », dans l'ordre. Les étapes 1 à 3 et 8 à 10 ont lieu dans le navigateur, les étapes 4 à 7 sur le serveur d'Epika.</p>
+          <ol class="pipeline">
+            <li><div><strong>La frappe</strong><span>Le champ note que c'est la personne qui a tapé ce texte. Une ville lue dans l'adresse de la page, ou écrite par « Autour de moi », ne déclenche rien.</span></div></li>
+            <li><div><strong>L'attente de 250 ms</strong><span>Le texte doit rester stable un quart de seconde. « Toulouse » tapé d'un trait fait une seule demande, pas huit. Rien n'est demandé sous 3 caractères.</span></div></li>
+            <li><div><strong>La demande à notre API</strong><span><code>GET /api/geo/communes?q=toul</code>. Si on tape une autre lettre avant la réponse, cette demande est annulée : elle ne répondrait plus au texte.</span></div></li>
+            <li><div><strong>Le nettoyage</strong><span>Le serveur ne garde que les lettres, chiffres, espaces, apostrophes, points et traits d'union. Tout le reste devient une espace.</span></div></li>
+            <li><div><strong>Le cache</strong><span>Une question déjà posée répond aussitôt, sans appel extérieur : gardée 7 jours (1 heure si elle n'a rien trouvé).</span></div></li>
+            <li><div><strong>La Géoplateforme</strong><span>Sinon, le serveur demande 20 communes au service public de l'IGN, en 2 secondes au plus.</span></div></li>
+            <li><div><strong>Le tri</strong><span>Les arrondissements sont retirés, les noms qui commencent par « toul » passent d'abord, les plus importants en tête, et 6 sont gardés.</span></div></li>
+            <li><div><strong>La liste</strong><span>Le champ annonce « 3 villes proposées », et ↓ ↑ les parcourent sans que le curseur quitte le champ.</span></div></li>
+            <li><div><strong>Le choix</strong><span>Entrée ou un clic : le champ prend « Toulouse », et le formulaire garde son code postal 31000.</span></div></li>
+            <li><div><strong>La recherche</strong><span>« Rechercher » envoie <code>ville=Toulouse&amp;cp=31000</code>. Retaper la ville efface ce code postal.</span></div></li>
+          </ol>
+        </section>
+
+        <section id="intermediaire" aria-labelledby="intermediaire-titre">
+          <h2 id="intermediaire-titre">Pourquoi passer par notre API</h2>
+          <p class="prose">Le navigateur pourrait appeler la Géoplateforme directement : elle l'accepte. Epika passe pourtant par son propre serveur, comme pour « Autour de moi » :</p>
+          <div class="grid2">
+            <div class="box"><h3>La vie privée</h3><p>Appelée depuis le navigateur, la Géoplateforme recevrait l'adresse IP du visiteur à chaque lettre. Par notre API, elle ne voit que celle du serveur d'Epika.</p></div>
+            <div class="box"><h3>Les règles au même endroit</h3><p>Le nettoyage, les 3 caractères, les arrondissements et le tri sont écrits une seule fois, en PHP, et testés.</p></div>
+            <div class="box"><h3>Le cache et le débit</h3><p>Mille personnes qui tapent « toul » en une semaine : une seule demande à l'IGN. Ça compte, car sa limite de 50 demandes par seconde est partagée par tous les usages d'Epika.</p></div>
+            <div class="box"><h3>Des tests sans Internet</h3><p>Les tests de bout en bout parlent à une fausse API, jamais à l'IGN : ils donnent toujours le même résultat.</p></div>
+          </div>
+        </section>
+
+        <section id="serveur" aria-labelledby="serveur-titre">
+          <h2 id="serveur-titre">Les règles du serveur</h2>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les réponses de GET /api/geo/communes, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Demande</th><th scope="col">Réponse</th></tr></thead>
+              <tbody>
+                <tr><td><code>?q=saint-den</code></td><td>200 : <code>{"items": [{"city": "Saint-Denis", "postcode": "97400", "departmentCode": "974", "departmentName": "La Réunion"}, …]}</code></td></tr>
+                <tr><td><code>?q=sa</code> (moins de 3 caractères)</td><td>200, liste vide, sans aucun appel</td></tr>
+                <tr><td><code>?q=a:b{c}</code></td><td>200 : nettoyée en « a b c ». Brute, elle faisait répondre une erreur à la Géoplateforme</td></tr>
+                <tr><td>Sans <code>q</code>, ou plus de 100 caractères</td><td>422</td></tr>
+                <tr><td>Géoplateforme en panne, trop sollicitée ou trop lente</td><td>200, liste vide, <code>Cache-Control: no-store</code> : le champ reste libre</td></tr>
+                <tr><td>Plus de 300 demandes par minute depuis une même adresse IP</td><td>429</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <ul class="prose">
+            <li><strong>3 caractères au moins</strong> : la Géoplateforme refuse en dessous. L'issue demandait 2 lettres ; c'est le service qui décide.</li>
+            <li><strong>300 par minute et par adresse IP</strong> : une adresse peut être partagée par des dizaines de personnes (une box familiale, une entreprise, un réseau mobile). Une personne qui tape et corrige envoie une trentaine de demandes par minute.</li>
+            <li><strong>Une clé de cache hachée</strong> (sha256) : la question brute peut contenir des caractères interdits dans une clé de cache, qui provoqueraient une erreur.</li>
+            <li><strong>Une panne n'est jamais gardée en cache</strong>, et le journal du serveur note la cause, jamais la question tapée.</li>
+          </ul>
+        </section>
+
+        <section id="combobox" aria-labelledby="combobox-titre">
+          <h2 id="combobox-titre">Le combobox et l'ARIA</h2>
+          <p class="prose">Le champ suit le modèle « combobox avec liste de suggestions » du guide officiel de l'ARIA (APG du W3C), écrit à la main, sans bibliothèque. Les attributs ARIA disent aux lecteurs d'écran ce que les yeux voient :</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les attributs ARIA du champ « Où ? », tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Attribut</th><th scope="col">Son rôle</th><th scope="col">Ce qu'on entend, par exemple</th></tr></thead>
+              <tbody>
+                <tr><td><code>role="combobox"</code></td><td>Un champ où l'on tape et où l'on peut choisir</td><td>« Où ?, zone de liste modifiable »</td></tr>
+                <tr><td><code>aria-autocomplete="list"</code></td><td>Des propositions vont apparaître</td><td>« saisie semi-automatique »</td></tr>
+                <tr><td><code>aria-expanded</code></td><td>La liste est ouverte ou non</td><td>« réduit » / « développé »</td></tr>
+                <tr><td><code>aria-controls</code></td><td>Relie le champ à sa liste</td><td>(permet d'aller à la liste)</td></tr>
+                <tr><td><code>aria-activedescendant</code></td><td>Désigne la suggestion surlignée, sans déplacer le focus</td><td>« Saint-Denis (93) Seine-Saint-Denis · 93200, 2 sur 2 »</td></tr>
+                <tr><td><code>role="listbox"</code>, <code>role="option"</code>, <code>aria-selected</code></td><td>La liste, ses suggestions, celle qui est surlignée</td><td>« sélectionné »</td></tr>
+                <tr><td><code>aria-live="polite"</code></td><td>Une zone invisible, présente dès le départ, qui annonce le nombre de villes</td><td>« 2 villes proposées. Flèches haut et bas pour choisir. »</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="grid2">
+            <div class="box"><h3>Le focus reste dans le champ</h3><p>↓ ne déplace pas le curseur dans la liste : c'est <code>aria-activedescendant</code> qui désigne la suggestion. On peut donc continuer à taper à tout moment.</p></div>
+            <div class="box"><h3>Une zone d'annonce qui existe déjà</h3><p>Un lecteur d'écran surveille les zones présentes à l'arrivée sur la page ; une zone créée au moment de parler n'est pas lue. Elle ne parle que quand la liste répond au texte actuel, jamais avec les villes de la lettre d'avant.</p></div>
+            <div class="box"><h3>Pas <code>role="status"</code></h3><p>Sur la page de résultats, le « statut » est déjà le nombre d'événements. Une zone <code>aria-live</code> se comporte pareil, sans lui prendre sa place.</p></div>
+            <div class="box"><h3>Le surlignage se voit</h3><p>Le fond turquoise clair seul ne contraste qu'à 1,1:1 avec le blanc ; un contour navy de 2 px le rend visible (RGAA, 3:1 au moins).</p></div>
+            <div class="box"><h3>Le clic n'est pas perdu</h3><p>Appuyer sur une suggestion ôterait le focus au champ, ce qui ferme la liste avant que le clic arrive. La liste l'empêche (<code>preventDefault</code> au moment de l'appui).</p></div>
+            <div class="box"><h3>Sans JavaScript</h3><p>L'accueil reste un vrai formulaire : la ville part seule, et le champ caché du code postal n'existe que lorsqu'une suggestion est choisie. Jamais de <code>cp=</code> vide.</p></div>
+          </div>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Le clavier dans « Où ? », tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Touche</th><th scope="col">Effet</th></tr></thead>
+              <tbody>
+                <tr><td>↓ / ↑</td><td>Ouvre la liste et parcourt les villes ; arrivé en bas, ↓ revient en haut</td></tr>
+                <tr><td>Entrée</td><td>Choisit la ville surlignée ; sans surlignage, envoie le formulaire</td></tr>
+                <tr><td>Échap</td><td>Ferme la liste ; appuyée de nouveau, efface la ville et son code postal</td></tr>
+                <tr><td>Tab</td><td>Quitte le champ sans rien choisir</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="quand" aria-labelledby="quand-titre">
+          <h2 id="quand-titre">Quand demander : le hook</h2>
+          <p class="prose">Toute la décision « faut-il demander, et la liste affichée est-elle la bonne ? » tient dans un hook React, <code>useCommuneSuggestions</code>, qui s'appuie sur TanStack Query :</p>
+          <ul class="prose">
+            <li><strong>« Qui a écrit ce texte ? »</strong> Le champ retient le dernier texte tapé par la personne. Si le champ contient autre chose (la ville de l'adresse, une ville choisie, celle d'« Autour de moi »), les deux diffèrent, et rien n'est demandé. Sans cette règle, chaque page de résultats enverrait une demande et annoncerait « 6 villes proposées » dès son ouverture.</li>
+            <li><strong>Le cache de TanStack Query</strong> garde chaque réponse 5 minutes : revenir de « toulo » à « toul » répond tout de suite. Et le navigateur garde aussi chaque réponse du serveur une heure (<code>Cache-Control: public, max-age=3600</code>).</li>
+            <li><strong>Pas de nouvelle tentative</strong> après un échec : une suggestion qui arrive une seconde trop tard ne sert plus, et chaque essai prendrait sur le débit partagé.</li>
+            <li><strong>La liste réduite tout de suite</strong> : pendant que « toulo » se charge, la liste de « toul » est filtrée aussitôt, sans majuscules ni accents, aux villes qui commencent par « toulo ». Une liste qui ne correspond plus disparaît au lieu de rester en tête.</li>
+            <li><strong>« Prête » ou non</strong> : le hook dit si la liste répond au texte actuel (attente finie, chargement fini, pas l'ancienne liste). Seule une liste prête est annoncée.</li>
+          </ul>
+        </section>
+
+        <section id="vitesse" aria-labelledby="vitesse-titre">
+          <hgroup><p class="eyebrow">Le 15/11/2026</p><h2 id="vitesse-titre">L'audit de vitesse</h2></hgroup>
+          <p class="prose">Flavie trouvait les suggestions lentes. Plutôt que d'optimiser au hasard, chaque maillon a été mesuré :</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les temps mesurés de chaque maillon, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Maillon</th><th scope="col">Sur le poste de développement</th><th scope="col">En mode production</th></tr></thead>
+              <tbody>
+                <tr><td>Notre API, question déjà en cache</td><td class="num">0,3 à 0,9 s</td><td class="num">20 à 25 ms</td></tr>
+                <tr><td>Notre API, nouvelle question</td><td class="num">1,2 à 3,8 s</td><td class="num">90 à 125 ms</td></tr>
+                <tr><td>La Géoplateforme seule</td><td class="num" colspan="2">0,14 à 0,27 s</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <ul class="prose">
+            <li><strong>Le code n'était pas en cause</strong> : la lenteur venait du poste de développement (Symfony en mode débogage sur Windows, et le serveur de développement de Next.js qui ajoute environ 0,5 s). Optimiser le PHP n'aurait rien changé.</li>
+            <li><strong>Deux vrais gains, valables en production aussi</strong> : la liste réduite tout de suite dans le navigateur, et le cache d'une heure du navigateur.</li>
+            <li><strong>Lighthouse</strong>, comparé à la version d'avant (3 à 4 passages de chaque côté) : performance inchangée sur l'accueil (98) et sur la recherche (84 contre 83,5, dans la variation normale), accessibilité 100, aucun décalage de mise en page. Le champ ajoute 2 Kio de JavaScript à l'accueil, 5 Kio à la recherche.</li>
+          </ul>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Les tests</h2>
+          <div class="grid2">
+            <div class="box"><h3>PHPUnit</h3><ul>
+              <li>La question envoyée, nettoyée et encodée (« L'Haÿ-les-Roses », « Saint-Étienne &amp; # »)</li>
+              <li>La Corse (2A, 2B) et l'outre-mer (974), les arrondissements retirés</li>
+              <li>Le tri, avec les vraies réponses de « toul », « mars » et « lil »</li>
+              <li>Le cache, une panne jamais gardée, le vide gardé une heure</li>
+              <li>La route : 422, 429, la panne en liste vide, les en-têtes de cache</li>
+            </ul></div>
+            <div class="box"><h3>Vitest</h3><ul>
+              <li>Le hook : une seule demande, rien sous 3 caractères, rien pour la ville de l'adresse, la liste réduite, aucune nouvelle tentative</li>
+              <li>Le combobox : rôles ARIA, ↓ ↑ Entrée Échap Tab, le clic, l'annonce au singulier et au pluriel</li>
+              <li>Ce que le formulaire de l'accueil envoie vraiment, et son HTML sans JavaScript</li>
+            </ul></div>
+            <div class="box"><h3>Playwright et axe</h3><ul>
+              <li>Le bon Saint-Denis choisi au clavier, puis à la souris</li>
+              <li>Le code postal qui ne reste plus collé</li>
+              <li>La liste au-dessus des barres collantes</li>
+              <li>axe avec la liste ouverte, à 360 et 1280 px, sur les deux pages</li>
+            </ul></div>
+            <div class="box"><h3>Les contre-épreuves</h3><p>Chaque règle importante a été cassée exprès pour vérifier qu'un test échoue. L'une d'elles n'en faisait échouer aucun : la règle était inutile, et elle a été retirée.</p></div>
+          </div>
+        </section>
+
+        <section id="prs" aria-labelledby="prs-titre">
+          <h2 id="prs-titre">Les pull requests</h2>
+          <ul class="prs">
+            <li><span class="num">#193</span><span>L'API : <code>GET /api/geo/communes</code>, le nettoyage, le cache, la limite par adresse IP, et la recherche par ville qui ne répond plus d'erreur serveur pour une ville trop courte.</span></li>
+            <li><span class="num">#194</span><span>L'interface : le combobox sur l'accueil et la page de résultats, le code postal qui ne reste plus collé, l'audit de vitesse et le tri des villes.</span></li>
+          </ul>
+        </section>
+
+      </div>
+    </details>
+
+    <section id="suite" aria-labelledby="suite-titre">
+      <h2 id="suite-titre">La suite</h2>
+      <p class="prose">Deux issues terminent le lot 3 : les favoris sur l'accueil (#184), puis une barre de navigation en bas de l'écran sur téléphone (#183). La table des communes, pour que « gre » propose Grenoble, suivra dans sa propre issue.</p>
+    </section>
+
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="156-bande-de-jours.html" rel="prev"><span>← Issue précédente</span><strong>#156 La bande de jours</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>
