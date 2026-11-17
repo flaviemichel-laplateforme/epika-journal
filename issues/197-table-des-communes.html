@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>Une table des communes dans Epika (#197) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #197 d'Epika : les 34 964 communes officielles dans la base d'Epika. « gre » propose enfin Grenoble, les villes sont trouvées en quelques millisecondes, sans dépendre d'un service extérieur.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a class="home" href="../index.html">Accueil</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 3 · issue #197 · EF-02 · terminée le 17/11/2026</p>
+    <h1>Une table des communes dans Epika</h1>
+    <p class="lede">Les 34 964 communes de France sont maintenant dans la base d'Epika, avec leur mairie, leurs codes postaux et leur population. « gre » propose enfin Grenoble, une ville est trouvée en quelques millisecondes, et plus rien ne dépend d'un service extérieur pour chercher par ville.</p>
+    <dl class="facts">
+      <div class="fact"><dt>pull requests, la table puis la lecture</dt><dd>2</dd></div>
+      <div class="fact"><dt>communes importées</dt><dd>34 964</dd></div>
+      <div class="fact"><dt>ms au plus dans la base pour une suggestion</dt><dd>14</dd></div>
+      <div class="fact"><dt>secondes pour tout importer</dt><dd>10</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#principe">Ce que ça change</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#decisions">Les choix faits</a></li>
+        <li><a href="#chemin">Trouvé en chemin</a></li>
+        <li><a href="#limites">Les limites</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#source">D'où viennent les communes</a></li>
+            <li><a href="#tables">Les deux tables</a></li>
+            <li><a href="#import">L'import</a></li>
+            <li><a href="#chercher">Chercher un nom</a></li>
+            <li><a href="#vide">Si la table est vide</a></li>
+            <li><a href="#mesures">Les mesures</a></li>
+            <li><a href="#tests">Les tests</a></li>
+            <li><a href="#prs">Les pull requests</a></li>
+          </ol>
+        </li>
+        <li><a href="#suite">La suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="principe" aria-labelledby="principe-titre">
+      <h2 id="principe-titre">Ce que ça change</h2>
+      <p class="prose">Avec <a href="159-proposer-les-villes.html">#159</a>, le champ « Où ? » proposait déjà les communes pendant la saisie, mais il demandait chaque lettre au service de géocodage de l'IGN, la Géoplateforme. Ce service ne proposait jamais Grenoble pour « gre ». Epika garde maintenant sa propre liste officielle des communes :</p>
+      <ul class="prose">
+        <li><strong>« gre » propose Grenoble en premier</strong>, puis Grenade, Gretz-Armainvilliers… Les noms qui commencent par ce qui est tapé passent d'abord, et parmi eux, les plus peuplés.</li>
+        <li><strong>Plus vite</strong> : une suggestion se trouve en 1 à 14 ms dans la base, au lieu de 90 à 125 ms auprès du service extérieur.</li>
+        <li><strong>Plus de panne venue d'ailleurs</strong> : si la Géoplateforme ne répond pas, les suggestions et la recherche par ville fonctionnent quand même.</li>
+        <li><strong>Les abréviations comprises</strong> : « st etienne » trouve Saint-Étienne, « ste marie » Sainte-Marie. Aste-Béon et Stenay, qui contiennent « ste », restent tels quels.</li>
+        <li><strong>Les très petits noms trouvés</strong> : Eu (Seine-Maritime) et Y (Somme) sont des communes, et on peut maintenant les chercher. 14 communes ont un nom de 1 ou 2 lettres.</li>
+        <li><strong>La recherche part de la mairie</strong>, là où se trouve vraiment la ville, et non du milieu géométrique de la commune.</li>
+      </ul>
+      <p class="prose">Le champ, la liste et l'adresse de la page ne changent pas : la personne qui cherche voit seulement de meilleures réponses, plus vite.</p>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <p class="prose muted">Captures prises par Playwright sur Epika en production, avec une fausse API : les événements sont fictifs, et les communes proposées sont celles que la vraie API a répondues le 17/11/2026 depuis la table des communes (des données publiques). Sur ordinateur à gauche, sur téléphone à droite.</p>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #197">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/197/01-grenoble-desktop.jpg" width="1280" height="800" loading="lazy" alt="L'accueil, avec « gre » tapé dans « Où ? » et la liste : « Grenoble (38) Isère · 38000 », puis Grenade, Gretz-Armainvilliers, Grenay, Grézieu-la-Varenne et Grésy-sur-Aix. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/197/01-grenoble-mobile.jpg" width="360" height="740" loading="lazy" alt="L'accueil, avec « gre » tapé dans « Où ? » et la liste : « Grenoble (38) Isère · 38000 », puis Grenade, Gretz-Armainvilliers, Grenay, Grézieu-la-Varenne et Grésy-sur-Aix. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> Sur l'accueil, « gre » : Grenoble arrive en premier. Avant, le service extérieur ne proposait que des communes nommées « Grès ».</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/197/02-abreviation-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page de résultats, avec « st eti » tapé dans « Où ? » et la liste : « Saint-Étienne (42) Loire · 42000 », puis Saint-Étienne-du-Rouvray, Saint-Étienne-de-Montluc et d'autres Saint-Étienne. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/197/02-abreviation-mobile.jpg" width="360" height="740" loading="lazy" alt="La page de résultats, avec « st eti » tapé dans « Où ? » et la liste : « Saint-Étienne (42) Loire · 42000 », puis Saint-Étienne-du-Rouvray, Saint-Étienne-de-Montluc et d'autres Saint-Étienne. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> Sur la page de résultats, « st eti » : « st » est compris comme « Saint », et Saint-Étienne arrive en tête, devant les autres Saint-Étienne, de la plus peuplée à la moins peuplée.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/197/03-six-villes-desktop.jpg" width="1280" height="800" loading="lazy" alt="L'accueil, avec « toul » tapé dans « Où ? » et la liste : « Toulouse (31) », « Toulon (83) », « Toul (54) », « Toulouges (66) », « Toulenne (33) » et « Toulaud (07) ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/197/03-six-villes-mobile.jpg" width="360" height="740" loading="lazy" alt="L'accueil, avec « toul » tapé dans « Où ? » et la liste : « Toulouse (31) », « Toulon (83) », « Toul (54) », « Toulouges (66) », « Toulenne (33) » et « Toulaud (07) ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> « toul » : six villes au lieu de trois, toujours Toulouse, Toulon et Toul d'abord. La liste vient maintenant de la base d'Epika, en quelques millisecondes.</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="decisions" aria-labelledby="decisions-titre">
+      <hgroup><p class="eyebrow">Les 16 et 17/11/2026</p><h2 id="decisions-titre">Les choix faits</h2></hgroup>
+      <div class="grid2">
+        <div class="box"><h3>La mairie, pas le centre</h3><p>Chaque commune a deux points possibles : sa mairie et son centre géométrique. Le centre d'Arles est à 15 km au sud de la ville, en Camargue : avec un rayon de recherche de 20 km, cela compte. Epika prend la mairie.</p></div>
+        <div class="box"><h3>3 lettres pour suggérer, aucune pour chercher</h3><p>Sous 3 lettres, trop de communes commencent pareil (« sa ») : la liste ne s'ouvre pas. Mais « Eu » tapé en entier puis cherché trouve la ville d'Eu.</p></div>
+        <div class="box"><h3>Une liste officielle</h3><p>Les données de l'État : l'INSEE pour les noms et les populations, La Poste pour les codes postaux, l'IGN pour les mairies. Publiées sous Licence Ouverte, à citer dans les mentions légales.</p></div>
+        <div class="box"><h3>Mise à jour chaque mois</h3><p>Des communes fusionnent au 1er janvier. Une commande relit la liste et ne change que ce qui a changé : relancée sans changement, elle ne touche à rien. Elle tournera chaque mois sur le serveur.</p></div>
+      </div>
+    </section>
+
+    <section id="chemin" aria-labelledby="chemin-titre">
+      <hgroup><p class="eyebrow">Le 17/11/2026</p><h2 id="chemin-titre">Trouvé en chemin</h2></hgroup>
+      <p class="prose">Chaque étape a été essayée et mesurée avant d'être validée. Quatre surprises, toutes réglées :</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Ce qui a été trouvé pendant le travail, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Ce qui se passait</th><th scope="col">La cause</th><th scope="col">La correction</th></tr></thead>
+          <tbody>
+            <tr><td>Le premier import prenait 9 minutes</td><td>Une écriture par ligne vers la base, et chacune coûte 3,4 ms sur le poste de développement : 70 000 lignes</td><td>500 communes écrites d'un coup : <strong>10 secondes</strong></td></tr>
+            <tr><td>L'import manquait de mémoire sur le poste de développement</td><td>En mode débogage, chaque requête est gardée pour les outils de diagnostic</td><td>Lancé en mode normal (<code>--no-debug</code>), comme en production ; c'est écrit dans la documentation</td></tr>
+            <tr><td>Une table vide donnait une erreur serveur au lieu d'un message clair</td><td>Une ligne de code oubliée lors d'une modification automatique</td><td>Le test écrit pour ce cas l'a montré avant la fusion ; la ligne est corrigée</td></tr>
+            <tr><td>En mode production, la route répondait une erreur juste après les changements</td><td>La configuration compilée de l'ancienne version restait en place</td><td>Elle est recompilée à chaque déploiement : une consigne pour la mise en ligne</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="limites" aria-labelledby="limites-titre">
+      <h2 id="limites-titre">Les limites</h2>
+      <ul class="prose">
+        <li><strong>Les anciennes communes ne sont pas trouvées.</strong> Cran-Gevrier et Annecy-le-Vieux ont fusionné dans Annecy : la liste officielle ne garde que les communes actuelles, donc les taper ne donne rien. Le service public sait relier une ancienne commune à la nouvelle : une issue future pourra les ajouter comme « Cran-Gevrier (Annecy) ».</li>
+        <li><strong>La table doit être remplie.</strong> Sur un serveur neuf, il faut lancer l'import une fois (environ 15 secondes). Tant qu'elle est vide, la recherche par ville le dit clairement (erreur 503), l'accueil montre les événements de toute la France, et le serveur l'écrit dans son journal.</li>
+        <li><strong>« Autour de moi » garde le service de l'IGN</strong> : trouver la commune où l'on se trouve demande les contours des communes, que la table ne contient pas.</li>
+      </ul>
+    </section>
+
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">La source, les tables, l'import, la recherche dans la base et les mesures : pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+
+        <section id="source" aria-labelledby="source-titre">
+          <h2 id="source-titre">D'où viennent les communes</h2>
+          <p class="prose">Une seule requête à l'API Géo de l'État, <code>geo.api.gouv.fr</code>, donne toute la liste : environ 8 Mo, en 1,4 seconde. Ses données viennent du dépôt <code>decoupage-administratif</code> (Licence Ouverte) : le Code officiel géographique et les populations légales de l'INSEE, la liste des codes postaux de La Poste, et les mairies issues de l'ADMIN EXPRESS de l'IGN.</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Ce que contenait la réponse le 17/11/2026, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Dans la réponse du 17/11/2026</th><th scope="col">Ce qu'Epika en fait</th></tr></thead>
+              <tbody>
+                <tr><td>34 969 communes actuelles, aucun arrondissement</td><td>Paris, Lyon et Marseille restent une ville chacune</td></tr>
+                <tr><td>35 493 couples commune–code postal (Paris en a 21)</td><td>Tous gardés</td></tr>
+                <tr><td>Une mairie pour chaque commune, écrite <code>[longitude, latitude]</code></td><td>Inversée à un seul endroit du code ; le centre ne sert que si la mairie manque</td></tr>
+                <tr><td>5 communes sans code postal : les Terres australes</td><td>Écartées, et listées dans le compte rendu</td></tr>
+                <tr><td>Clipperton, sans population</td><td>Population 0</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="prose">Une autre liste existe sur data.gouv.fr, plus riche, mais publiée par un particulier : écartée au profit des producteurs officiels.</p>
+        </section>
+
+        <section id="tables" aria-labelledby="tables-titre">
+          <h2 id="tables-titre">Les deux tables</h2>
+          <div class="grid2">
+            <div class="box"><h3><code>communes</code></h3><ul>
+              <li>Code INSEE (unique), nom, nom normalisé (« saint-etienne »)</li>
+              <li>Code et nom du département, population</li>
+              <li>Latitude et longitude de la mairie</li>
+              <li>Des contraintes <code>CHECK</code> sur chaque colonne : une ligne fausse ne peut pas entrer, même par un autre chemin que l'import</li>
+            </ul></div>
+            <div class="box"><h3><code>commune_postal_codes</code></h3><ul>
+              <li>Un code postal par ligne, rattaché à sa commune</li>
+              <li>Le couple commune–code unique, 5 chiffres vérifiés</li>
+              <li>Clé étrangère sans suppression en cascade, comme partout dans Epika</li>
+            </ul></div>
+          </div>
+          <div class="grid2">
+            <div class="box"><h3>Pourquoi une table à part</h3><p>Une colonne « liste » aurait suffi pour l'import, mais la base n'aurait rien vérifié, et chercher un code postal aurait demandé du SQL écrit à la main. Une table à part garde les contrôles dans la base, les requêtes écrites avec l'outil de Doctrine, et permet plus tard de chercher les communes derrière un code postal (80190 en sert des dizaines).</p></div>
+            <div class="box"><h3>Une entorse assumée</h3><p>Le nom du département dépend du code du département, pas de la commune : en toute rigueur (troisième forme normale), il irait dans sa propre table. Il reste dans <code>communes</code> : l'import remplace ces 108 noms d'un bloc, personne ne les modifie, et chaque suggestion évite une jointure.</p></div>
+          </div>
+          <p class="prose">Deux index sur le nom normalisé : un index classique pour la recherche exacte d'une ville, et un index « trigrammes » (des morceaux de 3 lettres) qui sert à la fois « commence par » (<code>gre%</code>) et « un mot commence par » (<code>%-etienne%</code>).</p>
+        </section>
+
+        <section id="import" aria-labelledby="import-titre">
+          <h2 id="import-titre">L'import : <code>app:communes:import</code></h2>
+          <ol class="pipeline">
+            <li><div><strong>Le verrou</strong><span>Un verrou PostgreSQL : deux imports ne tournent jamais en même temps, même lancés depuis deux serveurs.</span></div></li>
+            <li><div><strong>La lecture</strong><span>La liste officielle, ou un fichier enregistré (<code>--file</code>). Chaque ligne est vérifiée ; une ligne fausse est écartée avec son code INSEE et la raison.</span></div></li>
+            <li><div><strong>Les garde-fous</strong><span>Vérifiés avant d'écrire quoi que ce soit (voir le tableau).</span></div></li>
+            <li><div><strong>Une seule transaction</strong><span>Personne ne voit une table à moitié remplie ; en cas d'échec, rien n'a changé. <code>--dry-run</code> fait tout puis annule.</span></div></li>
+            <li><div><strong>Par lots de 500</strong><span>Chaque lot est lu en une requête avec ses codes postaux. Les nouvelles communes sont écrites en deux requêtes de plusieurs lignes ; les communes modifiées, une par une.</span></div></li>
+            <li><div><strong>Les codes postaux par différence</strong><span>Un code qui reste garde sa ligne, un code disparu est supprimé, un nouveau est ajouté. Jamais « tout effacer puis tout réécrire » : Doctrine écrit les ajouts avant les suppressions, et un couple réécrit heurterait la contrainte d'unicité.</span></div></li>
+            <li><div><strong>Les communes disparues</strong><span>Fusionnées au 1er janvier : supprimées, leurs codes postaux d'abord.</span></div></li>
+            <li><div><strong>Le compte rendu</strong><span>Ajoutées, modifiées, supprimées, inchangées, écartées (avec leurs codes), la durée et la mémoire utilisée.</span></div></li>
+          </ol>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les garde-fous de l'import, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Garde-fou</th><th scope="col">Seuil</th><th scope="col">Levé par <code>--force</code> ?</th></tr></thead>
+              <tbody>
+                <tr><td>Communes valides</td><td>moins de 30 000</td><td>Jamais : une réponse aussi courte est une réponse coupée, qui viderait la table</td></tr>
+                <tr><td>Lignes écartées</td><td>plus de 20 (5 attendues)</td><td>Oui, après avoir lu le compte rendu</td></tr>
+                <tr><td>Suppressions</td><td>plus de 1 % de la table (environ 350)</td><td>Oui, après un <code>--dry-run</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="chercher" aria-labelledby="chercher-titre">
+          <h2 id="chercher-titre">Chercher un nom</h2>
+          <div class="grid2">
+            <div class="box"><h3>Deux façons d'écrire un nom</h3><p><code>normalize()</code> fabrique le nom stocké à partir du nom officiel : « Saint-Étienne » devient « saint-etienne ». <code>normalizeQuery()</code> traite ce que la personne tape : la même chose, plus « st- » → « saint- » et « ste- » → « sainte- », seulement en début de mot et suivis d'un autre mot. Un nom officiel n'est jamais réécrit.</p></div>
+            <div class="box"><h3>Les suggestions</h3><p>Les noms qui commencent par la question, ou dont un mot commence par elle. Triés : d'abord ceux qui commencent par la question, puis par population, par nom, et enfin par code INSEE pour que l'ordre soit toujours le même. Six au plus, une ligne par commune, avec son plus petit code postal.</p></div>
+            <div class="box"><h3>La recherche par ville</h3><p>Le nom entier : « Toul » est Toul, jamais Toulouse. Le code postal choisi départage les homonymes (Saint-Denis 93200) ; sans lui, la plus peuplée l'emporte (le Saint-Denis de La Réunion, 155 634 habitants contre 149 077).</p></div>
+            <div class="box"><h3>Les jokers neutralisés</h3><p>Dans une recherche SQL <code>LIKE</code>, <code>%</code> veut dire « n'importe quoi ». La question n'en contient jamais après nettoyage, mais elle est échappée quand même : aucun code futur ne pourra transformer « % » en « toutes les communes ».</p></div>
+          </div>
+        </section>
+
+        <section id="vide" aria-labelledby="vide-titre">
+          <h2 id="vide-titre">Si la table est vide</h2>
+          <p class="prose">Une table vide n'est pas une « ville inconnue » : toutes les villes le seraient. Quand une ville n'est pas trouvée, Epika vérifie donc, et seulement à ce moment-là, si la table contient au moins une commune.</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Ce que répond chaque page quand la table est vide, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Où</th><th scope="col">Réponse</th><th scope="col">Pourquoi</th></tr></thead>
+              <tbody>
+                <tr><td>La recherche par ville</td><td>503</td><td>Ne jamais dire « aucune commune ne porte ce nom » à tort</td></tr>
+                <tr><td>L'accueil</td><td>Les événements de toute la France</td><td>L'accueil ne répond jamais d'erreur (référencement)</td></tr>
+                <tr><td>Les suggestions</td><td>Une liste vide, <code>Cache-Control: no-store</code></td><td>Aucun navigateur ne garde ce vide une heure : les suggestions reviennent dès l'import</td></tr>
+                <tr><td>Le journal du serveur</td><td>Un message <code>critical</code></td><td>Il dit quelle commande lancer ; <code>app:database:reset</code> le rappelle aussi</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="mesures" aria-labelledby="mesures-titre">
+          <hgroup><p class="eyebrow">Le 17/11/2026</p><h2 id="mesures-titre">Les mesures</h2></hgroup>
+          <p class="prose">Le critère de l'issue : une suggestion en moins de 20 ms depuis la base. Mesuré avec <code>EXPLAIN ANALYZE</code> sur les 34 964 communes, après <code>ANALYZE</code>, et la route entière dans un noyau Symfony de production (sans serveur web ni OPcache, comme à l'audit de #159) :</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les temps mesurés, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Question</th><th scope="col">Dans PostgreSQL</th><th scope="col">La route entière</th></tr></thead>
+              <tbody>
+                <tr><td><code>gre</code></td><td class="num">1,4 ms</td><td class="num">22 ms</td></tr>
+                <tr><td><code>etienne</code></td><td class="num">0,9 ms</td><td class="num">18 ms</td></tr>
+                <tr><td><code>saint-den</code></td><td class="num">4,5 ms</td><td class="num">23 ms</td></tr>
+                <tr><td><code>mar</code></td><td class="num">8,8 ms</td><td class="num">27 ms</td></tr>
+                <tr><td><code>sai</code>, le pire cas (4 497 noms commencent par « Saint »)</td><td class="num">14,1 ms</td><td class="num">36 ms</td></tr>
+                <tr><td>Situer Saint-Denis 93200</td><td class="num">0,16 ms</td><td class="num">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="prose">Avant, une nouvelle question prenait 90 à 125 ms, et seules les questions déjà en cache répondaient en 20 à 25 ms. Désormais, toute question répond aussi vite que l'ancien cache, sans cache sur le serveur : les deux caches de #159 ont été retirés.</p>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Les tests</h2>
+          <div class="grid2">
+            <div class="box"><h3>De vraies communes</h3><p>Un jeu de 20 vraies communes, avec les données officielles : Grenoble et les « Grès », les deux Saint-Denis, Ajaccio et Ajac, Toulouse, Toulon et Toul, Arles, Aste-Béon, Stenay, Eu, Y… Chaque cas difficile y a son exemple.</p></div>
+            <div class="box"><h3>L'import</h3><ul>
+              <li>Ajout, modification, suppression, relance sans aucun changement</li>
+              <li>Un code postal qui reste garde sa ligne</li>
+              <li>Les trois garde-fous, <code>--force</code>, <code>--dry-run</code></li>
+              <li>Deux imports en même temps : le second s'arrête</li>
+            </ul></div>
+            <div class="box"><h3>La recherche</h3><ul>
+              <li>« gre » → Grenoble, les homonymes, la Corse</li>
+              <li>Les abréviations, Aste-Béon et Stenay intacts</li>
+              <li>Eu et Y, les jokers <code>%</code> et <code>_</code></li>
+              <li>La table vide : 503, accueil national, <code>no-store</code></li>
+            </ul></div>
+            <div class="box"><h3>Plus jamais l'IGN</h3><p>Dans les tests des suggestions et de la recherche, un faux client de la Géoplateforme compte ses appels : le compteur doit rester à zéro. 4 494 tests au total.</p></div>
+          </div>
+        </section>
+
+        <section id="prs" aria-labelledby="prs-titre">
+          <h2 id="prs-titre">Les pull requests</h2>
+          <ul class="prs">
+            <li><span class="num">#198</span><span>La table : les deux entités, la migration, la lecture de la liste officielle, l'import avec ses garde-fous et son verrou, l'écriture par lots, la documentation.</span></li>
+            <li><span class="num">#199</span><span>La lecture : les suggestions et la recherche par ville depuis la table, les abréviations, la table vide, le retrait des caches et du client de la Géoplateforme, les mesures.</span></li>
+          </ul>
+        </section>
+
+      </div>
+    </details>
+
+    <section id="suite" aria-labelledby="suite-titre">
+      <h2 id="suite-titre">La suite</h2>
+      <p class="prose">À la mise en ligne, l'import tournera une première fois, puis chaque mois, avec une alerte s'il échoue. Une issue future pourra retrouver les anciennes communes (Cran-Gevrier, Annecy-le-Vieux) en les reliant à leur commune actuelle. Et la table servira aux futures pages par ville : retrouver une commune à partir d'un code postal est désormais une simple requête.</p>
+    </section>
+
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="183-barre-du-bas.html" rel="prev"><span>← Issue précédente</span><strong>#183 La barre du bas sur téléphone</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>
