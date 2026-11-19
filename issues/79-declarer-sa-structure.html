@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>Déclarer sa structure (#79) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #79 d'Epika : un organisateur déclare sa structure et suit sa validation. Un SIRET qui correspond à l'annuaire des entreprises de l'État la valide à l'instant, à l'essai ; tout le reste attend un administrateur, et Epika ne refuse jamais seul.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a class="home" href="../index.html">Accueil</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 4 · issue #79 · EF-11, RG-32 · terminée le 19/11/2026</p>
+    <h1>Déclarer sa structure</h1>
+    <p class="lede">La porte d'entrée de l'espace organisateur : une association, une mairie ou une entreprise se déclare en cinq champs, puis suit sa validation. Quand son SIRET correspond à son nom dans l'annuaire des entreprises de l'État, elle est validée à l'instant, à l'essai. Sinon, un administrateur vérifie : Epika ne refuse jamais seul.</p>
+    <dl class="facts">
+      <div class="fact"><dt>pull requests, déclarer puis vérifier</dt><dd>2</dd></div>
+      <div class="fact"><dt>conditions pour une validation automatique</dt><dd>6</dd></div>
+      <div class="fact"><dt>jours d'essai après une validation automatique</dt><dd>30</dd></div>
+      <div class="fact"><dt>tests du backend à la fin</dt><dd>4 735</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#principe">Ce que ça change</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#validation">La validation automatique</a></li>
+        <li><a href="#decisions">Les choix faits</a></li>
+        <li><a href="#chemin">Trouvé en chemin</a></li>
+        <li><a href="#securite">Sécurité et vie privée</a></li>
+        <li><a href="#limites">Les limites</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#api">Les routes de l'API</a></li>
+            <li><a href="#statuts">Les statuts et leurs passages</a></li>
+            <li><a href="#annuaire">Interroger l'annuaire</a></li>
+            <li><a href="#concurrence">Deux déclarations en même temps</a></li>
+            <li><a href="#traces">Ce qui est gardé</a></li>
+            <li><a href="#emails">Les e-mails</a></li>
+            <li><a href="#tests">Les tests</a></li>
+            <li><a href="#prs">Les pull requests</a></li>
+          </ol>
+        </li>
+        <li><a href="#appris">Ce que ce travail a appris</a></li>
+        <li><a href="#suite">La suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="principe" aria-labelledby="principe-titre">
+      <h2 id="principe-titre">Ce que ça change</h2>
+      <div class="prose"><p>Jusqu'ici, Epika ne montrait que des événements importés d'OpenAgenda. Avec #79, une personne inscrite peut déclarer la structure au nom de laquelle elle publiera : c'est la première brique de l'espace organisateur (lot 4).</p></div>
+      <ul class="prose">
+        <li><strong>Cinq champs seulement</strong> : le nom, le type (association, collectivité, entreprise, autre), le numéro d'identification, le code postal et la ville. Le profil complet (logo, présentation, réseaux) viendra avec #80.</li>
+        <li><strong>Validée à l'instant quand c'est clair</strong> : une mairie ou une entreprise dont le SIRET et le nom correspondent à l'annuaire des entreprises de l'État est validée pendant l'envoi, en une seconde environ.</li>
+        <li><strong>À l'essai pendant 30 jours</strong> : une structure validée automatiquement pourra publier 3 événements par semaine, le temps qu'un administrateur y jette un œil. La page le dit en toutes lettres.</li>
+        <li><strong>Sinon, un administrateur vérifie</strong>, et reçoit par e-mail toutes les raisons de l'attente. Epika ne refuse jamais une structure tout seul.</li>
+        <li><strong>Le statut toujours visible</strong> : un badge avec une icône et des mots, une frise « Déclarée → Vérification → Validée », et « Et maintenant ? » qui dit quoi faire.</li>
+        <li><strong>Refusée, puis renvoyée</strong> : le motif est écrit en clair ; on corrige, on renvoie, et le refus reste dans l'historique.</li>
+        <li><strong>« Espace organisateur »</strong> apparaît dans l'en-tête dès que le compte a une structure.</li>
+      </ul>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <div class="prose"><p class="muted">Captures prises par Playwright sur Epika en production, avec une fausse API : la personne est fictive. La Ville de Paris et la commune de La Farlède sont des collectivités : leur nom et leur SIRET sont des données publiques de l'annuaire des entreprises. Sur ordinateur à gauche, sur téléphone à droite.</p></div>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #79">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/79/01-declarer-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le formulaire « Déclarer ma structure » rempli : « Ville de Paris », le type « Collectivité ou mairie » coché, le SIRET avec son aide, le code postal 75004 et la ville Paris. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/79/01-declarer-mobile.jpg" width="360" height="740" loading="lazy" alt="Le formulaire « Déclarer ma structure » rempli : « Ville de Paris », le type « Collectivité ou mairie » coché, le SIRET avec son aide, le code postal 75004 et la ville Paris. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> « Ma structure », sans structure : cinq champs seulement. Le texte sous le numéro change avec le type, et annonce qu'un SIRET au nom de l'annuaire peut être validé tout de suite.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/79/02-verification-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le bouton « Vérification… » désactivé, et sous lui la phrase « Vérification de votre numéro auprès de l'annuaire des entreprises… Cela peut prendre quelques secondes. » Sur ordinateur.">
+              <img class="shot-mobile" src="../images/79/02-verification-mobile.jpg" width="360" height="740" loading="lazy" alt="Le bouton « Vérification… » désactivé, et sous lui la phrase « Vérification de votre numéro auprès de l'annuaire des entreprises… Cela peut prendre quelques secondes. » Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> Pendant l'envoi, Epika interroge l'annuaire des entreprises de l'État : le bouton dit « Vérification… », et une phrase l'annonce aussi aux lecteurs d'écran. Cela prend une seconde, sept au pire.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/79/03-validee-a-l-essai-desktop.jpg" width="1280" height="800" loading="lazy" alt="« Ville de Paris » avec le badge « Validée », la frise terminée, et sous « Et maintenant ? » : « Jusqu'au 19 décembre 2026, elle est à l'essai : vous pourrez publier jusqu'à 3 événements par semaine. » Sur ordinateur.">
+              <img class="shot-mobile" src="../images/79/03-validee-a-l-essai-mobile.jpg" width="360" height="740" loading="lazy" alt="« Ville de Paris » avec le badge « Validée », la frise terminée, et sous « Et maintenant ? » : « Jusqu'au 19 décembre 2026, elle est à l'essai : vous pourrez publier jusqu'à 3 événements par semaine. » Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> Le SIRET correspond au nom de l'annuaire : la structure est validée à l'instant, sans attendre personne. Elle est à l'essai pendant 30 jours, à 3 événements par semaine, et la page le dit en toutes lettres.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/79/04-en-attente-desktop.jpg" width="1280" height="800" loading="lazy" alt="« Mairie » avec le badge « En attente de validation », la frise sur l'étape « Vérification », « Et maintenant ? », le récapitulatif et le bouton « Corriger ma déclaration ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/79/04-en-attente-mobile.jpg" width="360" height="740" loading="lazy" alt="« Mairie » avec le badge « En attente de validation », la frise sur l'étape « Vérification », « Et maintenant ? », le récapitulatif et le bouton « Corriger ma déclaration ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">4</span> « Mairie » avec le SIRET de La Farlède : le numéro existe, mais le nom n'est pas celui de l'annuaire (« Commune de La Farlède »). Epika ne refuse jamais seul : la structure attend un administrateur, qui reçoit la raison par e-mail.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/79/05-numero-invalide-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le champ « Numéro d'identification » en erreur, avec le message « Numéro invalide (faute de frappe ?) ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/79/05-numero-invalide-mobile.jpg" width="360" height="740" loading="lazy" alt="Le champ « Numéro d'identification » en erreur, avec le message « Numéro invalide (faute de frappe ?) ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">5</span> Une faute de frappe dans le SIRET : la clé de contrôle ne tombe pas juste. L'erreur s'affiche sous le champ, qui reçoit le focus, et rien n'est envoyé, ni à Epika ni à l'annuaire.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/79/06-refusee-desktop.jpg" width="1280" height="800" loading="lazy" alt="« Les Amis du Vieux Moulin » avec le badge « Refusée », le motif sur fond rouge clair, « Et maintenant ? » et le formulaire pré-rempli. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/79/06-refusee-mobile.jpg" width="360" height="740" loading="lazy" alt="« Les Amis du Vieux Moulin » avec le badge « Refusée », le motif sur fond rouge clair, « Et maintenant ? » et le formulaire pré-rempli. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">6</span> Refusée par un administrateur : le motif est écrit en clair, et le formulaire est pré-rempli. On corrige, puis « Renvoyer pour validation » : la structure repasse en attente, et le refus reste dans l'historique.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/79/07-suspendue-desktop.jpg" width="1280" height="800" loading="lazy" alt="« Les Amis du Vieux Moulin » avec le badge « Suspendue », le motif « Événements trompeurs signalés à plusieurs reprises. » et « Et maintenant ? ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/79/07-suspendue-mobile.jpg" width="360" height="740" loading="lazy" alt="« Les Amis du Vieux Moulin » avec le badge « Suspendue », le motif « Événements trompeurs signalés à plusieurs reprises. » et « Et maintenant ? ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">7</span> Suspendue : ses événements ne sont plus visibles, et plus rien n'est modifiable. Le motif est affiché, avec le chemin pour contacter l'équipe.</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="validation" aria-labelledby="validation-titre">
+      <hgroup><p class="eyebrow">La règle RG-32</p><h2 id="validation-titre">La validation automatique</h2></hgroup>
+      <div class="prose"><p>Pendant l'envoi de la déclaration, Epika interroge l'<strong>annuaire des entreprises</strong> de l'État (recherche-entreprises.api.gouv.fr, un service public et gratuit). La structure est validée seulement si <strong>les six conditions</strong> sont remplies ; il suffit qu'une seule manque pour qu'elle attende un administrateur.</p></div>
+      <ol class="pipeline">
+        <li><div><strong>Le SIRET existe</strong><span>Trouvé dans l'annuaire, avec des données publiques, et l'établissement comme l'entreprise sont en activité.</span></div></li>
+        <li><div><strong>Le type est cohérent</strong><span>La catégorie juridique de l'INSEE correspond au type déclaré : une commune est une collectivité, une association est une association. Une entreprise qui se déclare « mairie » attend.</span></div></li>
+        <li><div><strong>Le nom correspond</strong><span>Le nom déclaré est celui de l'annuaire, aux majuscules, accents et tirets près : « Ville de Paris » = « VILLE DE PARIS ». Mais « L'Atelier » n'est pas « Atelier » : un doute part à la main.</span></div></li>
+        <li><div><strong>Le SIRET est libre</strong><span>Aucune autre structure ne le porte déjà. Sinon, l'administrateur reçoit le nom de celle qui le porte.</span></div></li>
+        <li><div><strong>L'e-mail est vérifié</strong><span>Toujours vrai aujourd'hui (on ne peut pas se connecter sans), gardé par prudence.</span></div></li>
+        <li><div><strong>Un numéro à comparer</strong><span>Une association avec seulement un numéro RNA, ou sans numéro, n'a rien à comparer dans l'annuaire : elle est vérifiée à la main.</span></div></li>
+      </ol>
+      <div class="grid2">
+        <div class="box"><h3>Validée</h3><p>La structure peut publier tout de suite, à l'essai : 30 jours, 3 événements par semaine. La personne reçoit « Votre structure est validée », et chaque administrateur un e-mail qui dit ce qui a été comparé, pour garder un œil dessus.</p></div>
+        <div class="box"><h3>En attente</h3><p>La personne reçoit un accusé de réception. Chaque administrateur reçoit la déclaration avec toutes les raisons de l'attente, en français : « le nom déclaré ne correspond à aucun nom de l'annuaire », « SIRET déjà porté par… ».</p></div>
+      </div>
+      <p class="note key">Si l'annuaire ne répond pas (panne, lenteur, trop de demandes), la déclaration n'est jamais bloquée : elle attend un administrateur, avec la raison « annuaire indisponible ».</p>
+    </section>
+
+    <section id="decisions" aria-labelledby="decisions-titre">
+      <hgroup><p class="eyebrow">Du 17 au 19/11/2026</p><h2 id="decisions-titre">Les choix faits</h2></hgroup>
+      <div class="prose"><p>Chaque choix a été pesé contre une autre solution ; voici celle retenue, et pourquoi l'autre a été écartée.</p></div>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Les choix faits et les solutions écartées, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Choix retenu</th><th scope="col">Solution écartée</th><th scope="col">Pourquoi</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Ne jamais refuser automatiquement</strong> : le système valide les cas clairs, et tout le reste attend</td><td>Refuser quand le SIRET ne correspond pas</td><td>Un nom abrégé ou une faute de frappe ne font pas une fraude : un refus automatique découragerait de vrais organisateurs. Un administrateur tranche.</td></tr>
+            <tr><td><strong>Une période d'essai</strong> de 30 jours après une validation automatique</td><td>Une validation automatique sans limite</td><td>Un SIRET public peut être utilisé par quelqu'un d'autre. L'essai limite les dégâts possibles le temps d'un contrôle humain.</td></tr>
+            <tr><td><strong>Le numéro d'une association est facultatif</strong></td><td>Exiger un numéro RNA</td><td>Les associations d'Alsace-Moselle n'ont pas de RNA. Sans numéro, la déclaration est acceptée et vérifiée à la main.</td></tr>
+            <tr><td><strong>L'enseigne n'est jamais un nom pour une collectivité</strong></td><td>Comparer le nom à tous les noms de l'annuaire, enseigne comprise</td><td>L'enseigne de toutes les communes est « MAIRIE » : « Mairie » aurait validé n'importe quelle commune. Les entreprises gardent leur enseigne.</td></tr>
+            <tr><td><strong>Pas d'index unique sur le SIRET</strong></td><td>Interdire en base deux structures au même SIRET</td><td>Si quelqu'un a déjà déclaré une mairie, la vraie mairie doit pouvoir se déclarer quand même, pour qu'un administrateur départage.</td></tr>
+            <tr><td><strong>Corriger une déclaration en attente relance la vérification</strong></td><td>Ne vérifier qu'au premier envoi</td><td>Après avoir corrigé « Mairie » en « Commune de La Farlède », la structure est validée sans attendre personne.</td></tr>
+            <tr><td><strong>Pas d'autocomplétion du SIRET pour l'instant</strong></td><td>Proposer les entreprises pendant la saisie</td><td>Un confort, pas une sécurité : le contrôle serait exactement le même. Gardée pour plus tard (#206).</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="chemin" aria-labelledby="chemin-titre">
+      <hgroup><p class="eyebrow">Du 17 au 19/11/2026</p><h2 id="chemin-titre">Trouvé en chemin</h2></hgroup>
+      <div class="prose"><p>Chaque étape a été essayée avant d'être validée, et l'essai à la main contre le vrai annuaire a fini le travail. Les surprises, toutes réglées :</p></div>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Ce qui a été trouvé pendant le travail, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Ce qui se passait</th><th scope="col">La cause</th><th scope="col">La correction</th></tr></thead>
+          <tbody>
+            <tr><td>Un SIRET de La Poste aurait été refusé comme « faute de frappe »</td><td>Les SIRET se vérifient avec la clé de Luhn, sauf ceux de La Poste, trop nombreux : pour eux, la somme des chiffres doit être un multiple de 5 (sauf son siège)</td><td>L'exception est dans le code et dans les tests, des deux côtés (navigateur et serveur)</td></tr>
+            <tr><td>« Mairie » avec le SIRET de La Farlède aurait été validée</td><td>L'enseigne de chaque commune est « MAIRIE » dans l'annuaire</td><td>L'enseigne ne compte plus pour une collectivité (décidé le 19/11)</td></tr>
+            <tr><td>Une réponse « trop de demandes » aurait été redemandée trois fois</td><td>Par défaut, Symfony réessaie aussi après une erreur 429, ce qui aggrave la limite de 7 demandes par seconde</td><td>Un seul nouvel essai, et seulement après une panne du réseau ou du serveur (502, 503, 504)</td></tr>
+            <tr><td>Le SIRET aurait pu finir dans les journaux du serveur</td><td>Le message d'erreur de Symfony contient l'adresse demandée, donc le SIRET (celui d'un entrepreneur individuel désigne une personne)</td><td>Le journal ne garde que la cause : le code de réponse, « réseau » ou « réponse illisible »</td></tr>
+            <tr><td>Une ligne vide en trop, ou deux lignes collées, dans les e-mails en texte</td><td>Twig avale le retour à la ligne qui suit une balise</td><td>Les modèles corrigés, et les trois cas rendus et relus</td></tr>
+            <tr><td>Avec « Espace organisateur », les liens de l'en-tête passaient sur deux lignes à 640 px</td><td>Quatre liens ne tiennent pas dans cette largeur</td><td>L'en-tête complet s'affiche à partir de 768 px ; en dessous, la barre du bas reste. Testé à 640, 768, 1024 et 1280 px</td></tr>
+            <tr><td>Aucun e-mail aux administrateurs pendant l'essai à la main</td><td>La base de développement n'avait aucun administrateur</td><td>Comportement voulu (un avertissement dans le journal) ; un administrateur créé avec la commande du projet</td></tr>
+            <tr><td>La CI échouait avant même les tests de bout en bout</td><td>Les serveurs d'Ubuntu ne répondaient plus pendant l'installation de Chromium</td><td>Une relance a suffi ; une issue (#209) pour ne plus dépendre d'eux</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="prose"><p>Et une amélioration venue de l'essai : quand un SIRET est déjà porté, l'e-mail aux administrateurs <strong>nomme la structure qui le porte</strong> (son statut, sa ville, sa gérante), pour comparer les deux déclarations d'un coup d'œil.</p></div>
+    </section>
+
+    <section id="securite" aria-labelledby="securite-titre">
+      <h2 id="securite-titre">Sécurité et vie privée</h2>
+      <div class="grid2">
+        <div class="box"><h3>Personne ne touche la structure d'un autre</h3><p>Les routes ne contiennent aucun identifiant : la structure est toujours celle du compte connecté, lue dans son jeton. Impossible de viser celle d'un autre en changeant un numéro dans l'adresse. Une structure suspendue ne peut plus être modifiée, et c'est un « voter » de Symfony qui le décide, jamais un test écrit dans un contrôleur.</p></div>
+        <div class="box"><h3>Les entrées vérifiées</h3><p>Le SIRET est nettoyé (espaces, points, tirets), puis contrôlé : 14 chiffres et la clé. Un numéro faux n'est jamais envoyé à l'annuaire. Le nom ne peut pas contenir de caractères de contrôle. La base vérifie aussi les valeurs, par des contraintes <code>CHECK</code>.</p></div>
+        <div class="box"><h3>Un nombre d'essais limité</h3><p>5 déclarations, corrections ou renvois par heure et par compte, au plus : assez pour corriger une faute, trop peu pour essayer des SIRET en série.</p></div>
+        <div class="box"><h3>Le moins de données possible</h3><p>Epika demande à l'annuaire sa version réduite, sans les noms des dirigeants : il ne reçoit jamais un nom dont il n'a pas besoin. Le SIRET n'est jamais écrit dans les journaux du serveur.</p></div>
+        <div class="box"><h3>Une preuve conservée</h3><p>Ce qui a validé une structure (le nom trouvé, le champ, la catégorie juridique, l'heure) est gardé pour toujours avec la décision, et ne peut plus être modifié.</p></div>
+        <div class="box"><h3>Accessible</h3><p>Le statut est écrit en mots, jamais en couleur seule ; les erreurs sont reliées à leur champ, qui reçoit le focus ; la vérification en cours est annoncée aux lecteurs d'écran. axe ne trouve rien, en téléphone et en ordinateur, dans les six états de la page.</p></div>
+      </div>
+    </section>
+
+    <section id="limites" aria-labelledby="limites-titre">
+      <h2 id="limites-titre">Les limites</h2>
+      <ul class="prose">
+        <li><strong>Le nom et le SIRET d'une mairie sont publics.</strong> N'importe qui peut déclarer « Commune de X » et être validé à l'essai. Avant l'ouverture au public, il faudra soit une preuve par l'adresse e-mail officielle de la commune (#203), soit vérifier les collectivités à la main.</li>
+        <li><strong>La limite de 3 événements par semaine</strong> est calculée, mais pas encore appliquée : elle le sera avec la publication des événements (#81).</li>
+        <li><strong>Les administrateurs décident directement dans la base</strong> jusqu'à leur espace (#87) ; d'ici là, ils sont prévenus de chaque déclaration et de chaque validation automatique par e-mail.</li>
+        <li><strong>Une association sans SIRET</strong> attend toujours un administrateur (#207 pourra peut-être retrouver son SIRET à partir de son RNA).</li>
+      </ul>
+    </section>
+
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Les routes, les statuts, l'annuaire, la concurrence, les traces gardées, les e-mails et les tests : pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+
+        <section id="api" aria-labelledby="api-titre">
+          <h2 id="api-titre">Les routes de l'API</h2>
+          <div class="prose"><p>Sur le modèle de l'espace participant (#78) : un objet de transfert (DTO), un « provider » qui lit, un « processor » qui écrit, avec API Platform.</p></div>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les routes de l'API, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Route</th><th scope="col">Ce qu'elle fait</th><th scope="col">Réponses</th></tr></thead>
+              <tbody>
+                <tr><td><code>GET /api/me/organization</code></td><td>Ma structure, sa dernière décision et son niveau de confiance (<code>trust</code>)</td><td>200 ; 404 « Aucune structure déclarée »</td></tr>
+                <tr><td><code>POST /api/me/organization</code></td><td>Déclarer, puis vérifier le SIRET</td><td>201 ; 409 si le compte a déjà une structure, même pour deux envois simultanés ; 422</td></tr>
+                <tr><td><code>PATCH /api/me/organization</code></td><td>Corriger (en attente ou refusée) ; en attente, la vérification est relancée</td><td>200 ; 403 suspendue ; 409 validée ; 422</td></tr>
+                <tr><td><code>POST /api/me/organization/resubmission</code></td><td>Renvoyer après un refus</td><td>200 ; 403 suspendue ; 409 sinon</td></tr>
+                <tr><td><code>GET /api/me</code></td><td>Ajoute <code>organization: {name, slug, status}</code>, pour l'en-tête</td><td>200</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="statuts" aria-labelledby="statuts-titre">
+          <h2 id="statuts-titre">Les statuts et leurs passages</h2>
+          <div class="prose"><p>Les passages permis vivent dans l'énumération <code>OrganizationStatus</code> elle-même (<code>canTransitionTo()</code>), avec un <code>match</code> sans cas par défaut : un statut ajouté un jour sans ses règles est une erreur visible tout de suite. Un passage interdit lève une exception typée. Les 25 paires de statuts sont testées.</p></div>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les passages entre statuts, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Depuis</th><th scope="col">Vers</th></tr></thead>
+              <tbody>
+                <tr><td><span class="pill todo">En attente</span></td><td>Validée, Refusée</td></tr>
+                <tr><td><span class="pill bad">Refusée</span></td><td>En attente (renvoi)</td></tr>
+                <tr><td><span class="pill done">Validée</span></td><td>Suspendue</td></tr>
+                <tr><td><span class="pill bad">Suspendue</span></td><td>Validée</td></tr>
+                <tr><td><span class="pill part">Non revendiquée</span> (importée)</td><td>En attente (revendication, en v2)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="annuaire" aria-labelledby="annuaire-titre">
+          <h2 id="annuaire-titre">Interroger l'annuaire</h2>
+          <div class="grid2">
+            <div class="box"><h3><code>SiretVerifier</code></h3><p><code>/search?q=&lt;SIRET&gt;&amp;minimal=true&amp;include=matching_etablissements</code>. Seul l'établissement dont le SIRET est exactement celui demandé compte. Chaque champ est lu avec son type : une réponse inattendue donne « indisponible », jamais une erreur 500. Quatre résultats : trouvé, introuvable, masqué, indisponible.</p></div>
+            <div class="box"><h3>Le client HTTP</h3><p><code>timeout: 3</code> ne mesure que l'inactivité ; <code>max_duration: 3</code> borne la requête entière. Un seul nouvel essai après 0,5 s, sur 0 (réseau), 502, 503 ou 504 seulement. Au pire, environ 7 secondes, que le formulaire annonce.</p></div>
+            <div class="box"><h3><code>AutomaticValidationRule</code></h3><p>Une classe « pure » : elle ne lit ni la base ni le réseau, elle reçoit tout en paramètres et rend un verdict (validée, à revoir, indisponible) avec toutes ses raisons. Elle se teste condition par condition, sans rien simuler.</p></div>
+            <div class="box"><h3><code>NameNormalizer</code></h3><p>Minuscules, accents retirés, ponctuation changée en espaces, « &amp; » lu « et ». Rien d'autre n'est retiré : ni « SAS », ni « L' ». Un nom vide ne correspond jamais à rien.</p></div>
+          </div>
+        </section>
+
+        <section id="concurrence" aria-labelledby="concurrence-titre">
+          <h2 id="concurrence-titre">Deux déclarations en même temps</h2>
+          <div class="prose"><p>Le risque : deux personnes déclarent la même mairie à la même seconde. Chacune vérifie que le SIRET est libre, chacune le trouve libre, et les deux sont validées. La solution tient en deux règles : ne jamais faire attendre la base pendant l'appel au réseau, et faire passer les deux déclarations l'une après l'autre au moment de décider.</p></div>
+          <ol class="pipeline">
+            <li><div><strong>L'annuaire d'abord, hors transaction</strong><span>La base n'attend jamais le réseau : aucune ligne n'est bloquée pendant la seconde que dure l'appel.</span></div></li>
+            <li><div><strong>Un verrou « consultatif » sur le SIRET</strong><span><code>pg_advisory_xact_lock</code> : un cadenas PostgreSQL qui porte un numéro (ici le SIRET, qui tient dans un entier de 64 bits). La seconde déclaration du même SIRET attend que la première ait fini. Il s'ouvre seul à la fin de la transaction.</span></div></li>
+            <li><div><strong>Relire la structure, verrouillée</strong><span><code>refresh($organization, LockMode::PESSIMISTIC_WRITE)</code>, soit un <code>SELECT … FOR UPDATE</code>. <code>find()</code> rendrait l'objet déjà en mémoire, tel qu'il était avant.</span></div></li>
+            <li><div><strong>Abandonner si elle a changé</strong><span>Plus en attente, ou un autre nom, type ou SIRET entre-temps : le verdict ne vaut plus rien, rien n'est enregistré.</span></div></li>
+            <li><div><strong>« SIRET déjà porté » compté sous le verrou</strong><span>La seule condition qui dépend de la base : la seconde déclaration voit la première, et attend.</span></div></li>
+            <li><div><strong>Décider</strong><span>Le verdict est enregistré, et s'il valide, la décision automatique avec sa preuve.</span></div></li>
+          </ol>
+          <p class="note">Un test lance deux structures au même SIRET : jamais deux validations. Un autre vérifie que l'appel à l'annuaire a bien lieu hors de toute transaction.</p>
+        </section>
+
+        <section id="traces" aria-labelledby="traces-titre">
+          <h2 id="traces-titre">Ce qui est gardé</h2>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les colonnes ajoutées, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Colonne (JSONB)</th><th scope="col">Contenu</th><th scope="col">Durée de vie</th></tr></thead>
+              <tbody>
+                <tr><td><code>organizations.last_verification</code></td><td>Le résultat, les raisons, l'heure, ce qui a été comparé</td><td>Remplacée à chaque vérification : elle explique l'attente en cours</td></tr>
+                <tr><td><code>organization_validations.evidence</code></td><td>La même chose, pour une validation automatique</td><td>Écrite une fois, jamais modifiée</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="prose"><p>Une contrainte <code>CHECK</code> garantit qu'une décision automatique a toujours sa preuve, et qu'une décision humaine n'en a pas. Le <strong>niveau de confiance</strong> (<code>OrganizationTrust</code>) n'est jamais stocké : il se calcule à partir de la dernière décision et de l'horloge (<code>ClockInterface</code>), testé à 29, 30 et 31 jours. La liste « à revoir » des structures à l'essai (<code>findOnProbation</code>) est prête pour l'espace d'administration (#87).</p></div>
+        </section>
+
+        <section id="emails" aria-labelledby="emails-titre">
+          <h2 id="emails-titre">Les e-mails</h2>
+          <div class="prose"><p>Ils partent <strong>après</strong> l'enregistrement en base (un e-mail n'annonce jamais ce qui n'est pas écrit) et ne bloquent jamais la requête : un serveur d'e-mail en panne est écrit dans le journal, et la déclaration réussit quand même. Chaque administrateur reçoit son propre e-mail, sans les adresses des autres.</p></div>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les e-mails, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">E-mail</th><th scope="col">À qui</th><th scope="col">Quand</th></tr></thead>
+              <tbody>
+                <tr><td>Nous avons bien reçu la déclaration</td><td>La personne</td><td>Déclaration ou renvoi, en attente</td></tr>
+                <tr><td>Une nouvelle structure attend votre validation, avec les raisons (et qui porte déjà le SIRET)</td><td>Chaque administrateur</td><td>Déclaration ou renvoi, en attente (pas après une simple correction)</td></tr>
+                <tr><td>Votre structure est validée, avec la période d'essai</td><td>La personne</td><td>Validation automatique ; plus tard, par un administrateur</td></tr>
+                <tr><td>Une structure a été validée automatiquement, avec ce qui a été comparé</td><td>Chaque administrateur</td><td>Validation automatique, en attendant le récapitulatif quotidien de #87</td></tr>
+                <tr><td>Votre structure n'a pas été validée, avec le motif</td><td>La personne</td><td>Prêt pour #87</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Les tests</h2>
+          <div class="grid2">
+            <div class="box"><h3>Aucun test ne sort sur Internet</h3><p>En test, le transport HTTP de Symfony est remplacé par un faux réseau (<code>TestNetwork</code>) : l'annuaire ne connaît aucun SIRET, et toute autre adresse lève une exception. Un test qui a besoin d'une réponse la fournit, comme la vraie réponse de la Ville de Paris, enregistrée sans aucune donnée personnelle.</p></div>
+            <div class="box"><h3>Backend : 4 735 tests</h3><ul>
+              <li>La règle, condition par condition</li>
+              <li>La lecture de réponses réelles et cassées</li>
+              <li>Un seul nouvel essai, jamais sur 429</li>
+              <li>L'appel hors transaction, un verdict abandonné</li>
+              <li>Deux structures, un seul SIRET</li>
+              <li>L'essai aux jours 29, 30 et 31, les e-mails</li>
+            </ul></div>
+            <div class="box"><h3>Frontend</h3><ul>
+              <li>Vitest : 447 tests, dont la clé de Luhn, la fin de l'essai à l'heure de Paris, chaque état de la page</li>
+              <li>Playwright : une déclaration au clavier, le refus puis le renvoi, la période d'essai</li>
+              <li>axe à 360 et 1280 px dans les six états</li>
+              <li>L'en-tête sur une ligne, sans décalage (CLS 0)</li>
+            </ul></div>
+            <div class="box"><h3>À la main, contre le vrai annuaire</h3><ul>
+              <li>Ville de Paris : validée à l'essai, deux e-mails</li>
+              <li>« Mairie » à La Farlède : en attente, puis validée une fois corrigée en « Commune de La Farlède »</li>
+              <li>Une seconde Ville de Paris : en attente, la première nommée</li>
+            </ul></div>
+          </div>
+        </section>
+
+        <section id="prs" aria-labelledby="prs-titre">
+          <h2 id="prs-titre">Les pull requests</h2>
+          <ul class="prs">
+            <li><span class="num">#201</span><span>Déclarer et suivre : les statuts et leurs passages, les contraintes de la base, le numéro selon le type et le SIRET avec sa clé, les quatre routes, les e-mails, la page « Ma structure » dans ses six états, « Espace organisateur » dans l'en-tête. 12 commits.</span></li>
+            <li><span class="num">#202</span><span>La validation automatique (RG-32) : l'annuaire, la règle, le verrou, les traces, la période d'essai, les e-mails aux administrateurs, l'annonce de la vérification, le faux réseau des tests. 11 commits.</span></li>
+          </ul>
+        </section>
+
+      </div>
+    </details>
+
+    <section id="appris" aria-labelledby="appris-titre">
+      <h2 id="appris-titre">Ce que ce travail a appris</h2>
+      <ul class="prose">
+        <li><strong>Un appel extérieur se prépare comme une panne</strong> : délais bornés, nouvel essai choisi avec soin, réponse lue champ par champ, et toujours un chemin quand le service ne répond pas.</li>
+        <li><strong>« Vérifier puis écrire » ne suffit pas à deux</strong> : sans verrou, deux requêtes simultanées voient le même état. Le verrou consultatif de PostgreSQL règle le problème sans bloquer toute une table.</li>
+        <li><strong>Les données réelles surprennent</strong> : l'enseigne « MAIRIE », l'exception de La Poste, les associations sans RNA. Seul l'essai contre le vrai annuaire les a toutes montrées.</li>
+        <li><strong>Un journal peut fuiter</strong> : un message d'erreur anodin contenait un identifiant. On écrit la cause, jamais la donnée.</li>
+        <li><strong>Automatiser, c'est choisir ce qu'on n'automatise pas</strong> : valider les cas clairs, laisser le doute à un humain, et garder la preuve de chaque décision.</li>
+      </ul>
+    </section>
+
+    <section id="suite" aria-labelledby="suite-titre">
+      <h2 id="suite-titre">La suite</h2>
+      <div class="prose"><p>La structure validée pourra compléter son profil (#80) et publier ses événements, avec la limite de la période d'essai (#81). Les administrateurs auront leur espace de validation et un récapitulatif quotidien (#87). Sept issues sont nées de ce travail : la preuve par le domaine de l'e-mail pour les collectivités (#203), un contrôle mensuel des SIRET (#204), le refus des e-mails jetables (#205), l'autocomplétion du SIRET (#206), le SIRET retrouvé à partir du RNA (#207), un test instable à corriger (#208) et la CI à rendre indépendante des serveurs d'Ubuntu (#209).</p></div>
+    </section>
+
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="197-table-des-communes.html" rel="prev"><span>← Issue précédente</span><strong>#197 Une table des communes dans Epika</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>
