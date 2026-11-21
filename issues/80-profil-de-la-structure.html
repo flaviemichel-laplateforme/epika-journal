@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>Le profil de la structure (#80) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #80 d'Epika : une structure se présente aux visiteurs avec son logo, sa présentation et ses liens. Un envoi d'image vérifié par ses octets et réencodé, un profil complet avant de publier, et l'aperçu de la page telle que les visiteurs la verront.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a class="home" href="../index.html">Accueil</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 4 · issue #80 · EF-12, US-O1, RG-01 · terminée le 21/11/2026</p>
+    <h1>Le profil de la structure</h1>
+    <p class="lede">Une structure se présente maintenant aux visiteurs : son logo, sa présentation, sa ville et ses liens. L'image envoyée est vérifiée par son contenu, puis refaite proprement par le serveur ; la page dit ce qui manque pour pouvoir publier, et montre la fiche exactement comme les visiteurs la verront.</p>
+    <dl class="facts">
+      <div class="fact"><dt>pull requests, l'API, la page, un correctif</dt><dd>3</dd></div>
+      <div class="fact"><dt>pixels au plus pour un logo enregistré</dt><dd>512</dd></div>
+      <div class="fact"><dt>caractères de présentation pour un profil complet</dt><dd>80</dd></div>
+      <div class="fact"><dt>tests du frontend à la fin</dt><dd>491</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#principe">Ce que ça change</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#decisions">Les choix faits</a></li>
+        <li><a href="#chemin">Trouvé en chemin</a></li>
+        <li><a href="#securite">Sécurité et vie privée</a></li>
+        <li><a href="#limites">Les limites</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#api">Les routes de l'API</a></li>
+            <li><a href="#image">Le parcours d'une image</a></li>
+            <li><a href="#stockage">Le stockage des fichiers</a></li>
+            <li><a href="#page">La page, côté code</a></li>
+            <li><a href="#tests">Les tests</a></li>
+            <li><a href="#prs">Les pull requests</a></li>
+          </ol>
+        </li>
+        <li><a href="#appris">Ce que ce travail a appris</a></li>
+        <li><a href="#suite">La suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="principe" aria-labelledby="principe-titre">
+      <h2 id="principe-titre">Ce que ça change</h2>
+      <div class="prose"><p>Avec <a href="79-declarer-sa-structure.html">#79</a>, une structure se déclarait et suivait sa validation. Avec #80, elle se <strong>présente</strong> : sa page publique, <code>/structures/…</code>, montre désormais ce que sa gérante a écrit.</p></div>
+      <ul class="prose">
+        <li><strong>« Mon profil public »</strong>, une nouvelle page de l'espace organisateur : le logo (et le blason d'une collectivité), une présentation, le code postal et la ville, la rue, un site web, une page Facebook et un compte Instagram.</li>
+        <li><strong>Un profil complet avant de publier</strong> (règle RG-01) : une présentation d'au moins 80 caractères et une image. La page dit ce qui manque, et chaque élément mène directement à son champ.</li>
+        <li><strong>L'aperçu de la fiche</strong>, en bas de la page : le bandeau même de la page publique, tel que les visiteurs le verront.</li>
+        <li><strong>Modifiable à tout moment</strong>, sauf le nom, le type et le numéro une fois la structure validée : ce sont eux qui ont été vérifiés.</li>
+        <li><strong>« Ma structure »</strong> a un nouvel encadré « Profil public », qui dit s'il est complet et y mène.</li>
+      </ul>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <div class="prose"><p class="muted">Captures prises par Playwright sur Epika en production, avec une fausse API : la personne, l'association et son logo sont fictifs (le logo a été dessiné pour ce journal). Sur ordinateur à gauche, sur téléphone à droite. Le bouton du champ de fichier est dessiné par le navigateur, dans sa propre langue : celui des captures est en anglais, celui d'un visiteur francophone est en français.</p></div>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #80">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/80/01-ma-structure-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page « Ma structure » d'une association validée, avec l'encadré « Profil public » : « Il manque : une description d'au moins 80 caractères, un logo » et le bouton « Compléter mon profil ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/80/01-ma-structure-mobile.jpg" width="360" height="740" loading="lazy" alt="La page « Ma structure » d'une association validée, avec l'encadré « Profil public » : « Il manque : une description d'au moins 80 caractères, un logo » et le bouton « Compléter mon profil ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> Dans « Ma structure », un nouvel encadré « Profil public » : ce qui manque encore pour publier un premier événement, et le chemin pour le compléter.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/80/02-profil-a-completer-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le haut de la page « Mon profil public » : « État du profil » avec la liste de ce qui manque, puis « Ce qui a été vérifié » avec le nom, le type et le numéro. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/80/02-profil-a-completer-mobile.jpg" width="360" height="740" loading="lazy" alt="Le haut de la page « Mon profil public » : « État du profil » avec la liste de ce qui manque, puis « Ce qui a été vérifié » avec le nom, le type et le numéro. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> « Mon profil public » : en haut, ce qui manque, chaque élément menant à son champ. Puis ce qui a été vérifié à la validation (le nom, le type, le numéro), qui ne se change plus ici.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/80/03-logo-choisi-desktop.jpg" width="1280" height="800" loading="lazy" alt="La section « Logo » : l'aperçu du logo choisi, le champ du fichier, la case « Je détiens les droits sur cette image. » cochée et le bouton « Enregistrer le logo ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/80/03-logo-choisi-mobile.jpg" width="360" height="740" loading="lazy" alt="La section « Logo » : l'aperçu du logo choisi, le champ du fichier, la case « Je détiens les droits sur cette image. » cochée et le bouton « Enregistrer le logo ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> Un logo choisi : son aperçu tel que les visiteurs le verront, en entier dans un carré. La case des droits n'est jamais cochée d'avance : on la coche pour chaque image.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/80/04-logo-enregistre-desktop.jpg" width="1280" height="800" loading="lazy" alt="La section « Logo » après l'envoi : le logo actuel, la case décochée, le bouton « Retirer le logo » et le message « Logo enregistré. Votre profil est complet. ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/80/04-logo-enregistre-mobile.jpg" width="360" height="740" loading="lazy" alt="La section « Logo » après l'envoi : le logo actuel, la case décochée, le bouton « Retirer le logo » et le message « Logo enregistré. Votre profil est complet. ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">4</span> Enregistré : le serveur l'a vérifié et réduit en WebP sans ses métadonnées. La page annonce que le profil est maintenant complet, et la case se décoche.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/80/05-logo-refuse-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le champ du logo en erreur, avec le message « L'image est trop petite : au moins 100 pixels de côté, pour rester nette. ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/80/05-logo-refuse-mobile.jpg" width="360" height="740" loading="lazy" alt="Le champ du logo en erreur, avec le message « L'image est trop petite : au moins 100 pixels de côté, pour rester nette. ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">5</span> Une image refusée par le serveur : la raison s'affiche sous le champ, qui reçoit le focus, dans des mots qui disent quoi faire.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/80/06-texte-desktop.jpg" width="1280" height="800" loading="lazy" alt="La section « Présentation et coordonnées » remplie : la présentation avec son compteur, le code postal, la ville, la rue avec « Jamais affichée sur votre page publique », le site web et la page Facebook. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/80/06-texte-mobile.jpg" width="360" height="740" loading="lazy" alt="La section « Présentation et coordonnées » remplie : la présentation avec son compteur, le code postal, la ville, la rue avec « Jamais affichée sur votre page publique », le site web et la page Facebook. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">6</span> La présentation, avec son compteur, les coordonnées et les liens. La rue reste privée : seule la ville apparaît sur la page publique.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/80/07-apercu-desktop.jpg" width="1280" height="800" loading="lazy" alt="La section « Aperçu de ma fiche » : le logo du comité dans un carré arrondi, le nom, « Association », « 83210 La Farlède », les liens « Site web » et « Facebook », puis la présentation. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/80/07-apercu-mobile.jpg" width="360" height="740" loading="lazy" alt="La section « Aperçu de ma fiche » : le logo du comité dans un carré arrondi, le nom, « Association », « 83210 La Farlède », les liens « Site web » et « Facebook », puis la présentation. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">7</span> « Aperçu de ma fiche » : le bandeau même de la page publique, sans copie. Ce que la gérante voit ici est exactement ce que verront les visiteurs.</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="decisions" aria-labelledby="decisions-titre">
+      <hgroup><p class="eyebrow">Du 19 au 21/11/2026</p><h2 id="decisions-titre">Les choix faits</h2></hgroup>
+      <div class="prose"><p>Chaque choix a été pesé contre une autre solution ; voici celle retenue, et pourquoi.</p></div>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Les choix faits et les solutions écartées, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Choix retenu</th><th scope="col">Solution écartée</th><th scope="col">Pourquoi</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Nom, type et numéro figés</strong> une fois la structure validée</td><td>Tout modifiable</td><td>Ce sont eux qui ont été vérifiés : on pourrait faire valider « Ville de Paris », puis la renommer. Pour les changer, on contacte l'équipe.</td></tr>
+            <tr><td><strong>Un profil complet = une présentation de 80 caractères et une image</strong></td><td>La présentation seule, ou en plus un lien</td><td>C'est ce que voit un visiteur : qui vous êtes, et une image reconnaissable. Beaucoup de petites associations n'ont ni site ni réseau.</td></tr>
+            <tr><td><strong>La rue n'est jamais publique</strong></td><td>Une case « afficher l'adresse »</td><td>Pour une petite association, c'est souvent le domicile d'un bénévole. Le lieu de chaque événement a sa propre adresse.</td></tr>
+            <tr><td><strong>Un stockage interchangeable</strong> (Flysystem)</td><td>Un simple dossier, ou un stockage objet tout de suite</td><td>Le disque aujourd'hui, le stockage objet au déploiement, sans changer une ligne de code ; sans bloquer #80 sur un choix d'hébergeur.</td></tr>
+            <tr><td><strong>Le logo en entier, dans un carré arrondi</strong></td><td>Un rond, l'image entière ou remplie</td><td>Le rond coupait les côtés d'un logo large, ou laissait du blanc autour d'une photo carrée. Le carré garde tout logo entier, et une image carrée le remplit. C'est la forme habituelle des logos.</td></tr>
+            <tr><td><strong>Les messages dans la page</strong>, à côté de l'action</td><td>Des « toasts » qui apparaissent puis disparaissent</td><td>Un message qui s'efface seul peut être manqué, doit pouvoir être mis en pause (RGAA) et cacherait la barre du bas sur téléphone.</td></tr>
+            <tr><td><strong>Le choix de la forme et le recadrage</strong> du logo, plus tard</td><td>Les ajouter dans #80</td><td>Un vrai chantier (base, API, interface) : il rejoint l'idée d'une personnalisation de la page, pour plus tard.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="chemin" aria-labelledby="chemin-titre">
+      <hgroup><p class="eyebrow">Du 19 au 21/11/2026</p><h2 id="chemin-titre">Trouvé en chemin</h2></hgroup>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Ce qui a été trouvé pendant le travail, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Ce qui se passait</th><th scope="col">La cause</th><th scope="col">La correction</th></tr></thead>
+          <tbody>
+            <tr><td>19 failles de sécurité signalées en installant Flysystem</td><td>Des composants Symfony un peu anciens (7.4.20), dont un sur la lecture des fichiers envoyés</td><td>Une mise à jour à part (7.4.23), fusionnée avant le code des envois</td></tr>
+            <tr><td>Après cette mise à jour, deux tests échouaient sur le serveur d'intégration, pas en local</td><td>Symfony arrondit l'attente d'un blocage de connexion à la minute supérieure : 61 secondes donnent « 2 minutes » sur une machine lente</td><td>Une phrase à nous, et des tests qui vérifient que le message et l'en-tête <code>Retry-After</code> disent la même chose</td></tr>
+            <tr><td>Les tests du frontend ne démarraient plus du tout</td><td>Une installation faite en mode « production » avait sauté une partie des outils de développement</td><td>Une réinstallation propre (<code>npm ci</code>), et la règle notée</td></tr>
+            <tr><td>Une photo carrée ne remplissait pas le rond du logo, puis un logo large y était coupé</td><td>Un rond ne convient ni à l'un ni à l'autre</td><td>Un carré arrondi, l'image entière</td></tr>
+            <tr><td>Sur téléphone, le bouton du champ d'image était coupé</td><td>La légende de l'aperçu ne revenait pas à la ligne et écrasait le champ</td><td>Le champ passe sous l'aperçu ; un test à 360 px le vérifie (trouvé en prenant les captures de cette page)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="securite" aria-labelledby="securite-titre">
+      <h2 id="securite-titre">Sécurité et vie privée</h2>
+      <div class="grid2">
+        <div class="box"><h3>Une image vérifiée par son contenu</h3><p>Le serveur ne croit ni le nom du fichier ni ce que dit le navigateur : il lit les octets. Seuls le JPEG, le PNG et le WebP passent ; le SVG est refusé, car il peut contenir du script.</p></div>
+        <div class="box"><h3>Une image refaite</h3><p>Chaque image est décodée puis réenregistrée en WebP, réduite à 512 pixels. Ce qui sort n'est fait que de pixels : la position GPS d'une photo de téléphone et tout ce qu'on aurait caché derrière l'image disparaissent.</p></div>
+        <div class="box"><h3>Une « bombe » refusée avant d'exploser</h3><p>Un petit fichier peut annoncer 20 000 × 20 000 pixels, soit 1,6 Go une fois décodé. Les dimensions sont lues dans l'en-tête, avant tout décodage : une telle image est refusée sans risque pour le serveur.</p></div>
+        <div class="box"><h3>Un nom donné par Epika</h3><p>Le fichier est enregistré sous un nom aléatoire, jamais celui envoyé. La base vérifie elle-même ce format, et refuse par exemple une tentative de remonter dans les dossiers (<code>../</code>).</p></div>
+        <div class="box"><h3>Les droits sur l'image</h3><p>Une case « Je détiens les droits sur cette image » est demandée à chaque envoi, jamais cochée d'avance. Elle sera complétée par les conditions d'utilisation (lot 6).</p></div>
+        <div class="box"><h3>Des liens qui mènent où ils le disent</h3><p>Un lien Facebook doit mener à Facebook : <code>facebook.com.example.org</code> est refusé. Aucune adresse ne peut contenir d'identifiant ni de mot de passe.</p></div>
+      </div>
+    </section>
+
+    <section id="limites" aria-labelledby="limites-titre">
+      <h2 id="limites-titre">Les limites</h2>
+      <ul class="prose">
+        <li><strong>Le profil complet ne bloque encore rien</strong> : la publication des événements arrive avec #81, qui appliquera la règle.</li>
+        <li><strong>Pas encore de page de contact</strong> (lot 6) : « contactez l'équipe d'Epika » n'a pas de lien.</li>
+        <li><strong>Le pays est toujours la France</strong> : le code postal a 5 chiffres.</li>
+        <li><strong>À essayer à la main</strong> : la page avec le lecteur d'écran NVDA, et une photo prise avec un vrai téléphone (au format HEIC sur iPhone).</li>
+        <li><strong>Des idées pour la suite</strong>, notées : un badge « Structure validée par Epika », un contact public, les événements passés, une photo de couverture.</li>
+      </ul>
+    </section>
+
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Les routes, le traitement des images, le stockage, la page et les tests : pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+
+        <section id="api" aria-labelledby="api-titre">
+          <h2 id="api-titre">Les routes de l'API</h2>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les routes de l'API, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Route</th><th scope="col">Ce qu'elle fait</th><th scope="col">Réponses</th></tr></thead>
+              <tbody>
+                <tr><td><code>GET /api/me/organization</code></td><td>Ma structure, avec le profil, <code>profileComplete</code> et <code>missingProfileFields</code></td><td>200 ; 404</td></tr>
+                <tr><td><code>PATCH /api/me/organization/profile</code></td><td>Le texte et les liens, en JSON Merge Patch : un champ absent garde sa valeur, <code>null</code> l'efface</td><td>200 ; 403 suspendue ; 422 ; 429 (30 par heure)</td></tr>
+                <tr><td><code>POST</code> / <code>DELETE /api/me/organization/logo</code> et <code>/crest</code></td><td>Envoyer (multipart : <code>file</code>, <code>rightsConfirmed</code>) ou retirer une image ; le blason pour une collectivité seulement</td><td>200 ; 403 ; 422 sur le champ ; 429 (10 par heure) ; 503 si le stockage ne répond pas</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="prose"><p>Une seule fabrique, <code>MyOrganizationViews</code>, construit la réponse des six routes de « Ma structure » : elles ne peuvent pas diverger. La page publique <code>GET /api/organizations/{slug}</code> garde sa forme, sans jamais la rue.</p></div>
+        </section>
+
+        <section id="image" aria-labelledby="image-titre">
+          <h2 id="image-titre">Le parcours d'une image</h2>
+          <ol class="pipeline">
+            <li><div><strong>Lue, sans être décodée</strong><span><code>ImageProcessor</code> : 5 Mo au plus ; le vrai type lu par <code>fileinfo</code> et confirmé par <code>getimagesize</code> ; les dimensions lues dans l'en-tête (de 100 à 6 000 pixels de côté, 16 millions au plus).</span></div></li>
+            <li><div><strong>Décodée, redressée, réduite</strong><span>GD décode l'image, applique l'orientation EXIF d'un téléphone (sinon le logo apparaîtrait couché), la réduit à 512 pixels sans l'agrandir et garde sa transparence.</span></div></li>
+            <li><div><strong>Réécrite en WebP</strong><span>Une image neuve, faite de pixels seulement : sans EXIF, sans ce qui suivait l'image.</span></div></li>
+            <li><div><strong>Écrite sous un nom aléatoire</strong><span><code>organizations/&lt;UUID&gt;.webp</code>, dans le stockage.</span></div></li>
+            <li><div><strong>Enregistrée en base</strong><span>Si cela échoue, le nouveau fichier est supprimé : l'ancien logo reste, avec son fichier.</span></div></li>
+            <li><div><strong>L'ancien fichier supprimé</strong><span>Seulement maintenant. Un échec laisse un fichier orphelin, noté dans le journal du serveur, jamais une erreur pour la personne.</span></div></li>
+          </ol>
+        </section>
+
+        <section id="stockage" aria-labelledby="stockage-titre">
+          <h2 id="stockage-titre">Le stockage des fichiers</h2>
+          <div class="grid2">
+            <div class="box"><h3>Flysystem</h3><p>Le code écrit « range ces octets sous cette clé », sans savoir où. En développement, le dossier <code>public/media</code> ; dans les tests, la mémoire ; au déploiement, un stockage objet, en changeant la configuration seulement.</p></div>
+            <div class="box"><h3>Une clé, pas une adresse</h3><p>La base garde <code>organizations/&lt;UUID&gt;.webp</code> (colonnes <code>logo_path</code> et <code>crest_path</code>, vérifiées par une contrainte <code>CHECK</code>). L'adresse est construite à l'affichage avec <code>MEDIA_BASE_URL</code> : changer d'hébergeur ne touche aucune ligne.</p></div>
+          </div>
+        </section>
+
+        <section id="page" aria-labelledby="page-titre">
+          <h2 id="page-titre">La page, côté code</h2>
+          <div class="grid2">
+            <div class="box"><h3>Deux parties indépendantes</h3><p>Une image part seule ; le texte a son propre formulaire, rempli une seule fois et remis à zéro seulement après son propre enregistrement, avec ce que le serveur a gardé. Envoyer un logo n'efface jamais un texte en cours de frappe.</p></div>
+            <div class="box"><h3>Compter comme le serveur</h3><p>En JavaScript, <code>"🎉".length</code> vaut 2 ; en PHP, <code>mb_strlen</code> compte 1. Le compteur utilise <code>Array.from()</code>, pour dire la même chose que le serveur.</p></div>
+            <div class="box"><h3>Des annonces qui sont lues</h3><p>Chaque message (« Logo enregistré. Votre profil est complet. ») est écrit dans une zone <code>role="status"</code> toujours présente, vide au départ : une zone ajoutée en même temps que son message n'est pas toujours annoncée.</p></div>
+            <div class="box"><h3>L'aperçu, sans copie</h3><p><code>OrganizationHeader</code>, le bandeau de la page publique, prend un niveau de titre : <code>h1</code> sur la page publique, <code>h3</code> dans l'aperçu, sous le <code>h2</code> de sa section. Le plan de la page reste juste pour un lecteur d'écran.</p></div>
+          </div>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Les tests</h2>
+          <div class="grid2">
+            <div class="box"><h3>Backend : 4 810 tests</h3><ul>
+              <li>Une photo redressée et sans EXIF, un script caché derrière une image, la « bombe »</li>
+              <li>SVG, PDF renommé, GIF, image abîmée, trop petite, trop lourde</li>
+              <li>La contrainte de la base, <code>../</code> compris</li>
+              <li>L'envoi comme un navigateur, l'ancien fichier supprimé</li>
+              <li>La rue jamais publique, le nom jamais changé une fois validée</li>
+            </ul></div>
+            <div class="box"><h3>Frontend : 491 tests Vitest</h3><ul>
+              <li>L'ordre des titres de la page</li>
+              <li>Un texte conservé quand on envoie un logo</li>
+              <li>Le corps exact du merge-patch, un multipart sans <code>Content-Type</code> écrit à la main</li>
+              <li>Chaque adresse d'aperçu libérée, la case des droits décochée</li>
+            </ul></div>
+            <div class="box"><h3>De bout en bout (Playwright)</h3><ul>
+              <li>Le texte au clavier, puis après un rechargement</li>
+              <li>Un logo envoyé, un refus sous son champ</li>
+              <li>Le champ d'image entier à 360 px</li>
+              <li>axe sans violation à 360 et 1280 px</li>
+            </ul></div>
+            <div class="box"><h3>Vérifier qu'un test protège</h3><p>Pour les tests clés (la photo redressée, le texte conservé, le champ sur téléphone), le code a été cassé exprès pour s'assurer que le test échoue alors.</p></div>
+          </div>
+        </section>
+
+        <section id="prs" aria-labelledby="prs-titre">
+          <h2 id="prs-titre">Les pull requests</h2>
+          <ul class="prs">
+            <li><span class="num">#211</span><span>Hors #80, mais rendue nécessaire par elle : la mise à jour de sécurité des composants Symfony, et les tests qui dépendaient de l'horloge.</span></li>
+            <li><span class="num">#212</span><span>L'API : le stockage Flysystem, les colonnes des images vérifiées, le traitement des images, les routes du profil et des images, leurs limites, la documentation.</span></li>
+            <li><span class="num">#213</span><span>La page : le service et ses mutations, <code>Textarea</code> et <code>ImageField</code>, « Mon profil public », l'encadré de « Ma structure », les tests de bout en bout.</span></li>
+            <li><span class="num">#214</span><span>Le champ d'image sur téléphone, trouvé en prenant ces captures.</span></li>
+          </ul>
+        </section>
+
+      </div>
+    </details>
+
+    <section id="appris" aria-labelledby="appris-titre">
+      <h2 id="appris-titre">Ce que ce travail a appris</h2>
+      <ul class="prose">
+        <li><strong>Un fichier envoyé ne se croit jamais sur parole</strong> : ni son nom, ni son type annoncé. On lit ses octets, puis on en fait une image neuve.</li>
+        <li><strong>Stocker une clé plutôt qu'une adresse</strong> rend le changement d'hébergeur indolore.</li>
+        <li><strong>Les détails d'affichage se voient en vrai</strong> : le logo coupé et le champ écrasé sur téléphone ne sont apparus qu'en regardant les pages, pas dans les tests. Les captures font partie de la vérification.</li>
+        <li><strong>Une mise à jour peut révéler un test fragile</strong> : celui qui dépendait de la seconde exacte de l'horloge.</li>
+        <li><strong>Un test qui passe ne prouve rien tant qu'on ne l'a pas vu échouer</strong> sur le défaut qu'il doit attraper.</li>
+      </ul>
+    </section>
+
+    <section id="suite" aria-labelledby="suite-titre">
+      <h2 id="suite-titre">La suite</h2>
+      <div class="prose"><p>La structure validée, au profil complet, pourra publier ses événements avec #81, qui appliquera aussi la règle du profil complet et la limite de la période d'essai. Plusieurs idées sont notées pour plus tard : un badge « Structure validée par Epika » sur la page publique, un contact public, les événements passés, une photo de couverture, et, avec une offre de personnalisation, le choix de la forme du logo et son recadrage.</p></div>
+    </section>
+
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="79-declarer-sa-structure.html" rel="prev"><span>← Issue précédente</span><strong>#79 Déclarer sa structure</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>
