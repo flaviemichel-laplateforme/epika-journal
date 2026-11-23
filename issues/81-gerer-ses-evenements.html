@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>Gérer ses événements (#81) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #81 d'Epika : une structure validée crée, modifie, publie, repasse en brouillon, annule et supprime ses événements. Ce qui empêche de publier est dit d'un coup, la période d'essai ne limite plus rien, et chaque réponse suit le même ordre.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a class="home" href="../index.html">Accueil</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 4 · issue #81 · EF-13, EF-14, EF-15, RG-01 à RG-06, RG-10 à RG-12 · terminée le 23/11/2026</p>
+    <h1>Gérer ses événements</h1>
+    <p class="lede">Une structure validée peut maintenant créer ses événements, les modifier, les publier, les repasser en brouillon, les annuler avec un motif et supprimer un brouillon. Ce qui empêche de publier est dit d'un seul coup, la période d'essai ne limite plus rien, et chaque refus suit toujours le même ordre. Les écrans viendront avec les issues suivantes : #81 en est le moteur.</p>
+    <dl class="facts">
+      <div class="fact"><dt>pull requests, les règles puis les routes</dt><dd>2</dd></div>
+      <div class="fact"><dt>routes de l'API pour l'organisatrice</dt><dd>8</dd></div>
+      <div class="fact"><dt>raisons de refuser une publication, dites d'un coup</dt><dd>7</dd></div>
+      <div class="fact"><dt>tests du backend à la fin</dt><dd>5 053</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#principe">Ce que ça change</a></li>
+        <li><a href="#cycle">La vie d'un événement</a></li>
+        <li><a href="#publier">Ce qui empêche de publier</a></li>
+        <li><a href="#essai">Une période d'essai sans quota</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#decisions">Les choix faits</a></li>
+        <li><a href="#chemin">Trouvé en chemin</a></li>
+        <li><a href="#securite">Sécurité et vie privée</a></li>
+        <li><a href="#limites">Les limites</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#api">Les routes et l'ordre des réponses</a></li>
+            <li><a href="#domaine">Les règles, dans le domaine</a></li>
+            <li><a href="#ecriture">Créer et modifier</a></li>
+            <li><a href="#fichiers">Les fichiers clés</a></li>
+            <li><a href="#tests">Les tests</a></li>
+            <li><a href="#prs">Les pull requests</a></li>
+          </ol>
+        </li>
+        <li><a href="#appris">Ce que ce travail a appris</a></li>
+        <li><a href="#suite">La suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="principe" aria-labelledby="principe-titre">
+      <h2 id="principe-titre">Ce que ça change</h2>
+      <div class="prose"><p>Avec <a href="79-declarer-sa-structure.html">#79</a>, une structure se déclarait ; avec <a href="80-profil-de-la-structure.html">#80</a>, elle se présentait. Avec #81, elle <strong>publie</strong>. C'est le critère de sortie du lot 4 : une structure peut mettre un événement en ligne.</p></div>
+      <ul class="prose">
+        <li><strong>Créer un brouillon</strong> avec un titre, une sous-catégorie et ses séances. Le reste se complète ensuite, à son rythme.</li>
+        <li><strong>Le modifier</strong> à tout moment, tant qu'il n'est ni annulé ni suspendu par la modération.</li>
+        <li><strong>Le publier</strong>, s'il ne manque rien. Sinon, Epika dit tout ce qui manque, d'un seul coup.</li>
+        <li><strong>Le repasser en brouillon</strong>, pour le retirer de la vue des visiteurs sans le perdre.</li>
+        <li><strong>L'annuler</strong>, avec un motif : il reste visible, marqué « Annulé », pour que les visiteurs sachent qu'il n'aura pas lieu.</li>
+        <li><strong>Supprimer un brouillon</strong> qui n'a jamais été en ligne. Un événement qui a déjà été public reste en brouillon : son historique est gardé.</li>
+        <li><strong>Lister ses événements</strong>, ceux à venir en premier.</li>
+      </ul>
+      <div class="note key"><p>#81 est le <strong>moteur</strong> : l'API qui fait tout cela, vérifiée par des milliers de tests. Les écrans qu'utilisera l'organisatrice arrivent avec les issues suivantes : le formulaire (#82), les séances (#83), les photos et le programme (#84), la liste (#85).</p></div>
+    </section>
+
+    <section id="cycle" aria-labelledby="cycle-titre">
+      <h2 id="cycle-titre">La vie d'un événement</h2>
+      <div class="prose"><p>Un événement saisi par une structure passe par quelques états, et seulement par certains chemins.</p></div>
+      <div class="diagram" tabindex="0" role="region" aria-label="Schéma de la vie d'un événement, défilant sur téléphone">
+        <svg viewBox="0 0 700 300" role="img" aria-labelledby="cycle-svg-titre cycle-svg-texte">
+          <title id="cycle-svg-titre">La vie d'un événement saisi</title>
+          <desc id="cycle-svg-texte">Les états et les passages entre eux ; la version texte suit le schéma.</desc>
+          <defs>
+            <marker id="fleche-cycle" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="arrowhead" d="M0,0 L10,5 L0,10 z"/></marker>
+          </defs>
+          <g class="node"><rect x="30" y="112" width="150" height="52" rx="10"/><text x="105" y="143" text-anchor="middle">Brouillon</text></g>
+          <g class="node"><rect x="280" y="112" width="150" height="52" rx="10"/><text x="355" y="143" text-anchor="middle">Publié</text></g>
+          <g class="node"><rect x="530" y="30" width="150" height="52" rx="10"/><text x="605" y="61" text-anchor="middle">Annulé</text></g>
+          <g class="node aside"><rect x="530" y="196" width="150" height="52" rx="10"/><text x="605" y="227" text-anchor="middle">Suspendu</text></g>
+          <g class="node end"><rect x="30" y="236" width="150" height="52" rx="10"/><text x="105" y="267" text-anchor="middle">Supprimé</text></g>
+          <path class="edge" d="M180 128 L278 128" marker-end="url(#fleche-cycle)"/>
+          <text class="label" x="229" y="118" text-anchor="middle">publier</text>
+          <path class="edge" d="M280 150 L182 150" marker-end="url(#fleche-cycle)"/>
+          <text class="label" x="229" y="174" text-anchor="middle">en brouillon</text>
+          <path class="edge" d="M430 124 L528 66" marker-end="url(#fleche-cycle)"/>
+          <text class="label" x="452" y="86" text-anchor="end">annuler</text>
+          <text class="label" x="452" y="102" text-anchor="end">(motif)</text>
+          <path class="edge" d="M430 152 L528 212" marker-end="url(#fleche-cycle)"/>
+          <text class="label" x="455" y="206" text-anchor="middle">modération</text>
+          <path class="edge" d="M105 164 L105 234" marker-end="url(#fleche-cycle)"/>
+          <text class="label" x="115" y="196">supprimer, s'il n'a</text>
+          <text class="label" x="115" y="212">jamais été en ligne</text>
+        </svg>
+      </div>
+      <ul class="prose" aria-label="Le schéma, en texte">
+        <li>Un <strong>brouillon</strong> se <strong>publie</strong>, s'il ne manque rien.</li>
+        <li>Un événement <strong>publié</strong> peut <strong>repasser en brouillon</strong>, ou être <strong>annulé</strong> avec un motif. Annulé, il reste visible et le reste : on ne le remet pas en brouillon, ce qui ferait croire aux visiteurs qu'il n'avait jamais été annulé.</li>
+        <li>Un brouillon se <strong>supprime</strong> seulement s'il n'a <strong>jamais été en ligne</strong>.</li>
+        <li>La <strong>modération</strong> (lot 5) peut <strong>suspendre</strong> un événement publié ou annulé : sa structure ne peut alors plus y toucher.</li>
+      </ul>
+    </section>
+
+    <section id="publier" aria-labelledby="publier-titre">
+      <h2 id="publier-titre">Ce qui empêche de publier</h2>
+      <div class="prose"><p>Quand quelque chose manque, Epika ne le dit pas une chose à la fois, ce qui obligerait à essayer, corriger, réessayer… Il donne <strong>toute la liste d'un coup</strong>, chaque raison accrochée au champ à remplir.</p></div>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Les raisons de refuser une publication, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Ce qui manque</th><th scope="col">Pourquoi c'est demandé</th></tr></thead>
+          <tbody>
+            <tr><td>La structure n'est pas validée</td><td>Seule une structure vérifiée publie (RG-02).</td></tr>
+            <tr><td>Une présentation de la structure d'au moins 80 caractères</td><td>Un visiteur doit savoir qui organise (RG-01, demandé à chaque publication).</td></tr>
+            <tr><td>Un logo, ou un blason pour une collectivité</td><td>Une image reconnaissable de la structure (RG-01).</td></tr>
+            <tr><td>Une adresse placée sur la carte</td><td>Sans position, l'événement serait introuvable dans « Autour de moi ».</td></tr>
+            <tr><td>Le lien de réservation</td><td>Quand on réserve sur le site de la structure (RG-03, RG-04).</td></tr>
+            <tr><td>Un téléphone ou un e-mail</td><td>Quand on réserve en prenant contact (RG-03).</td></tr>
+            <tr><td>Une séance à venir</td><td>Publier un événement dont toutes les dates sont passées n'aurait pas de sens.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note"><p>Une fois publié, l'événement reste protégé : une modification qui le rendrait impubliable, comme retirer son lien de réservation ou changer son adresse pour une adresse introuvable, est <strong>refusée</strong>, et rien n'est enregistré. En revanche, une structure qui retire son logo plus tard garde ses événements en ligne : seule une <strong>nouvelle</strong> publication lui est refusée.</p></div>
+    </section>
+
+    <section id="essai" aria-labelledby="essai-titre">
+      <hgroup><p class="eyebrow">Décidé le 21/11/2026</p><h2 id="essai-titre">Une période d'essai sans quota</h2></hgroup>
+      <div class="prose"><p>Une entreprise ou une collectivité dont le SIRET correspond à son nom est validée tout de suite, mais reste <strong>à l'essai</strong> pendant 30 jours (<a href="79-declarer-sa-structure.html">#79</a>). Il était prévu de limiter ses publications à <strong>3 par semaine</strong> pendant cet essai.</p></div>
+      <div class="grid2">
+        <div class="box"><h3>Pourquoi ce quota a été abandonné</h3><p>Il tombait au pire moment : le premier mois, quand une structure découvre Epika. Un théâtre ou une mairie qui veut charger sa saison, vingt dates, aurait été bloqué dès le premier jour. Une structure partie à cause d'une limite ne revient pas.</p></div>
+        <div class="box"><h3>Ce qui le remplace</h3><p>Surveiller plutôt que bloquer. L'équipe d'Epika <strong>peut relire</strong> les événements nouveaux ou modifiés des structures à l'essai, et une alerte la préviendra si l'une publie beaucoup en peu de temps (l'espace d'administration, #87). Une limite technique large, 30 créations par heure, arrête un robot, jamais une personne.</p></div>
+      </div>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <div class="prose"><p class="muted">#81 n'ajoute pas encore d'écran : ce sont ses deux changements visibles, dans « Ma structure » et « Mon profil public ». Captures prises par Playwright sur Epika en production, avec une fausse API : la personne est fictive ; la Ville de Paris est un organisme public, dont le nom et le SIRET sont des données publiques. Sur ordinateur à gauche, sur téléphone à droite.</p></div>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #81">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/81/01-periode-d-essai-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page « Ma structure » de la Ville de Paris, validée : « Jusqu'au 19 décembre 2026, elle est à l'essai : pendant cette période, l'équipe d'Epika peut relire vos événements. », puis l'encadré « Profil public » : « Pour publier un événement, votre profil doit être complet. Il manque : une description d'au moins 80 caractères, un logo ou un blason. » Sur ordinateur.">
+              <img class="shot-mobile" src="../images/81/01-periode-d-essai-mobile.jpg" width="360" height="740" loading="lazy" alt="La page « Ma structure » de la Ville de Paris, validée : « Jusqu'au 19 décembre 2026, elle est à l'essai : pendant cette période, l'équipe d'Epika peut relire vos événements. », puis l'encadré « Profil public » : « Pour publier un événement, votre profil doit être complet. Il manque : une description d'au moins 80 caractères, un logo ou un blason. » Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> Validée automatiquement grâce à son SIRET, la structure est à l'essai pendant 30 jours. Elle ne limite plus rien : l'équipe d'Epika peut relire ses événements. Et l'encadré « Profil public » ne parle plus d'un « premier » événement : le profil complet est demandé à chaque publication.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/81/02-profil-pour-publier-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le haut de la page « Mon profil public » : « État du profil », « Un profil complet est nécessaire pour publier vos événements. Il manque : » puis la liste : une description d'au moins 80 caractères, un logo ou un blason. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/81/02-profil-pour-publier-mobile.jpg" width="360" height="740" loading="lazy" alt="Le haut de la page « Mon profil public » : « État du profil », « Un profil complet est nécessaire pour publier vos événements. Il manque : » puis la liste : une description d'au moins 80 caractères, un logo ou un blason. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> « Mon profil public » : un profil complet est nécessaire pour publier ses événements, à chaque publication. Chaque élément qui manque mène à son champ.</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="decisions" aria-labelledby="decisions-titre">
+      <hgroup><p class="eyebrow">Du 21 au 23/11/2026</p><h2 id="decisions-titre">Les choix faits</h2></hgroup>
+      <div class="prose"><p>Chaque choix a été pesé contre une autre solution ; voici celle retenue, et pourquoi.</p></div>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Les choix faits et les solutions écartées, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Choix retenu</th><th scope="col">Solution écartée</th><th scope="col">Pourquoi</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Pas de quota</strong> pendant la période d'essai</td><td>3 publications par semaine</td><td>Voir plus haut : surveiller plutôt que bloquer.</td></tr>
+            <tr><td><strong>Le profil complet à chaque publication</strong></td><td>Seulement à la première</td><td>Une seule règle, plus simple à expliquer et à vérifier.</td></tr>
+            <tr><td><strong>Ne supprimer que ce qui n'a jamais été en ligne</strong></td><td>Supprimer tout brouillon</td><td>Sinon, « publier, retirer, supprimer » effacerait toute trace d'un événement que des visiteurs ont vu, mis en favori ou signalé.</td></tr>
+            <tr><td><strong>Un événement annulé reste annulé</strong></td><td>Pouvoir le repasser en brouillon</td><td>Les visiteurs doivent savoir qu'il n'aura pas lieu (RG-10).</td></tr>
+            <tr><td><strong>Tout ce qui manque, d'un coup</strong></td><td>Un refus à la fois</td><td>On corrige tout en une fois, sans allers-retours.</td></tr>
+            <tr><td><strong>Un brouillon sans adresse placée s'enregistre quand même</strong></td><td>Le refuser</td><td>Un brouillon a le droit d'être incomplet ; seule la publication demande une position.</td></tr>
+            <tr><td><strong>L'adresse de la page suit le titre</strong> jusqu'à la première publication</td><td>La figer dès la création</td><td>Un brouillon titré « Test » garderait sinon l'adresse <code>/evenements/test</code> pour toujours. Une fois publiée, elle ne bouge plus : une adresse publique ne change pas.</td></tr>
+            <tr><td><strong>100 séances au plus</strong>, pour l'instant</td><td>366, comme l'import</td><td>C'est le cahier des charges ; à revoir avant l'écran des séances (#83), car une exposition ouverte chaque jour pendant quatre mois en a 120.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="chemin" aria-labelledby="chemin-titre">
+      <hgroup><p class="eyebrow">Du 21 au 23/11/2026</p><h2 id="chemin-titre">Trouvé en chemin</h2></hgroup>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Ce qui a été trouvé pendant le travail, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Ce qui se passait</th><th scope="col">La cause</th><th scope="col">La correction</th></tr></thead>
+          <tbody>
+            <tr><td>Le test de la « course » entre deux créations ne provoquait aucune collision</td><td>Un second contrôle d'unicité de l'adresse, fait avant l'enregistrement, voyait le doublon avant la base, et répondait une erreur sur un champ que l'organisatrice ne remplit pas</td><td>Ce contrôle est retiré ; l'index unique de la base est la seule garde, et la création recommence avec une autre adresse</td></tr>
+            <tr><td>Après trois collisions de suite, la réponse contenait le texte de la requête SQL</td><td>API Platform transforme d'office une violation d'unicité en erreur « données invalides », message de la base compris</td><td>Une erreur à nous, sans aucun détail technique ; le même défaut ailleurs est noté dans l'issue #216</td></tr>
+            <tr><td>Les réponses privées pouvaient être gardées sur le disque du navigateur</td><td>Sans consigne, Symfony envoie « ne pas réutiliser sans vérifier », mais pas « ne pas garder »</td><td>Toutes les réponses du compte disent maintenant <code>no-store</code> : aucune copie, même sur un ordinateur partagé</td></tr>
+            <tr><td>Changer la sous-catégorie principale échouait en base</td><td>La base n'accepte jamais deux sous-catégories principales, même un instant</td><td>Le changement se fait en deux temps, dans une même transaction</td></tr>
+            <tr><td>Une date envoyée par le navigateur pouvait être refusée</td><td><code>toISOString()</code> en JavaScript ajoute des millièmes de seconde</td><td>Ils sont acceptés, puis retirés : une séance se compte à la seconde</td></tr>
+            <tr><td>Sur téléphone, dans « Mon profil public », une puce de liste était en face de la deuxième ligne</td><td>Un bouton est une boîte d'un seul tenant : la puce s'alignait sur sa dernière ligne</td><td>La puce est dessinée à côté du bouton ; un test à 360 px le vérifie (trouvé en prenant les captures de cette page)</td></tr>
+            <tr><td>Sur téléphone, un deux-points peut commencer une ligne</td><td>Les textes du site écrivent l'espace avant « : » comme une espace ordinaire</td><td>Une issue (#218) pour toute la typographie française du site</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="securite" aria-labelledby="securite-titre">
+      <h2 id="securite-titre">Sécurité et vie privée</h2>
+      <div class="grid2">
+        <div class="box"><h3>Jamais l'événement d'une autre</h3><p>La structure est toujours celle du compte connecté, jamais une structure nommée dans l'adresse. L'événement d'une autre structure répond « introuvable », exactement comme un événement qui n'existe pas : un numéro ne révèle jamais rien des autres.</p></div>
+        <div class="box"><h3>Le droit, puis l'état</h3><p>Un refus dit toujours la bonne raison, dans le même ordre : « pas à vous », puis « pas le droit » (structure non validée, événement suspendu), puis « pas depuis cet état » (publier ce qui l'est déjà), puis « il manque quelque chose ».</p></div>
+        <div class="box"><h3>Aucune copie des réponses privées</h3><p>Les réponses du compte, de la structure et de ses événements ne sont gardées par aucun cache, ni partagé ni dans le navigateur.</p></div>
+        <div class="box"><h3>Des limites contre les robots</h3><p>30 créations et 120 modifications par heure et par compte : assez pour charger une saison, pas pour inonder le site.</p></div>
+        <div class="box"><h3>Du texte, rien que du texte</h3><p>Une description qui contient du code est gardée telle quelle et affichée comme du texte, jamais exécutée. Un lien de réservation commence par <code>http</code> ou <code>https</code> : <code>javascript:</code> est refusé.</p></div>
+        <div class="box"><h3>Un historique gardé</h3><p>Un événement qui a été public n'est jamais supprimé : ses favoris, ses signalements et l'historique de la modération restent.</p></div>
+      </div>
+    </section>
+
+    <section id="limites" aria-labelledby="limites-titre">
+      <h2 id="limites-titre">Les limites</h2>
+      <ul class="prose">
+        <li><strong>Pas encore d'écran</strong> : l'organisatrice ne peut pas encore se servir de tout cela sans les formulaires et la liste (#82, #83, #85).</li>
+        <li><strong>Une structure en attente ne peut pas préparer de brouillons</strong> : une association sans SIRET attend sa validation à la main avant de pouvoir commencer. À décider à la fin du MVP.</li>
+        <li><strong>100 séances au plus</strong>, à revoir avant l'écran des séances (#83).</li>
+        <li><strong>L'adresse est placée pendant la requête</strong> : si le service de cartographie répond lentement, l'enregistrement attend. Rare, à mesurer après l'ouverture.</li>
+        <li><strong>À essayer de bout en bout</strong> avec les écrans : un premier parcours à la main par la documentation de l'API a été fait, le reste le sera avec le formulaire.</li>
+      </ul>
+    </section>
+
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Les routes, l'ordre des réponses, les règles du domaine, l'écriture, les fichiers et les tests : pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+
+        <section id="api" aria-labelledby="api-titre">
+          <h2 id="api-titre">Les routes et l'ordre des réponses</h2>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les routes de l'API, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Route (sous <code>/api/me/organization/events</code>)</th><th scope="col">Ce qu'elle fait</th><th scope="col">Réponses</th></tr></thead>
+              <tbody>
+                <tr><td><code>GET /</code></td><td>Mes événements saisis, une page ; filtre par statut</td><td>200 ; 404 ; 422</td></tr>
+                <tr><td><code>GET /{id}</code></td><td>Un de mes événements, avec ses blocages et les actions possibles</td><td>200 ; 404</td></tr>
+                <tr><td><code>POST /</code></td><td>Un nouveau brouillon</td><td>201 ; 403 ; 404 ; 422 ; 429 (30 par heure)</td></tr>
+                <tr><td><code>PATCH /{id}</code></td><td>Le modifier, en JSON Merge Patch</td><td>200 ; 403 ; 404 ; 409 ; 422 ; 429 ; 503</td></tr>
+                <tr><td><code>POST /{id}/publication</code></td><td>Le publier</td><td>200 ; 403 ; 404 ; 409 ; 422 ; 429 ; 503</td></tr>
+                <tr><td><code>DELETE /{id}/publication</code></td><td>Le repasser en brouillon</td><td>200 ; 403 ; 404 ; 409 ; 429</td></tr>
+                <tr><td><code>POST /{id}/cancellation</code></td><td>L'annuler, avec un motif de 1 à 1 000 caractères</td><td>200 ; 403 ; 404 ; 409 ; 422 ; 429</td></tr>
+                <tr><td><code>DELETE /{id}</code></td><td>Supprimer un brouillon jamais en ligne</td><td>204 ; 403 ; 404 ; 409 ; 429</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="prose"><p>Les cinq routes qui changent un événement partagent un seul compteur, 120 par heure. Chaque réponse suit le même ordre :</p></div>
+          <div class="diagram" tabindex="0" role="region" aria-label="Schéma de l'ordre des réponses, défilant sur téléphone">
+            <svg viewBox="0 0 700 150" role="img" aria-labelledby="ordre-svg-titre ordre-svg-texte">
+              <title id="ordre-svg-titre">L'ordre des réponses</title>
+              <desc id="ordre-svg-texte">Cinq questions posées dans l'ordre ; la version texte suit le schéma.</desc>
+              <defs>
+                <marker id="fleche-ordre" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="arrowhead" d="M0,0 L10,5 L0,10 z"/></marker>
+              </defs>
+              <g class="node"><rect x="10" y="30" width="118" height="80" rx="10"/><text x="69" y="62" text-anchor="middle">À moi ?</text><text class="code" x="69" y="88" text-anchor="middle">sinon 404</text></g>
+              <g class="node"><rect x="150" y="30" width="118" height="80" rx="10"/><text x="209" y="62" text-anchor="middle">Le droit ?</text><text class="code" x="209" y="88" text-anchor="middle">sinon 403</text></g>
+              <g class="node"><rect x="290" y="30" width="118" height="80" rx="10"/><text x="349" y="62" text-anchor="middle">L'état ?</text><text class="code" x="349" y="88" text-anchor="middle">sinon 409</text></g>
+              <g class="node"><rect x="430" y="30" width="118" height="80" rx="10"/><text x="489" y="62" text-anchor="middle">Les règles ?</text><text class="code" x="489" y="88" text-anchor="middle">sinon 422</text></g>
+              <g class="node ok"><rect x="570" y="30" width="118" height="80" rx="10"/><text x="629" y="62" text-anchor="middle">Enregistré</text><text class="code" x="629" y="88" text-anchor="middle">200 ou 204</text></g>
+              <path class="edge" d="M128 70 L148 70" marker-end="url(#fleche-ordre)"/>
+              <path class="edge" d="M268 70 L288 70" marker-end="url(#fleche-ordre)"/>
+              <path class="edge" d="M408 70 L428 70" marker-end="url(#fleche-ordre)"/>
+              <path class="edge" d="M548 70 L568 70" marker-end="url(#fleche-ordre)"/>
+            </svg>
+          </div>
+          <ol class="prose" aria-label="Le schéma, en texte">
+            <li><strong>404</strong> : pas un de mes événements saisis (<code>MyEventFinder</code>). Celui d'une autre structure, un événement importé et un numéro inconnu reçoivent la même réponse.</li>
+            <li><strong>403</strong> : pas le droit (<code>EventVoter</code>) : structure non validée, événement suspendu. Le voter ne juge que le droit, jamais le statut.</li>
+            <li><strong>409</strong> : pas depuis cet état (<code>EventStateException</code>, levée par <code>Event</code>).</li>
+            <li><strong>422</strong> : une règle, avec une erreur par champ et le code stable de chaque blocage. La <strong>503</strong> s'ajoute quand le service de cartographie est en panne pour un événement publié.</li>
+            <li><strong>200 ou 204</strong> : enregistré.</li>
+          </ol>
+        </section>
+
+        <section id="domaine" aria-labelledby="domaine-titre">
+          <h2 id="domaine-titre">Les règles, dans le domaine</h2>
+          <div class="prose"><p>Toutes les règles vivent dans l'entité <code>Event</code> (la première pull request) ; les routes ne font que lui demander. Une seule liste dit ce qui empêche de publier :</p></div>
+          <div class="grid2">
+            <div class="box"><h3><code>publicationBlockers($now)</code></h3><p>Les blocages de la structure, puis ceux de l'événement qui ne dépendent ni de l'heure ni de la structure (<code>contentBlockers()</code>), puis la séance à venir. <code>publish()</code> lit cette liste ; la fiche la montre, et <code>canPublish</code> veut dire « liste vide ». Les deux ne peuvent pas se contredire.</p></div>
+            <div class="box"><h3><code>assertStillPublishable()</code></h3><p>Pour la modification d'un événement publié : <code>contentBlockers()</code> seulement. Ni l'heure (un événement passé reste publié), ni la structure (un logo retiré ne retire pas les événements en ligne).</p></div>
+            <div class="box"><h3><code>replaceOccurrences()</code></h3><p>Remplace toute la liste des séances : tout est vérifié avant de changer quoi que ce soit (une au moins, 100 au plus, 24 heures au plus, sans chevauchement), puis seules les séances qui changent sont ajoutées ou retirées. Elle dit si quelque chose a changé.</p></div>
+            <div class="box"><h3>Deux dates nouvelles</h3><p><code>first_published_at</code>, posée une seule fois, à la première publication ; <code>organizer_edited_at</code>, posée seulement quand l'organisatrice change vraiment quelque chose. Elles nourriront la relecture des structures à l'essai (#87).</p></div>
+          </div>
+        </section>
+
+        <section id="ecriture" aria-labelledby="ecriture-titre">
+          <h2 id="ecriture-titre">Créer et modifier</h2>
+          <ol class="pipeline">
+            <li><div><strong>Le droit et l'état</strong><span>Ma structure, mon événement, le voter, puis <code>assertEditable()</code>.</span></div></li>
+            <li><div><strong>Le formulaire lu</strong><span>Chaque longueur égale à sa colonne ; les dates en ISO 8601 avec leur décalage, lues strictement (le 30 février est refusé) ; les sous-catégories par leur slug.</span></div></li>
+            <li><div><strong>L'adresse placée, avant la transaction</strong><span>Un appel réseau ne garde jamais la base occupée. Introuvable : un brouillon s'enregistre sans position, un événement publié est refusé.</span></div></li>
+            <li><div><strong>Tout vérifié en mémoire</strong><span>Les champs, les séances, la règle de l'événement publié, le Validator : un refus arrive avant tout enregistrement.</span></div></li>
+            <li><div><strong>Enregistré en une transaction</strong><span>Les sous-catégories en dernier, la principale en deux temps.</span></div></li>
+          </ol>
+          <div class="note"><p><strong>JSON Merge Patch</strong> : un champ absent garde sa valeur, <code>null</code> l'efface, et une liste envoyée remplace toute la liste. Le formulaire est d'abord rempli avec les valeurs actuelles, puis le corps de la requête est écrit dessus. Une modification qui ne change rien, comme un titre renvoyé avec des espaces autour, n'est pas comptée.</p></div>
+        </section>
+
+        <section id="fichiers" aria-labelledby="fichiers-titre">
+          <h2 id="fichiers-titre">Les fichiers clés</h2>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les fichiers clés et leur rôle, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Fichier</th><th scope="col">Son rôle</th></tr></thead>
+              <tbody>
+                <tr><td><code>Event</code></td><td>Les règles : blocages, publication, états, séances</td></tr>
+                <tr><td><code>PublicationBlocker</code></td><td>Les 7 raisons de refuser, avec leur champ et leur message</td></tr>
+                <tr><td><code>MyEventFinder</code></td><td>« Un de mes événements », ou 404</td></tr>
+                <tr><td><code>OrganizerEventEditor</code></td><td>Créer et modifier, la relance en cas de collision d'adresse</td></tr>
+                <tr><td><code>OrganizerEventActions</code></td><td>Publier, repasser en brouillon, annuler, supprimer</td></tr>
+                <tr><td><code>EventClassifier::reclassify()</code></td><td>Changer les sous-catégories dans un ordre qui ne casse aucune règle de la base</td></tr>
+                <tr><td><code>MyEventViews</code></td><td>La fiche renvoyée, et les actions possibles maintenant</td></tr>
+                <tr><td><code>EventViolations</code></td><td>Les refus du domaine traduits en erreurs par champ</td></tr>
+                <tr><td><code>IsoDateTime</code></td><td>La lecture stricte des dates</td></tr>
+                <tr><td><code>PrivateResponseCacheListener</code></td><td>Aucune copie des réponses privées</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Les tests</h2>
+          <div class="grid2">
+            <div class="box"><h3>Backend : 5 053 tests</h3><ul>
+              <li>Les règles du domaine : chaque blocage, chaque changement d'état, les séances, deux changements d'heure</li>
+              <li>Les huit routes : 146 tests d'API, dont chaque refus relu dans la base pour prouver que rien n'a changé</li>
+              <li>Une vraie collision d'adresses, puis trois de suite</li>
+              <li>La matrice des droits, générée sur tous les cas</li>
+            </ul></div>
+            <div class="box"><h3>Un test d'équivalence</h3><p>Pour chaque état et chaque action, la fiche dit « possible » exactement quand la route ne répond ni « pas le droit » ni « pas depuis cet état ». L'écran ne proposera jamais un bouton qui échoue.</p></div>
+            <div class="box"><h3>Vérifier qu'un test protège</h3><p>La règle « pas sur un événement suspendu » a été retirée exprès : cinq tests ont échoué. Le test de la puce a d'abord échoué sur l'ancien code.</p></div>
+            <div class="box"><h3>Le temps tenu en main</h3><p>« À venir » et « passé » se lisent avec une horloge réglée dans les tests, jamais l'heure réelle : un test ne change pas de résultat selon le jour.</p></div>
+          </div>
+        </section>
+
+        <section id="prs" aria-labelledby="prs-titre">
+          <h2 id="prs-titre">Les pull requests</h2>
+          <ul class="prs">
+            <li><span class="num">#215</span><span>Les règles : le quota retiré, les deux dates, les séances, la publication et les états, les règles de la structure, le droit séparé de l'état.</span></li>
+            <li><span class="num">#217</span><span>Les routes : la lecture, l'en-tête de cache, les erreurs par champ, la création, la modification, les quatre actions, la documentation.</span></li>
+            <li><span class="num">fix</span><span>La puce de « Mon profil public » sur téléphone, trouvée en prenant les captures de cette page.</span></li>
+          </ul>
+        </section>
+
+      </div>
+    </details>
+
+    <section id="appris" aria-labelledby="appris-titre">
+      <h2 id="appris-titre">Ce que ce travail a appris</h2>
+      <ul class="prose">
+        <li><strong>Une limite qui gêne les honnêtes ne vaut pas toujours le risque qu'elle couvre</strong> : surveiller peut suffire.</li>
+        <li><strong>Une seule source pour une règle</strong> : la fiche et l'action lisent la même liste de blocages, elles ne peuvent pas se contredire.</li>
+        <li><strong>Distinguer « pas le droit » de « pas maintenant »</strong> donne des réponses justes, et un écran qui sait quoi dire.</li>
+        <li><strong>Tout vérifier avant d'enregistrer</strong> : un refus qui arrive après un enregistrement partiel laisse des données à moitié changées.</li>
+        <li><strong>Deux contrôles d'une même règle peuvent se masquer</strong> : c'est en écrivant le test de la course qu'on a vu le second.</li>
+        <li><strong>Un test ne prouve rien tant qu'on ne l'a pas vu échouer</strong> : la première correction de la puce ne changeait rien, et seul le test l'a montré.</li>
+      </ul>
+    </section>
+
+    <section id="suite" aria-labelledby="suite-titre">
+      <h2 id="suite-titre">La suite</h2>
+      <div class="prose"><p>Les écrans de l'organisatrice : le formulaire d'un événement (#82), ses séances et l'assistant de répétition (#83), ses photos et son programme (#84), la liste de ses événements (#85). Côté administration, la relecture des structures à l'essai et l'alerte (#87). Et deux corrections notées en chemin : le message SQL d'une erreur rare (#216), la typographie française du site (#218).</p></div>
+    </section>
+
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="80-profil-de-la-structure.html" rel="prev"><span>← Issue précédente</span><strong>#80 Le profil de la structure</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>

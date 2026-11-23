@@ -233,3 +233,20 @@ footer.site { color: var(--muted); font-size: .85rem; border-top: 1px solid var(
   html { scroll-behavior: auto; }
   * { transition: none !important; animation: none !important; }
 }
+
+/* Diagrams drawn in SVG (#81). The colours follow the theme through the variables above; on a phone the drawing keeps
+   a readable size and scrolls sideways inside its frame (tabindex + role="region" on the frame), like a wide table.
+   Its text version, right under it, is what a screen reader reads (role="img" + aria-labelledby on the svg). */
+.diagram { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 12px; }
+.diagram:focus-visible { outline: 3px solid var(--turquoise); outline-offset: 2px; }
+.diagram svg { display: block; width: 100%; min-width: 600px; height: auto; }
+.diagram .node rect { fill: var(--tint); stroke: var(--turquoise); stroke-width: 2; }
+.diagram .node.end rect { fill: var(--danger-tint); stroke: var(--danger); }
+.diagram .node.aside rect { fill: var(--code-bg); stroke: var(--line); }
+.diagram .node.ok rect { fill: var(--done-bg); stroke: var(--done); }
+.diagram text { fill: var(--fg); font-family: var(--font-body); font-size: 14px; }
+.diagram .node text { fill: var(--navy); font-weight: 700; }
+.diagram .node .code { fill: var(--muted); font-family: var(--font-mono); font-weight: 600; font-size: 13px; }
+.diagram .edge { stroke: var(--muted); stroke-width: 2; fill: none; }
+.diagram .arrowhead { fill: var(--muted); }
+.diagram .label { fill: var(--muted); font-size: 12.5px; }
