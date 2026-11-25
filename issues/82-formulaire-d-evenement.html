@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>Le formulaire d'un événement (#82) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #82 d'Epika : une organisatrice crée son événement en six étapes, enregistrées une à une, avec des pastilles comme les filtres de la recherche, l'aperçu de la vraie page, l'aperçu dans Google et la publication.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a class="home" href="../index.html">Accueil</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 4 · issue #82 · EF-13, EF-14, US-O2, US-O3, RG-03 à RG-05, RG-34 · terminée le 25/11/2026</p>
+    <h1>Le formulaire d'un événement</h1>
+    <p class="lede">Une structure validée crée maintenant son événement en six étapes courtes, enregistrées une à une. Les choix se font en pastilles, comme dans la recherche ; ce qui est facultatif n'apparaît qu'à la demande. Avant de publier, elle voit ce qui manque, la vraie page de son événement et la façon dont Google la montrera. Puis elle publie, d'un clic.</p>
+    <dl class="facts">
+      <div class="fact"><dt>étapes, chacune enregistrée en la quittant</dt><dd>6</dd></div>
+      <div class="fact"><dt>pull requests</dt><dd>3</dd></div>
+      <div class="fact"><dt>tests du frontend à la fin (Vitest et Playwright)</dt><dd>790</dd></div>
+      <div class="fact"><dt>défauts trouvés en chemin, et corrigés</dt><dd>7</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#principe">Ce que ça change</a></li>
+        <li><a href="#etapes">Six étapes</a></li>
+        <li><a href="#leger">Plus léger, plus clair</a></li>
+        <li><a href="#publier">Vérifier, voir, publier</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#decisions">Les choix faits</a></li>
+        <li><a href="#chemin">Trouvé en chemin</a></li>
+        <li><a href="#accessibilite">Pour tout le monde</a></li>
+        <li><a href="#limites">Les limites</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#formulaire">Un formulaire, six étapes</a></li>
+            <li><a href="#performance">Ne redessiner que ce qui change</a></li>
+            <li><a href="#apercu-technique">L'aperçu et la publication</a></li>
+            <li><a href="#api">Ce qui a changé dans l'API</a></li>
+            <li><a href="#fichiers">Les fichiers clés</a></li>
+            <li><a href="#tests">Les tests</a></li>
+            <li><a href="#prs">Les pull requests</a></li>
+          </ol>
+        </li>
+        <li><a href="#appris">Ce que ce travail a appris</a></li>
+        <li><a href="#suite">La suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="principe" aria-labelledby="principe-titre">
+      <h2 id="principe-titre">Ce que ça change</h2>
+      <div class="prose"><p>Avec <a href="81-gerer-ses-evenements.html">#81</a>, Epika savait créer, modifier et publier un événement, mais seulement par son API. Avec #82, l'organisatrice a <strong>son écran</strong> : depuis « Ma structure », le bouton « Créer un événement » ouvre un parcours guidé, de la première idée à la mise en ligne.</p></div>
+      <ul class="prose">
+        <li><strong>Un brouillon dès la première étape</strong> : un titre, une catégorie et une date suffisent. Le reste se complète à son rythme.</li>
+        <li><strong>Rien n'est perdu</strong> : chaque étape s'enregistre quand on la quitte, et l'étape en cours est dans l'adresse de la page. Recharger la page, ou revenir en arrière avec le navigateur, garde tout.</li>
+        <li><strong>Ce qui manque pour publier est dit clairement</strong>, avec un lien vers le bon champ.</li>
+        <li><strong>On voit avant de publier</strong> : la vraie page de l'événement, et sa ligne dans Google.</li>
+        <li><strong>On publie d'un clic</strong>, et l'événement est en ligne aussitôt.</li>
+      </ul>
+      <div class="note key"><p>Ce formulaire a été <strong>refait en cours de route</strong>. La première version tenait sur une seule longue page ; Flavie l'a trouvée lourde. Après quatre maquettes et plusieurs échanges, il est devenu un parcours en six étapes, avec des choix en pastilles et l'aperçu de la carte à droite. Les règles, elles, n'ont pas changé : elles étaient déjà écrites et testées.</p></div>
+    </section>
+
+    <section id="etapes" aria-labelledby="etapes-titre">
+      <h2 id="etapes-titre">Six étapes</h2>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Les six étapes du formulaire, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Étape</th><th scope="col">Ce qu'elle demande</th></tr></thead>
+          <tbody>
+            <tr><td><strong>1. L'essentiel</strong></td><td>Le titre, la catégorie (les mêmes tuiles qu'à l'accueil) et sa sous-catégorie principale, jusqu'à deux secondaires, la première date. C'est ici que le brouillon est créé.</td></tr>
+            <tr><td><strong>2. Présentation</strong></td><td>La description courte, nécessaire pour publier : elle s'affiche sous le titre et dans Google. Puis la description complète.</td></tr>
+            <tr><td><strong>3. Le lieu</strong></td><td>Le nom du lieu, l'adresse, la ville (avec ses suggestions) et le code postal. La ville de la structure est proposée quand le lieu est encore vide.</td></tr>
+            <tr><td><strong>4. Tarif et réservation</strong></td><td>Gratuit, Payant ou Non précisé ; plusieurs tarifs si besoin ; la réservation sur le site de la structure ou en la contactant.</td></tr>
+            <tr><td><strong>5. Pour aller plus loin</strong></td><td>L'accessibilité, toujours visible, puis ce qu'on veut préciser : âge conseillé, infos pratiques, restauration, stationnement, matériel fourni, condition physique.</td></tr>
+            <tr><td><strong>6. Vérifier et publier</strong></td><td>Où en est l'événement, un récapitulatif de chaque étape, l'aperçu de la page, sa ligne dans Google, et « Publier l'événement ».</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note"><p>Une date de fin plus tôt que le début, c'est le lendemain : un bal de 21 h à 1 h se saisit tel quel, et le formulaire le confirme : « Se termine le dimanche 13 décembre à 01:00 ».</p></div>
+    </section>
+
+    <section id="leger" aria-labelledby="leger-titre">
+      <hgroup><p class="eyebrow">Décidé avec Flavie les 24 et 25/11/2026</p><h2 id="leger-titre">Plus léger, plus clair</h2></hgroup>
+      <div class="grid2">
+        <div class="box"><h3>Des pastilles, comme les filtres</h3><p>Le tarif, la réservation et les précisions facultatives se choisissent en pastilles, exactement celles des filtres de la recherche. Le même geste a le même dessin partout : on ne l'apprend qu'une fois.</p></div>
+        <div class="box"><h3>Le facultatif à la demande</h3><p>Le prix n'apparaît que pour « Payant », les détails pour « Plusieurs tarifs », chaque précision quand on choisit sa pastille. Retirer une pastille garde ce qui avait été tapé : la remettre le retrouve.</p></div>
+        <div class="box"><h3>Les tuiles de l'accueil</h3><p>La catégorie se choisit avec les tuiles de la page d'accueil, une seule et même pièce de code pour les deux : impossible qu'elles divergent un jour.</p></div>
+        <div class="box"><h3>L'aperçu de la carte</h3><p>Sur un grand écran, la carte de l'événement, telle qu'elle apparaîtra dans les listes, suit la saisie à droite du formulaire. Fermée par défaut, elle s'ouvre quand on la veut ; sur un téléphone, elle n'est pas chargée du tout.</p></div>
+      </div>
+    </section>
+
+    <section id="publier" aria-labelledby="publier-titre">
+      <h2 id="publier-titre">Vérifier, voir, publier</h2>
+      <ol class="pipeline">
+        <li><div><strong>Ce qui manque</strong><span>Dans les mots de l'API, chaque manque mène à son étape et met le curseur dans le bon champ. Un manque de la structure (son logo, sa présentation) mène à « Mon profil public ».</span></div></li>
+        <li><div><strong>La vraie page</strong><span>« Voir l'aperçu de la page » montre l'événement tel que les visiteurs le verront, dessiné par les composants mêmes de la page publique, avec sa carte.</span></div></li>
+        <li><div><strong>Sa ligne dans Google</strong><span>Le titre et la description que la page donnera aux moteurs de recherche, faits par les mêmes fonctions que la vraie page : l'aperçu ne peut pas mentir.</span></div></li>
+        <li><div><strong>Publier</strong><span>Depuis la vérification ou depuis l'aperçu. « Votre événement est en ligne », avec le lien vers sa page publique : rien ne bouge sans que l'organisatrice le décide.</span></div></li>
+      </ol>
+      <div class="note"><p>Pour publier, il faut désormais une <strong>description courte</strong> (décidé le 24/11/2026). C'est elle qui décrit la page dans Google : elle n'est jamais vide. Pas de longueur minimale : « Loto du club. » est une description honnête, un minimum pousserait à écrire n'importe quoi pour passer.</p></div>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <div class="prose"><p class="muted">Captures prises par Playwright sur Epika en production, avec une fausse API : la personne (Camille Martin) et la structure (Comité des fêtes du village) sont fictives ; La Farlède est une vraie commune. Sur ordinateur à gauche, sur téléphone à droite.</p></div>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #82">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/82/01-creer-un-evenement-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le haut du formulaire « Créer un événement » : la progression des étapes (les six en ligne sur ordinateur, « Étape 1 sur 6 » et une barre sur téléphone), puis la carte de l'étape « L'essentiel » avec le champ « Titre de l'événement » et son compteur. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/82/01-creer-un-evenement-mobile.jpg" width="360" height="740" loading="lazy" alt="Le haut du formulaire « Créer un événement » : la progression des étapes (les six en ligne sur ordinateur, « Étape 1 sur 6 » et une barre sur téléphone), puis la carte de l'étape « L'essentiel » avec le champ « Titre de l'événement » et son compteur. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> « Créer un événement » : six étapes, la barre de progression en haut sur ordinateur, « Étape 1 sur 6 » sur téléphone. La première étape demande seulement ce qu'il faut pour créer le brouillon : un titre, une catégorie, une première date.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/82/02-la-categorie-desktop.jpg" width="1280" height="800" loading="lazy" alt="La section « Catégorie » : les tuiles Musique et Sport, Musique choisie (anneau et coche), puis « Sous-catégorie principale » avec les pastilles Concert et Bal et soirée dansante, cette dernière cochée, et « Ajouter une sous-catégorie secondaire ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/82/02-la-categorie-mobile.jpg" width="360" height="740" loading="lazy" alt="La section « Catégorie » : les tuiles Musique et Sport, Musique choisie (anneau et coche), puis « Sous-catégorie principale » avec les pastilles Concert et Bal et soirée dansante, cette dernière cochée, et « Ajouter une sous-catégorie secondaire ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> La catégorie en trois temps : les mêmes tuiles qu'à l'accueil, puis la sous-catégorie principale en pastilles, comme les filtres de la recherche, puis jusqu'à deux sous-catégories secondaires.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/82/03-la-premiere-date-desktop.jpg" width="1280" height="800" loading="lazy" alt="La section « Première date » remplie : jour 12/12/2026, début 21:00, fin 01:00 avec l'aide « Après minuit ? Indiquez l'heure, par exemple 01:00 : elle compte pour le lendemain. », puis l'écho « Se termine le dimanche 13 décembre à 01:00. » et le bouton « Créer le brouillon et continuer ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/82/03-la-premiere-date-mobile.jpg" width="360" height="740" loading="lazy" alt="La section « Première date » remplie : jour 12/12/2026, début 21:00, fin 01:00 avec l'aide « Après minuit ? Indiquez l'heure, par exemple 01:00 : elle compte pour le lendemain. », puis l'écho « Se termine le dimanche 13 décembre à 01:00. » et le bouton « Créer le brouillon et continuer ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> Une fin plus tôt que le début, c'est le lendemain : un bal de 21 h à 1 h se tape tel quel, et le formulaire dit ce qu'il a compris : « Se termine le dimanche 13 décembre à 01:00 ».</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/82/04-tarif-et-reservation-desktop.jpg" width="1280" height="800" loading="lazy" alt="L'étape « Tarif et réservation » : les pastilles Gratuit, Payant (choisie), Non précisé, le champ « Prix d'une entrée, en euros » à 8, la pastille « Plusieurs tarifs » cochée avec ses détails, puis « Comment réserver ? » avec « Sur votre site » choisie et son lien. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/82/04-tarif-et-reservation-mobile.jpg" width="360" height="740" loading="lazy" alt="L'étape « Tarif et réservation » : les pastilles Gratuit, Payant (choisie), Non précisé, le champ « Prix d'une entrée, en euros » à 8, la pastille « Plusieurs tarifs » cochée avec ses détails, puis « Comment réserver ? » avec « Sur votre site » choisie et son lien. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">4</span> Le tarif et la réservation en pastilles : le prix n'apparaît que pour « Payant », les détails pour « Plusieurs tarifs », et l'aide de la réservation suit le choix.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/82/05-plus-d-infos-desktop.jpg" width="1280" height="800" loading="lazy" alt="L'étape « Pour aller plus loin » : le champ « Accessibilité » rempli, puis « Je veux préciser : » avec les pastilles Âge conseillé, Infos pratiques, Restauration (cochée), Stationnement et accès, Matériel fourni, Condition physique, et le champ « Restauration » rempli. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/82/05-plus-d-infos-mobile.jpg" width="360" height="740" loading="lazy" alt="L'étape « Pour aller plus loin » : le champ « Accessibilité » rempli, puis « Je veux préciser : » avec les pastilles Âge conseillé, Infos pratiques, Restauration (cochée), Stationnement et accès, Matériel fourni, Condition physique, et le champ « Restauration » rempli. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">5</span> « Pour aller plus loin » : l'accessibilité toujours visible, le reste à la demande. Chaque pastille de « Je veux préciser : » fait apparaître son champ ; la retirer garde ce qui a été tapé.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/82/06-ce-qui-manque-desktop.jpg" width="1280" height="800" loading="lazy" alt="L'étape « Vérifier et publier » : « Presque prêt : 2 informations manquent pour publier », « Ajoutez une description courte… · Présentation », « Indiquez le lien de réservation. · Tarif et réservation », puis le récapitulatif de chaque étape avec « Modifier ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/82/06-ce-qui-manque-mobile.jpg" width="360" height="740" loading="lazy" alt="L'étape « Vérifier et publier » : « Presque prêt : 2 informations manquent pour publier », « Ajoutez une description courte… · Présentation », « Indiquez le lien de réservation. · Tarif et réservation », puis le récapitulatif de chaque étape avec « Modifier ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">6</span> « Vérifier » : ce qui manque pour publier, dans les mots de l'API ; chaque manque mène à son étape et à son champ. Le brouillon, lui, est déjà enregistré.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/82/07-dans-google-desktop.jpg" width="1280" height="800" loading="lazy" alt="La section « Dans les résultats de Google » : une ligne de résultat avec Epika, l'adresse epika.events › evenements › bal-du-village-la-farlede, le titre « Bal du village, samedi 12 décembre à La Farlède — Epika » et la description courte, puis la mention « Aperçu indicatif ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/82/07-dans-google-mobile.jpg" width="360" height="740" loading="lazy" alt="La section « Dans les résultats de Google » : une ligne de résultat avec Epika, l'adresse epika.events › evenements › bal-du-village-la-farlede, le titre « Bal du village, samedi 12 décembre à La Farlède — Epika » et la description courte, puis la mention « Aperçu indicatif ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">7</span> « Dans les résultats de Google » : le titre et la description que la page donnera aux moteurs de recherche, faits par les mêmes fonctions que la vraie page. Un aperçu indicatif : Google choisit ce qu'il affiche.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/82/08-l-apercu-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page « Aperçu de votre événement » : le bandeau « Brouillon. Voici ce que verront les visiteurs une fois l'événement publié. », le bouton « Publier l'événement », « Revenir à la vérification », puis le début de la page publique du « Bal du village ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/82/08-l-apercu-mobile.jpg" width="360" height="740" loading="lazy" alt="La page « Aperçu de votre événement » : le bandeau « Brouillon. Voici ce que verront les visiteurs une fois l'événement publié. », le bouton « Publier l'événement », « Revenir à la vérification », puis le début de la page publique du « Bal du village ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">8</span> L'aperçu de la page, avant de publier : la vraie page publique, dessinée par ses propres composants, sous un bandeau qui dit où en est l'événement, avec « Publier ».</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/82/09-en-ligne-desktop.jpg" width="1280" height="800" loading="lazy" alt="L'étape « Vérifier et publier » après la publication : « Votre événement est en ligne. » dans la ligne d'état, l'encadré « Votre événement est en ligne », « Les visiteurs le trouvent dans la recherche et sur sa page. », les liens « Voir la page publique » et « Retour à Ma structure ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/82/09-en-ligne-mobile.jpg" width="360" height="740" loading="lazy" alt="L'étape « Vérifier et publier » après la publication : « Votre événement est en ligne. » dans la ligne d'état, l'encadré « Votre événement est en ligne », « Les visiteurs le trouvent dans la recherche et sur sa page. », les liens « Voir la page publique » et « Retour à Ma structure ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">9</span> Publié : « Votre événement est en ligne », dit à l'écran et aux lecteurs d'écran, avec sa page publique. Rien ne bouge sans que l'organisatrice le décide.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/82/10-l-apercu-de-la-carte-desktop.jpg" width="1280" height="800" loading="lazy" alt="L'étape « Présentation » : la description courte et son compteur ; sur ordinateur, à droite, « Aperçu de votre carte » avec la carte du « Bal du village » (Gratuit, Musique, samedi 12 décembre, La Farlède) et « Aperçu indicatif ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/82/10-l-apercu-de-la-carte-mobile.jpg" width="360" height="740" loading="lazy" alt="L'étape « Présentation » : la description courte et son compteur ; sur ordinateur, à droite, « Aperçu de votre carte » avec la carte du « Bal du village » (Gratuit, Musique, samedi 12 décembre, La Farlède) et « Aperçu indicatif ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">10</span> Sur un grand écran, l'aperçu de la carte suit la saisie, à droite du formulaire : notre carte d'événement, rien de cliquable. Fermé par défaut ; sur un téléphone, il n'est pas chargé du tout.</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="decisions" aria-labelledby="decisions-titre">
+      <hgroup><p class="eyebrow">Du 23 au 25/11/2026</p><h2 id="decisions-titre">Les choix faits</h2></hgroup>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Les choix faits et les solutions écartées, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Choix retenu</th><th scope="col">Solution écartée</th><th scope="col">Pourquoi</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Six étapes</strong></td><td>Une seule longue page ; sept étapes</td><td>Une page tout d'un coup était lourde. Sept étapes en faisaient une de trop : « Catégorie » seule était maigre, et l'API a besoin du titre, de la catégorie et d'une date pour créer le brouillon.</td></tr>
+            <tr><td><strong>Enregistrer chaque étape en la quittant</strong></td><td>Une sauvegarde automatique</td><td>Une sauvegarde à chaque frappe créerait des brouillons en double. Chaque étape n'envoie que ses propres champs : une erreur concerne toujours l'étape affichée.</td></tr>
+            <tr><td><strong>La barre de progression en ligne</strong> sur ordinateur, compacte sur téléphone</td><td>Une liste verticale à gauche</td><td>Six étapes tiennent sur une ligne ; le formulaire garde toute sa largeur, et ordinateur et téléphone se ressemblent.</td></tr>
+            <tr><td><strong>Des pastilles</strong></td><td>De grandes cartes ; des cases à cocher</td><td>La cohérence avec les filtres de la recherche, et trois choix sur une seule ligne, même sur téléphone.</td></tr>
+            <tr><td><strong>La description courte nécessaire pour publier</strong></td><td>La description longue ; un minimum de caractères</td><td>C'est elle qui décrit la page dans Google ; un minimum n'améliore pas la qualité.</td></tr>
+            <tr><td><strong>L'aperçu dans une page à part</strong>, avec les vrais composants</td><td>Une copie de la page publique</td><td>Ce qui est montré est ce qui sera en ligne ; une copie finirait par différer.</td></tr>
+            <tr><td><strong>« Publier » à la vérification et dans l'aperçu</strong></td><td>À un seul endroit</td><td>On publie à la fin du parcours, ou juste après avoir regardé la page : le même bouton, la même règle.</td></tr>
+            <tr><td><strong>Après la publication, on reste sur l'écran</strong></td><td>Partir aussitôt sur la page publique</td><td>Le message et le lien suffisent ; rien ne bouge sans que l'organisatrice le décide.</td></tr>
+            <tr><td><strong>Le fond blanc</strong></td><td>Le turquoise clair des premières maquettes</td><td>Plus calme ; le turquoise reste pour les accents.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="chemin" aria-labelledby="chemin-titre">
+      <hgroup><p class="eyebrow">Du 23 au 25/11/2026</p><h2 id="chemin-titre">Trouvé en chemin</h2></hgroup>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Ce qui a été trouvé pendant le travail, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Ce qui se passait</th><th scope="col">La cause</th><th scope="col">La correction</th></tr></thead>
+          <tbody>
+            <tr><td>La création d'un brouillon plantait juste après avoir réussi</td><td>L'API peut omettre un champ vide ; un prix absent était lu comme « Payant »</td><td>Tout champ omis est lu comme vide, partout ; un test le garde (trouvé par un test de bout en bout)</td></tr>
+            <tr><td>Sur téléphone, la barre « Précédent / Suivant » passait sous la navigation du bas</td><td>Elle se collait au bas de l'écran, là où la navigation du site est déjà fixée</td><td>Elle se colle au-dessus, comme la barre de réservation ; un champ qui reçoit le focus n'est jamais caché (testé à 360 px et à 400 % de zoom)</td></tr>
+            <tr><td>Après « Publier », le focus pouvait se perdre</td><td>Il était placé « au bon moment » en espérant que la page serait déjà redessinée ; sur une machine chargée, elle ne l'était pas</td><td>Il attend que l'événement affiché ait vraiment changé</td></tr>
+            <tr><td>Sur ordinateur, « Créer le brouillonet continuer »</td><td>Un bouton qui aligne ses éléments supprime l'espace seul entre deux d'entre eux</td><td>Les mots sont réunis dans un même bloc ; un test lit le texte tel qu'il est affiché (trouvé en prenant les captures de cette page)</td></tr>
+            <tr><td>La ligne entre deux étapes traversait les ronds</td><td>Chaque ligne était dessinée après le rond précédent, donc par-dessus</td><td>Les ronds passent au-dessus des lignes (trouvé par Flavie)</td></tr>
+            <tr><td>Les champs « Jour, Début, Fin » n'étaient pas alignés</td><td>L'aide de « Fin », au-dessus du champ, le poussait vers le bas</td><td>L'aide passe sous le champ, et dit plus simplement : « Après minuit ? Indiquez l'heure, par exemple 01:00 : elle compte pour le lendemain. » (trouvé par Flavie)</td></tr>
+            <tr><td>Un lecteur d'écran aurait entendu « Présentation(à compléter…) »</td><td>Un espace placé en tête d'un texte caché disparaît du nom lu</td><td>L'espace est placé hors du texte caché</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="accessibilite" aria-labelledby="accessibilite-titre">
+      <h2 id="accessibilite-titre">Pour tout le monde</h2>
+      <div class="grid2">
+        <div class="box"><h3>Où l'on est</h3><p>À chaque étape, le curseur va sur son titre, et l'onglet du navigateur dit « Étape 2 sur 6 : Présentation ». L'état de chaque étape (terminée, à compléter pour publier) est dit en mots, jamais par la couleur seule.</p></div>
+        <div class="box"><h3>De vrais choix</h3><p>Les pastilles et les tuiles sont de vrais boutons radio et de vraies cases : les flèches du clavier passent d'un choix à l'autre, un lecteur d'écran dit « bouton radio, 2 sur 3 ». Une pastille qui fait apparaître un champ le dit.</p></div>
+        <div class="box"><h3>Les erreurs</h3><p>Elles apparaissent en quittant un champ, jamais à chaque frappe, sous le champ concerné, qui reçoit le focus. Une erreur du serveur reste sur l'étape affichée.</p></div>
+        <div class="box"><h3>Une page, un arbre de titres</h3><p>L'aperçu garde un seul titre principal : « Aperçu de votre événement » ; l'événement et ses sections descendent d'un niveau. La page publique, elle, ne change pas.</p></div>
+      </div>
+      <div class="note"><p>Contrôlé avec axe à 360 et 1 280 px, sans aucune violation, et au clavier à 400 % de zoom. Les annonces des lecteurs d'écran (NVDA, VoiceOver) restent à vérifier à la main, à la recette du lot 6.</p></div>
+    </section>
+
+    <section id="limites" aria-labelledby="limites-titre">
+      <h2 id="limites-titre">Les limites</h2>
+      <ul class="prose">
+        <li><strong>Une seule date à la création</strong> : les autres séances, et corriger une date tapée par erreur, arrivent avec l'écran des séances (#83). #82 et #83 doivent sortir ensemble.</li>
+        <li><strong>Retrouver un brouillon</strong> ne se fait encore que par son adresse : la liste « Mes événements » est l'issue #85, conseillée juste après.</li>
+        <li><strong>Pas encore de photo</strong> : l'aperçu montre l'illustration d'Epika ; les photos et le programme sont l'issue #84.</li>
+        <li><strong>Pas d'enregistrement automatique</strong> : chaque étape s'enregistre en la quittant. Le navigateur prévient avant de fermer l'onglet, pas avant de suivre un lien du site.</li>
+        <li><strong>Une question encore ouverte</strong> : une fête de village sans réservation doit quand même donner un lien ou un contact pour être publiée. Faut-il un mode « Entrée libre » ? Noté pour la fin du MVP.</li>
+      </ul>
+    </section>
+
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Le formulaire en étapes, les règles de performance, l'aperçu et la publication, l'API, les fichiers et les tests : pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+
+        <section id="formulaire" aria-labelledby="formulaire-titre">
+          <h2 id="formulaire-titre">Un formulaire, six étapes</h2>
+          <ol class="pipeline">
+            <li><div><strong>Un seul React Hook Form</strong><span>Pour les six étapes, partagé par <code>FormProvider</code> : changer d'étape ne perd rien. Les règles sont un schéma Zod, <code>eventFormSchema()</code>, en mode <code>onTouched</code>.</span></div></li>
+            <li><div><strong>« Suivant » vérifie l'étape</strong><span><code>trigger()</code> sur les seuls champs de l'étape (<code>EVENT_STEPS</code>).</span></div></li>
+            <li><div><strong>Puis l'enregistre</strong><span><code>stepInput()</code> garde les seules clés de l'étape : <code>POST</code> à la première étape d'un nouvel événement, <code>PATCH</code> ensuite (JSON Merge Patch), rien si l'étape n'a pas changé.</span></div></li>
+            <li><div><strong>L'adresse suit</strong><span><code>window.history.pushState</code> écrit <code>?etape=lieu</code> sans requête au serveur ; <code>popstate</code> suit le bouton « retour ».</span></div></li>
+            <li><div><strong>Le focus et le titre</strong><span>Le titre de l'étape reçoit le focus ; <code>document.title</code> dit l'étape.</span></div></li>
+          </ol>
+          <div class="note"><p>Un champ caché par un choix garde ce qui a été tapé, mais <code>toEventInput()</code> l'envoie à <code>null</code> : le prix hors « Payant », le lien en mode contact, une précision dont la pastille est retirée. Après un enregistrement, <code>resetField</code> prend la valeur enregistrée, sauf pour un champ caché, qui garde le texte tapé.</p></div>
+        </section>
+
+        <section id="performance" aria-labelledby="performance-titre">
+          <h2 id="performance-titre">Ne redessiner que ce qui change</h2>
+          <div class="grid2">
+            <div class="box"><h3>Des champs « feuilles »</h3><p>Chaque champ lit sa propre valeur et sa propre erreur (<code>useWatch</code> et <code>useFormState</code> avec son nom). Taper dans un champ ne redessine que lui : un test compte les rendus.</p></div>
+            <div class="box"><h3>Rien de large à la racine</h3><p>Pas de <code>watch()</code> ni de lecture de tout <code>formState</code> dans le composant qui enchaîne les étapes. L'avertissement « modifications non enregistrées » passe par <code>subscribe()</code>, qui ne redessine rien.</p></div>
+            <div class="box"><h3>L'aperçu de la carte</h3><p>Monté seulement à partir de 1 280 px (<code>useSyncExternalStore</code> sur <code>matchMedia</code>), il ne lit que les champs que la carte affiche, à travers <code>useDeferredValue</code> : la frappe passe d'abord.</p></div>
+            <div class="box"><h3>Jamais rechargé tout seul</h3><p>L'événement n'est pas redemandé en revenant sur l'onglet : une copie fraîche n'écrase pas une saisie en cours. Chaque enregistrement met à jour le cache.</p></div>
+          </div>
+        </section>
+
+        <section id="apercu-technique" aria-labelledby="apercu-technique-titre">
+          <h2 id="apercu-technique-titre">L'aperçu et la publication</h2>
+          <div class="grid2">
+            <div class="box"><h3>Un adaptateur pur</h3><p><code>toPreviewPage()</code> transforme l'événement de l'organisatrice en page publique : textes vides retirés, dates à venir, tarif, sous-catégories par leur nom. Aucune horloge ni requête dedans : testé seul.</p></div>
+            <div class="box"><h3>Un niveau de titre</h3><p><code>headingLevel</code> sur <code>EventHeader</code>, <code>EventDates</code>, <code>EventContent</code> et <code>EventPlace</code> ; les valeurs par défaut sont celles de la page publique, qui ne change pas.</p></div>
+            <div class="box"><h3>Un seul « Publier »</h3><p><code>usePublishAction</code>, partagé par la vérification et l'aperçu : 200 « en ligne », 422 l'événement relu et sa liste focalisée, 409, 429 et 503 dans une alerte.</p></div>
+            <div class="box"><h3>Google</h3><p><code>pageTitle()</code> et <code>pageDescription()</code>, les fonctions de la vraie page, suivies de « — Epika » ; seul l'habillage est caché aux lecteurs d'écran.</p></div>
+          </div>
+        </section>
+
+        <section id="api" aria-labelledby="api-titre">
+          <h2 id="api-titre">Ce qui a changé dans l'API</h2>
+          <ul class="prose">
+            <li><strong>Un nouveau blocage</strong>, <code>short_description</code>, dans <code>contentBlockers()</code> : vérifié à chaque publication, et à chaque modification d'un événement publié (on ne peut pas vider sa description courte). Pas de contrainte en base : un événement importé peut ne pas en avoir.</li>
+            <li><strong>La fiche de l'organisatrice</strong> donne <code>latitude</code> et <code>longitude</code> : l'aperçu montre la vraie carte, et l'organisatrice voit où son adresse a été placée.</li>
+          </ul>
+        </section>
+
+        <section id="fichiers" aria-labelledby="fichiers-titre">
+          <h2 id="fichiers-titre">Les fichiers clés</h2>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les fichiers clés et leur rôle, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Fichier</th><th scope="col">Son rôle</th></tr></thead>
+              <tbody>
+                <tr><td><code>schemas/event.ts</code></td><td>Les règles, les six étapes, ce que chacune envoie</td></tr>
+                <tr><td><code>services/paris-time.ts</code></td><td>Une heure de Paris, avec le décalage de son propre jour (les nuits de changement d'heure)</td></tr>
+                <tr><td><code>form/EventSteps.tsx</code></td><td>Le parcours : enregistrer, changer d'étape, le focus, l'adresse</td></tr>
+                <tr><td><code>form/steps/*</code></td><td>Une étape par fichier</td></tr>
+                <tr><td><code>form/fields.tsx</code></td><td>Les champs « feuilles »</td></tr>
+                <tr><td><code>form/StepProgress.tsx</code></td><td>La barre de progression</td></tr>
+                <tr><td><code>form/CategoryPicker.tsx</code>, <code>CategoryTile.tsx</code></td><td>La catégorie, avec la tuile partagée avec l'accueil</td></tr>
+                <tr><td><code>ui/Chip.tsx</code>, <code>ui/ChipGroup.tsx</code></td><td>Les pastilles, partagées avec les filtres de la recherche</td></tr>
+                <tr><td><code>services/event-preview.ts</code>, <code>EventPreviewScreen.tsx</code></td><td>L'aperçu de la page</td></tr>
+                <tr><td><code>form/use-publish-action.ts</code></td><td>Publier, aux deux endroits</td></tr>
+                <tr><td><code>form/GooglePreview.tsx</code></td><td>La ligne dans Google</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Les tests</h2>
+          <div class="grid2">
+            <div class="box"><h3>Vitest : 606 tests</h3><ul>
+              <li>Les règles et ce que chaque étape envoie, au champ près</li>
+              <li>Deux tests de cohérence : chaque donnée de l'API est envoyée par une étape et une seule, chaque champ appartient à une étape et une seule</li>
+              <li>Le parcours complet, le focus, l'adresse, le bouton « retour », une 422</li>
+              <li>Un compteur de rendus</li>
+            </ul></div>
+            <div class="box"><h3>Playwright : 184 tests</h3><ul>
+              <li>Créer en six étapes, recharger, revenir en arrière</li>
+              <li>Une erreur du serveur, ce qui manque, l'aperçu, la publication</li>
+              <li>axe à 360 et 1 280 px ; le clavier à 400 % de zoom</li>
+              <li>Le texte des boutons tel qu'il est affiché</li>
+            </ul></div>
+            <div class="box"><h3>PHPUnit : 5 059 tests</h3><p>Le nouveau blocage : un brouillon sans description courte s'enregistre mais ne se publie pas ; un événement publié ne peut pas la perdre.</p></div>
+            <div class="box"><h3>Trois fois de suite</h3><p>Le parcours de bout en bout a été joué trois fois d'affilée après la correction du focus : une course ne se voit pas toujours du premier coup.</p></div>
+          </div>
+        </section>
+
+        <section id="prs" aria-labelledby="prs-titre">
+          <h2 id="prs-titre">Les pull requests</h2>
+          <ul class="prs">
+            <li><span class="num">#220</span><span>Le formulaire en six étapes : les règles, les pastilles, la catégorie, l'aperçu de la carte, l'enregistrement par étape, le blocage de la description courte.</span></li>
+            <li><span class="num">#223</span><span>L'aperçu de la page, la publication, la ligne dans Google, les coordonnées dans la fiche.</span></li>
+            <li><span class="num">fix</span><span>Les espaces des boutons sur ordinateur, trouvés en prenant les captures de cette page.</span></li>
+          </ul>
+        </section>
+
+      </div>
+    </details>
+
+    <section id="appris" aria-labelledby="appris-titre">
+      <h2 id="appris-titre">Ce que ce travail a appris</h2>
+      <ul class="prose">
+        <li><strong>Une maquette coûte moins cher qu'un code refait</strong> : les étapes, les pastilles et l'aperçu ont été choisis sur des dessins, avant d'écrire une ligne.</li>
+        <li><strong>Le même geste, le même dessin</strong> : réutiliser les pastilles des filtres et les tuiles de l'accueil rend le site plus cohérent, et le code plus court.</li>
+        <li><strong>Ne jamais parier sur un délai</strong> : un focus placé « après un instant » marche sur une machine rapide et échoue sur une lente. Attendre le vrai changement est sûr.</li>
+        <li><strong>Une donnée peut manquer</strong> : une API a le droit d'omettre un champ vide. Le code ne doit jamais supposer qu'il est là.</li>
+        <li><strong>Les captures sont des tests</strong> : regarder chaque image a encore trouvé un défaut que tous les tests laissaient passer.</li>
+      </ul>
+    </section>
+
+    <section id="suite" aria-labelledby="suite-titre">
+      <h2 id="suite-titre">La suite</h2>
+      <div class="prose"><p>La liste « Mes événements » pour retrouver ses brouillons (#85), conseillée juste après ; l'écran des séances (#83), à sortir avec ce formulaire ; les photos et le programme (#84). Deux issues sont nées de #82 : des suggestions d'adresses pendant la saisie (#221), et chercher une ville par son code postal (#222).</p></div>
+    </section>
+
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="81-gerer-ses-evenements.html" rel="prev"><span>← Issue précédente</span><strong>#81 Gérer ses événements</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>
