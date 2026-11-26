@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>Les dates d'un événement (#83) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #83 d'Epika : une organisatrice gère toutes les dates de son événement, les ajoute, les modifie, les supprime, et les répète chaque semaine sur les jours de son choix grâce à un assistant.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a class="home" href="../index.html">Accueil</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 4 · issue #83 · EF-13, RG-07 · terminée le 26/11/2026</p>
+    <h1>Les dates d'un événement</h1>
+    <p class="lede">Un événement n'a plus une seule date. L'organisatrice ajoute, modifie et supprime ses dates directement dans le formulaire, et un assistant les répète chaque semaine, sur les jours de son choix, jusqu'à la date qu'elle donne : un mois de concerts du mardi au dimanche se saisit en quelques secondes.</p>
+    <dl class="facts">
+      <div class="fact"><dt>dates au plus par événement (EF-13)</dt><dd>100</dd></div>
+      <div class="fact"><dt>pull requests</dt><dd>2</dd></div>
+      <div class="fact"><dt>tests du frontend à la fin (Vitest et Playwright)</dt><dd>886</dd></div>
+      <div class="fact"><dt>défauts trouvés en chemin, et corrigés</dt><dd>4</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#principe">Ce que ça change</a></li>
+        <li><a href="#liste">La liste des dates</a></li>
+        <li><a href="#assistant">Répéter chaque semaine</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#decisions">Les choix faits</a></li>
+        <li><a href="#chemin">Trouvé en chemin</a></li>
+        <li><a href="#accessibilite">Pour tout le monde</a></li>
+        <li><a href="#limites">Les limites</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#regles">Les règles, à un seul endroit</a></li>
+            <li><a href="#heure">L'heure de Paris</a></li>
+            <li><a href="#formulaire">Une liste dans le formulaire</a></li>
+            <li><a href="#panneau">Un panneau, pas un formulaire</a></li>
+            <li><a href="#api">L'API, déjà prête</a></li>
+            <li><a href="#fichiers">Les fichiers clés</a></li>
+            <li><a href="#tests">Les tests</a></li>
+            <li><a href="#prs">Les pull requests</a></li>
+          </ol>
+        </li>
+        <li><a href="#appris">Ce que ce travail a appris</a></li>
+        <li><a href="#suite">La suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="principe" aria-labelledby="principe-titre">
+      <h2 id="principe-titre">Ce que ça change</h2>
+      <div class="prose"><p>Avec <a href="82-formulaire-d-evenement.html">#82</a>, un événement se créait avec <strong>une seule date</strong>, qui ne se modifiait plus ensuite. Une date tapée par erreur restait fausse, et un loto répété chaque samedi demandait autant d'événements que de samedis. Avec #83, l'organisatrice gère <strong>toutes ses dates</strong>, dans l'étape « L'essentiel » du formulaire.</p></div>
+      <ul class="prose">
+        <li><strong>Modifier une date sur place</strong> : son jour, son heure de début, son heure de fin.</li>
+        <li><strong>Ajouter une date</strong> : une nouvelle ligne, déjà aux heures de la dernière date.</li>
+        <li><strong>Supprimer une date</strong>, sauf la dernière : un événement garde toujours au moins une date.</li>
+        <li><strong>Répéter chaque semaine</strong> : les jours cochés, des heures, une période, et toutes les dates d'un coup.</li>
+        <li><strong>Les dates passées</strong> restent à part, en lecture seule : ce que les visiteurs ont vu ne change pas.</li>
+      </ul>
+      <div class="note key"><p>#82 et #83 devaient sortir ensemble pour de vrais utilisateurs : sans #83, une erreur de date ne se corrigeait pas. C'est maintenant chose faite.</p></div>
+    </section>
+
+    <section id="liste" aria-labelledby="liste-titre">
+      <h2 id="liste-titre">La liste des dates</h2>
+      <div class="grid2">
+        <div class="box"><h3>Une ligne par date</h3><p>Chaque date à venir a sa ligne : le jour, le début, la fin. Une fin plus tôt que le début, c'est le lendemain, comme à la création : un bal de 21 h à 1 h se saisit tel quel.</p></div>
+        <div class="box"><h3>Enregistrée avec l'étape</h3><p>Comme le reste du formulaire, la liste s'enregistre quand on quitte l'étape. Rien n'est envoyé si rien n'a changé.</p></div>
+        <div class="box"><h3>Vérifiée avant l'envoi</h3><p>Deux dates qui se chevauchent sont refusées tout de suite, sous la ligne fautive, avec la date de l'autre : « Cette séance chevauche celle du samedi 12 décembre à 21:00 ».</p></div>
+        <div class="box"><h3>Lue partout</h3><p>L'aperçu de la carte montre la prochaine date et « + N autres dates » ; le résumé de « Vérifier » dit « 5 dates, prochaine : … ».</p></div>
+      </div>
+    </section>
+
+    <section id="assistant" aria-labelledby="assistant-titre">
+      <hgroup><p class="eyebrow">Le scénario de recette du cahier des charges</p><h2 id="assistant-titre">Répéter chaque semaine</h2></hgroup>
+      <ol class="pipeline">
+        <li><div><strong>Il s'ouvre déjà réglé</strong><span>Sur le jour et la date de la première date à venir, aux heures de la dernière.</span></div></li>
+        <li><div><strong>On coche les jours</strong><span>En pastilles, comme les filtres de la recherche : un ou plusieurs jours de la semaine.</span></div></li>
+        <li><div><strong>Il annonce avant d'ajouter</strong><span>« 24 dates seront ajoutées. 3 sont déjà prévues. » Les dates déjà dans la liste ne sont pas ajoutées deux fois.</span></div></li>
+        <li><div><strong>Il refuse ce qui ne tiendrait pas</strong><span>Plus de 100 dates en tout, une date qui en chevaucherait une autre, une période à l'envers : il le dit, sous le champ à corriger.</span></div></li>
+        <li><div><strong>Les dates rejoignent la liste</strong><span>Dans l'ordre du calendrier, et c'est dit : « 24 dates ajoutées. »</span></div></li>
+      </ol>
+      <div class="note"><p>La nuit du passage à l'heure d'été, 2 h 30 n'existe pas. Une séance répétée à 2 h 30 saute ce dimanche-là, et l'assistant le dit : « Le dimanche 29 mars est sauté : cette heure n'existe pas ce jour-là ».</p></div>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <div class="prose"><p class="muted">Captures prises par Playwright sur Epika en production, avec une fausse API : la personne (Camille Martin), la structure (Comité des fêtes du village) et les concerts de l'Avent sont fictifs ; La Farlède est une vraie commune. Sur ordinateur à gauche, sur téléphone à droite.</p></div>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #83">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/83/01-la-liste-des-dates-desktop.jpg" width="1280" height="800" loading="lazy" alt="La section « Dates » de l'étape « L'essentiel » : « 4 dates · 100 au plus », puis les lignes « Date 1 » (1er décembre 2026, 18:00 à 19:00), « Date 2 » (5 décembre) et « Date 3 » (8 décembre), chacune avec ses champs Jour, Début, Fin et un bouton Supprimer ; sur ordinateur, on voit aussi plus bas les boutons « Ajouter une date » et « Répéter chaque semaine », puis « 1 date passée » déplié : « Du samedi 14 novembre à 18:00 au samedi 14 novembre à 19:00 ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/83/01-la-liste-des-dates-mobile.jpg" width="360" height="740" loading="lazy" alt="La section « Dates » de l'étape « L'essentiel » : « 4 dates · 100 au plus », puis les lignes « Date 1 » (1er décembre 2026, 18:00 à 19:00), « Date 2 » (5 décembre) et « Date 3 » (8 décembre), chacune avec ses champs Jour, Début, Fin et un bouton Supprimer ; sur ordinateur, on voit aussi plus bas les boutons « Ajouter une date » et « Répéter chaque semaine », puis « 1 date passée » déplié : « Du samedi 14 novembre à 18:00 au samedi 14 novembre à 19:00 ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> Dans « L'essentiel », les dates de l'événement : une ligne par date à venir, qui se modifie sur place, avec « Supprimer » ; le nombre de dates en haut. Les dates déjà passées sont à part, en bas, et ne se modifient plus.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/83/02-ajouter-une-date-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le bas de la liste des dates : la ligne « Date 4 » ajoutée, son champ Jour vide et entouré (il a le focus), de 18:00 à 19:00, puis les boutons « Ajouter une date » et « Répéter chaque semaine ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/83/02-ajouter-une-date-mobile.jpg" width="360" height="740" loading="lazy" alt="Le bas de la liste des dates : la ligne « Date 4 » ajoutée, son champ Jour vide et entouré (il a le focus), de 18:00 à 19:00, puis les boutons « Ajouter une date » et « Répéter chaque semaine ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> « Ajouter une date » : une nouvelle ligne, déjà aux heures de la dernière date, et le curseur sur son jour : il ne reste qu'à le choisir.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/83/03-repeter-chaque-semaine-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le panneau « Répéter chaque semaine » : les pastilles Mar, Mer, Jeu, Ven, Sam et Dim cochées, Lun non cochée, De 18:00 À 19:00, Du 01/12/2026 Au 31/12/2026, la ligne « 24 dates seront ajoutées. 3 sont déjà prévues. », les boutons « Ajouter ces dates » et « Fermer sans ajouter ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/83/03-repeter-chaque-semaine-mobile.jpg" width="360" height="740" loading="lazy" alt="Le panneau « Répéter chaque semaine » : les pastilles Mar, Mer, Jeu, Ven, Sam et Dim cochées, Lun non cochée, De 18:00 À 19:00, Du 01/12/2026 Au 31/12/2026, la ligne « 24 dates seront ajoutées. 3 sont déjà prévues. », les boutons « Ajouter ces dates » et « Fermer sans ajouter ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> « Répéter chaque semaine » : les jours en pastilles, les heures, la période. Pour un concert chaque soir du mardi au dimanche, tout le mois de décembre, l'assistant annonce avant d'ajouter : 24 dates nouvelles, 3 déjà prévues.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/83/04-les-dates-ajoutees-desktop.jpg" width="1280" height="800" loading="lazy" alt="La section « Dates » après l'ajout : « 28 dates · 100 au plus », puis les lignes Date 1 (1er décembre), Date 2 (2 décembre), Date 3 (3 décembre)…, toutes de 18:00 à 19:00. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/83/04-les-dates-ajoutees-mobile.jpg" width="360" height="740" loading="lazy" alt="La section « Dates » après l'ajout : « 28 dates · 100 au plus », puis les lignes Date 1 (1er décembre), Date 2 (2 décembre), Date 3 (3 décembre)…, toutes de 18:00 à 19:00. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">4</span> Une fois ajoutées, les dates rejoignent la liste dans l'ordre du calendrier, et c'est dit : 28 dates en tout. Elles s'enregistrent avec l'étape, comme le reste du formulaire.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/83/05-un-refus-de-l-assistant-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le panneau « Répéter chaque semaine » avec les sept jours cochés, du 01/12/2026 au 31/03/2027, et le message rouge « Cela ferait 122 dates : un événement en a 100 au plus. Raccourcissez la période, ou cochez moins de jours. » Sur ordinateur.">
+              <img class="shot-mobile" src="../images/83/05-un-refus-de-l-assistant-mobile.jpg" width="360" height="740" loading="lazy" alt="Le panneau « Répéter chaque semaine » avec les sept jours cochés, du 01/12/2026 au 31/03/2027, et le message rouge « Cela ferait 122 dates : un événement en a 100 au plus. Raccourcissez la période, ou cochez moins de jours. » Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">5</span> L'assistant refuse ce que l'événement ne pourrait pas garder, et dit pourquoi sous le bouton : ici, tous les jours jusqu'à fin mars, cela ferait 122 dates, alors qu'un événement en a 100 au plus.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/83/06-verifier-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le récapitulatif de l'étape « Vérifier et publier » : la ligne « L'essentiel » dit « Concerts de l'Avent · Concert · 4 dates, prochaine : mardi 1er décembre à 18:00 », avec un lien Modifier, puis les autres étapes. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/83/06-verifier-mobile.jpg" width="360" height="740" loading="lazy" alt="Le récapitulatif de l'étape « Vérifier et publier » : la ligne « L'essentiel » dit « Concerts de l'Avent · Concert · 4 dates, prochaine : mardi 1er décembre à 18:00 », avec un lien Modifier, puis les autres étapes. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">6</span> À l'étape « Vérifier », le résumé dit combien de dates l'événement a, et la prochaine : « 4 dates, prochaine : mardi 1er décembre à 18:00 ».</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="decisions" aria-labelledby="decisions-titre">
+      <hgroup><p class="eyebrow">Le 26/11/2026</p><h2 id="decisions-titre">Les choix faits</h2></hgroup>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Les choix faits et les solutions écartées, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Choix retenu</th><th scope="col">Solution écartée</th><th scope="col">Pourquoi</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Les dates dans « L'essentiel »</strong></td><td>Une septième étape « Dates »</td><td>Le titre, la catégorie et les dates font l'essentiel d'un événement ; le formulaire garde ses six étapes.</td></tr>
+            <tr><td><strong>Les jours au choix</strong></td><td>Répéter une date le même jour chaque semaine</td><td>Une exposition ouverte du mardi au dimanche se fait en un seul passage, un loto du samedi aussi.</td></tr>
+            <tr><td><strong>100 dates au plus</strong>, comme le dit le cahier des charges</td><td>366 dates, une année entière</td><td>Le besoin reste rare ; l'assistant prévient avant de dépasser, et la limite pourra être revue si des organisateurs la rencontrent.</td></tr>
+            <tr><td><strong>Les dates passées en lecture seule</strong></td><td>Les modifier comme les autres</td><td>Une date passée effacée changerait ce que les visiteurs ont vu.</td></tr>
+            <tr><td><strong>« Toute la journée » dans une issue à part</strong> (#228)</td><td>L'ajouter à #83</td><td>Il faut une nouvelle donnée en base, un affichage partout, et une règle pour les jours de 23 et 25 heures : #83 est resté un travail d'écran, sans migration.</td></tr>
+            <tr><td><strong>« Suivant » seul</strong>, comme « Précédent »</td><td>« Suivant : Plus d'infos »</td><td>Le nom de l'étape se lisait mal à côté de « Suivant » ; la barre de progression montre déjà l'étape suivante, et un lecteur d'écran l'entend toujours.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="chemin" aria-labelledby="chemin-titre">
+      <hgroup><p class="eyebrow">Du 26/11/2026</p><h2 id="chemin-titre">Trouvé en chemin</h2></hgroup>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Ce qui a été trouvé pendant le travail, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Ce qui se passait</th><th scope="col">La cause</th><th scope="col">La correction</th></tr></thead>
+          <tbody>
+            <tr><td>« Suivant : Plus d'infos » se lisait comme « plus d'informations sur la suite »</td><td>Le nom de l'étape suivante était affiché dans le bouton, à partir de 640 px</td><td>« Suivant » seul à l'écran, sa destination toujours lue par les lecteurs d'écran (trouvé par Flavie)</td></tr>
+            <tr><td>Le bouton « Supprimer » d'une date descendait sous les champs</td><td>Il s'alignait sur le bas de la ligne, message d'erreur compris</td><td>Il s'aligne sur les champs eux-mêmes (trouvé en regardant l'écran)</td></tr>
+            <tr><td>Sur téléphone, les dates de l'assistant étaient coupées (« 12/12/20 »)</td><td>Deux champs de date côte à côte dans 360 px</td><td>Une date par ligne sur téléphone, les heures restent côte à côte (trouvé en regardant l'écran)</td></tr>
+            <tr><td>Un test passait sur l'ordinateur de Flavie mais échouait sur le serveur de tests</td><td>Il tapait la date au clavier ; l'ordre jour / mois dépend de la langue du navigateur, anglaise sur le serveur</td><td>Le test écrit la date au format ISO, valable dans toutes les langues</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="accessibilite" aria-labelledby="accessibilite-titre">
+      <h2 id="accessibilite-titre">Pour tout le monde</h2>
+      <div class="grid2">
+        <div class="box"><h3>Chaque ligne a un nom</h3><p>« Date 2 » encadre ses trois champs : un lecteur d'écran dit « Date 2, groupe, Jour ». Le bouton dit quelle date il supprime : « Supprimer : date du samedi 12 décembre ».</p></div>
+        <div class="box"><h3>Le curseur ne se perd jamais</h3><p>Après un ajout, il va sur le jour de la nouvelle date ; après une suppression, sur la date suivante ; après l'assistant, sur le titre « Dates ».</p></div>
+        <div class="box"><h3>Ce qui change est dit</h3><p>« Date du samedi 5 décembre supprimée. », « 24 dates seront ajoutées. » : annoncé aux lecteurs d'écran, sans interrompre la saisie.</p></div>
+        <div class="box"><h3>Le clavier d'abord</h3><p>Entrée dans un champ de l'assistant ajoute les dates, au lieu de passer à l'étape suivante. Les jours sont de vraies cases à cocher, nommées en entier : « samedi » pour « Sam ».</p></div>
+      </div>
+      <div class="note"><p>Contrôlé avec axe à 360 et 1 280 px, sur la liste et sur l'assistant ouvert avec une erreur, sans aucune violation. Les annonces des lecteurs d'écran (NVDA, VoiceOver) restent à vérifier à la main, à la recette du lot 6.</p></div>
+    </section>
+
+    <section id="limites" aria-labelledby="limites-titre">
+      <h2 id="limites-titre">Les limites</h2>
+      <ul class="prose">
+        <li><strong>100 dates au plus</strong> : une exposition ouverte tous les jours pendant quatre mois n'y tient pas. L'assistant le dit avant d'ajouter.</li>
+        <li><strong>Pas de « toute la journée »</strong> : une date a toujours une heure de début et de fin. C'est l'issue #228.</li>
+        <li><strong>Une répétition par semaine</strong> : pas encore « un samedi sur deux » ni « le premier dimanche du mois » ; on ajoute alors les dates une à une.</li>
+      </ul>
+    </section>
+
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Les règles pures, l'heure de Paris, la liste dans React Hook Form, le panneau de l'assistant, l'API, les fichiers et les tests : pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+
+        <section id="regles" aria-labelledby="regles-titre">
+          <h2 id="regles-titre">Les règles, à un seul endroit</h2>
+          <div class="prose"><p><code>services/occurrence-rules.ts</code> regroupe des fonctions <strong>pures</strong> (ni horloge, ni requête) : les trois règles de l'API avec ses propres phrases (<code>slotProblem()</code>, <code>firstOverlap()</code>, <code>countProblem()</code>), le calendrier (<code>weekdayOf()</code>, <code>daysBetween()</code>), la répétition (<code>weeklySlots()</code>), la fusion sans doublons (<code>mergeSlots()</code>) et la décision de l'assistant (<code>planRepeat()</code>), qui répond soit « voici les dates », soit « refusé, sur ce champ ». Le composant ne fait qu'afficher sa réponse.</p></div>
+        </section>
+
+        <section id="heure" aria-labelledby="heure-titre">
+          <h2 id="heure-titre">L'heure de Paris</h2>
+          <div class="grid2">
+            <div class="box"><h3>Le décalage du jour</h3><p>Chaque date répétée prend le décalage de son propre jour : <code>+01:00</code> en hiver, <code>+02:00</code> en été. Un samedi 28 mars et un dimanche 29 mars n'ont pas le même.</p></div>
+            <div class="box"><h3>Les deux 2 h 30 d'octobre</h3><p>La nuit du passage à l'heure d'hiver, 2 h 30 arrive deux fois. Une date non touchée est donc renvoyée <strong>exactement</strong> comme elle est venue (<code>lineOccurrence()</code>) : refaite depuis le texte « 02:30 », elle pourrait se décaler d'une heure.</p></div>
+          </div>
+        </section>
+
+        <section id="formulaire" aria-labelledby="formulaire-titre">
+          <h2 id="formulaire-titre">Une liste dans le formulaire</h2>
+          <ol class="pipeline">
+            <li><div><strong>Un champ <code>dates</code></strong><span>Chaque ligne garde son texte, si elle est passée, et la séance d'origine (<code>saved</code>).</span></div></li>
+            <li><div><strong><code>useFieldArray</code></strong><span>Seul le composant de la liste se redessine quand une ligne arrive ou part ; chaque ligne lit ses propres valeurs et erreurs.</span></div></li>
+            <li><div><strong>Envoyée dans l'ordre</strong><span>Toute la liste part avec le <code>PATCH</code> de l'étape : une erreur <code>occurrences[2]</code> de l'API s'affiche sous la ligne 3 (<code>dateFieldOf()</code>).</span></div></li>
+          </ol>
+        </section>
+
+        <section id="panneau" aria-labelledby="panneau-titre">
+          <h2 id="panneau-titre">Un panneau, pas un formulaire</h2>
+          <div class="prose"><p>Un formulaire HTML ne peut pas en contenir un autre. L'assistant est donc un panneau <code>role="group"</code> dans le formulaire de l'événement, avec ses propres états React (<code>useState</code>), hors de React Hook Form : ses champs ne sont jamais envoyés à l'API. Entrée y est interceptée (<code>preventDefault</code>) pour ajouter les dates au lieu de valider l'étape. Le bouton qui l'ouvre porte <code>aria-expanded</code> et <code>aria-controls</code>.</p></div>
+        </section>
+
+        <section id="api" aria-labelledby="api-titre">
+          <h2 id="api-titre">L'API, déjà prête</h2>
+          <div class="prose"><p>Aucune ligne de backend : depuis <a href="81-gerer-ses-evenements.html">#81</a>, un <code>PATCH</code> avec <code>occurrences</code> remplace toute la liste, et <code>Event::replaceOccurrences()</code> vérifie 1 à 100 séances, 24 heures au plus chacune, sans chevauchement ; les bornes première et dernière séance sont recalculées, les dates gardées avec leur décalage (en UTC dans PostgreSQL). #83 a été un travail d'écran.</p></div>
+        </section>
+
+        <section id="fichiers" aria-labelledby="fichiers-titre">
+          <h2 id="fichiers-titre">Les fichiers clés</h2>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les fichiers clés et leur rôle, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Fichier</th><th scope="col">Son rôle</th></tr></thead>
+              <tbody>
+                <tr><td><code>services/occurrence-rules.ts</code></td><td>Les règles, la répétition, la décision de l'assistant, les dates en mots</td></tr>
+                <tr><td><code>schemas/event.ts</code></td><td>Le champ <code>dates</code>, la vérification de chaque ligne, l'envoi et le chargement</td></tr>
+                <tr><td><code>form/OccurrencesEditor.tsx</code></td><td>La liste des dates dans « L'essentiel »</td></tr>
+                <tr><td><code>form/WeeklyRepeat.tsx</code></td><td>Le panneau « Répéter chaque semaine »</td></tr>
+                <tr><td><code>form/field-map.ts</code>, <code>form/EventSteps.tsx</code></td><td>Une erreur de l'API placée sur sa ligne, et le focus</td></tr>
+                <tr><td><code>services/event-card-preview.ts</code>, <code>steps/ReviewStep.tsx</code></td><td>La prochaine date dans l'aperçu et dans le résumé</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Les tests</h2>
+          <div class="grid2">
+            <div class="box"><h3>Vitest : 685 tests</h3><ul>
+              <li>Les règles et la répétition, les nuits de mars et d'octobre comprises</li>
+              <li>Chaque refus de l'assistant, sur son champ</li>
+              <li>La liste : ajout, suppression, chevauchement, une 422 sur sa ligne</li>
+              <li>Le panneau : réglé d'avance, Entrée, fermeture</li>
+            </ul></div>
+            <div class="box"><h3>Playwright : 201 tests</h3><ul>
+              <li>Les concerts du mardi au dimanche pendant un mois, enregistrés et relus</li>
+              <li>Changer, ajouter, supprimer une date au clavier</li>
+              <li>Une 422 sur sa ligne, un refus de l'assistant</li>
+              <li>axe à 360 et 1 280 px ; dans deux langues de navigateur</li>
+            </ul></div>
+          </div>
+        </section>
+
+        <section id="prs" aria-labelledby="prs-titre">
+          <h2 id="prs-titre">Les pull requests</h2>
+          <ul class="prs">
+            <li><span class="num">#230</span><span>La liste des dates dans « L'essentiel » : les règles, la liste modifiable, les dates passées à part, une erreur de l'API sur sa ligne, la prochaine date dans l'aperçu et le résumé ; « Suivant » seul.</span></li>
+            <li><span class="num">#231</span><span>L'assistant « Répéter chaque semaine », ses tests de bout en bout et la documentation.</span></li>
+          </ul>
+        </section>
+
+      </div>
+    </details>
+
+    <section id="appris" aria-labelledby="appris-titre">
+      <h2 id="appris-titre">Ce que ce travail a appris</h2>
+      <ul class="prose">
+        <li><strong>Une API bien faite allège l'écran</strong> : les règles existaient déjà, testées ; #83 n'a eu qu'à les montrer au bon moment.</li>
+        <li><strong>Le temps est piégé</strong> : une heure qui n'existe pas, une heure qui existe deux fois. Ces cas se testent exprès, et un test qui marche un jour peut échouer un autre.</li>
+        <li><strong>Un test peut dépendre de la langue</strong> : taper une date au clavier n'est pas pareil en français et en anglais.</li>
+        <li><strong>Regarder l'écran reste indispensable</strong> : deux défauts d'affichage n'ont été vus que sur les captures.</li>
+      </ul>
+    </section>
+
+    <section id="suite" aria-labelledby="suite-titre">
+      <h2 id="suite-titre">La suite</h2>
+      <div class="prose"><p>Les photos et le programme d'un événement (#84). Deux issues sont nées pendant #83 : une séance sur toute la journée (#228), et deux balises canonical vues après un changement de page sur la page d'une structure (#229), à regarder avec la mise à jour de Next.js.</p></div>
+    </section>
+
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="85-mes-evenements.html" rel="prev"><span>← Issue précédente</span><strong>#85 Mes événements</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>
