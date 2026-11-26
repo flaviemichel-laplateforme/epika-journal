@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>Mes événements (#85) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #85 d'Epika : une organisatrice retrouve tous ses événements dans une liste, les filtre par statut, et les repasse en brouillon, les annule ou les supprime après une confirmation claire.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a class="home" href="../index.html">Accueil</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 4 · issue #85 · EF-15, US-O6, RG-10 · terminée le 26/11/2026</p>
+    <h1>Mes événements</h1>
+    <p class="lede">Une organisatrice retrouve maintenant tous ses événements au même endroit : ses brouillons, ce qui est en ligne, ce qui est annulé. Elle les filtre par statut, voit d'un coup d'œil où en est chacun, et peut le modifier, le repasser en brouillon, l'annuler ou le supprimer. Les gestes importants demandent d'abord une confirmation claire.</p>
+    <dl class="facts">
+      <div class="fact"><dt>statuts, chacun avec ses boutons</dt><dd>4</dd></div>
+      <div class="fact"><dt>actions qui demandent d'abord</dt><dd>3</dd></div>
+      <div class="fact"><dt>tests du frontend à la fin (Vitest et Playwright)</dt><dd>833</dd></div>
+      <div class="fact"><dt>défauts du formulaire trouvés en essayant, et corrigés</dt><dd>3</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#principe">Ce que ça change</a></li>
+        <li><a href="#ligne">Une ligne par événement</a></li>
+        <li><a href="#confirmer">Demander avant d'agir</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#decisions">Les choix faits</a></li>
+        <li><a href="#chemin">Trouvé en essayant</a></li>
+        <li><a href="#accessibilite">Pour tout le monde</a></li>
+        <li><a href="#limites">Les limites</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#regles">Les règles des boutons</a></li>
+            <li><a href="#adresse">Le filtre et la page dans l'adresse</a></li>
+            <li><a href="#fenetre">Une seule fenêtre</a></li>
+            <li><a href="#api">Les routes utilisées</a></li>
+            <li><a href="#fichiers">Les fichiers clés</a></li>
+            <li><a href="#tests">Les tests</a></li>
+            <li><a href="#prs">La pull request</a></li>
+          </ol>
+        </li>
+        <li><a href="#appris">Ce que ce travail a appris</a></li>
+        <li><a href="#suite">La suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="principe" aria-labelledby="principe-titre">
+      <h2 id="principe-titre">Ce que ça change</h2>
+      <div class="prose"><p>Avec <a href="82-formulaire-d-evenement.html">#82</a>, une organisatrice savait créer et publier un événement. Mais un brouillon enregistré ne se retrouvait que par son adresse : rien ne menait à lui. Avec #85, elle a <strong>la liste de ses événements</strong>, « Mes événements ».</p></div>
+      <ul class="prose">
+        <li><strong>Tout au même endroit</strong> : depuis « Ma structure », et depuis chaque sortie du formulaire (« Enregistrer et quitter », « Retour à mes événements »).</li>
+        <li><strong>Un filtre par statut</strong> : Tous, Brouillons, Publiés, Annulés, Suspendus, avec le nombre d'événements. Le filtre et la page sont dans l'adresse : on peut la garder en favori, la recharger, revenir en arrière.</li>
+        <li><strong>Où en est chacun</strong> : son statut en mots, sa prochaine date, le nombre de dates, ou « Terminé le … ».</li>
+        <li><strong>Seulement les boutons possibles</strong> : un brouillon déjà publié ne propose pas « Supprimer », un événement annulé ne se modifie plus.</li>
+        <li><strong>Une confirmation avant les gestes importants</strong> : repasser en brouillon, annuler (avec son motif), supprimer.</li>
+      </ul>
+      <div class="note key"><p>« Publier » un brouillon depuis la liste mène toujours à l'étape « Vérifier » du formulaire (« Vérifier et publier ») : <strong>une seule façon de publier</strong>, avec sous les yeux ce qui manque, l'aperçu de la page et sa ligne dans Google (décidé avec Flavie le 25/11/2026).</p></div>
+    </section>
+
+    <section id="ligne" aria-labelledby="ligne-titre">
+      <h2 id="ligne-titre">Une ligne par événement</h2>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Les boutons de chaque statut, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Statut</th><th scope="col">Ce que la ligne propose</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pill todo">Brouillon</span></td><td>« Vérifier et publier », « Modifier », « Supprimer ».</td></tr>
+            <tr><td><span class="pill todo">Brouillon · déjà publié</span></td><td>« Vérifier et publier », « Modifier ». Il a déjà été en ligne : des visiteurs ont pu l'enregistrer en favori ou le partager, il ne se supprime donc plus, et la ligne le dit.</td></tr>
+            <tr><td><span class="pill done">Publié</span></td><td>« Modifier », « Voir la page publique », « Repasser en brouillon », « Annuler ».</td></tr>
+            <tr><td><span class="pill part">Annulé</span></td><td>« Voir la page publique » : il reste visible, marqué « Annulé », avec son motif, pour que les visiteurs sachent pourquoi.</td></tr>
+            <tr><td><span class="pill bad">Suspendu</span></td><td>Aucun bouton. La ligne explique : suspendu par l'équipe d'Epika, il n'est plus visible et ne peut pas être modifié.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note"><p>La date dit tout sans calcul : « Prochaine date : samedi 12 décembre à 21:00 · 5 dates au total ». Le total compte toutes les dates, passées comprises : jamais un « et 4 autres dates » qui serait faux.</p></div>
+    </section>
+
+    <section id="confirmer" aria-labelledby="confirmer-titre">
+      <h2 id="confirmer-titre">Demander avant d'agir</h2>
+      <div class="grid2">
+        <div class="box"><h3>Repasser en brouillon</h3><p>« Il ne sera plus visible des visiteurs. Vous pourrez le republier. »</p></div>
+        <div class="box"><h3>Annuler</h3><p>Un motif est demandé (jusqu'à 1 000 caractères, avec un compteur) : l'événement reste visible, marqué « Annulé », avec ce motif. Il ne pourra plus être modifié.</p></div>
+        <div class="box"><h3>Supprimer</h3><p>« Ce brouillon sera supprimé définitivement. » Seul un brouillon jamais publié peut l'être.</p></div>
+        <div class="box"><h3>Des boutons qui disent ce qu'ils font</h3><p>« Supprimer le brouillon », « Annuler l'événement », « Repasser en brouillon » : jamais un vague « Confirmer ». L'autre bouton est toujours « Garder tel quel ».</p></div>
+      </div>
+      <ol class="pipeline">
+        <li><div><strong>La fenêtre s'ouvre</strong><span>Le curseur va sur le choix le plus sûr, « Garder tel quel » (ou sur le motif, pour une annulation) : un Entrée par réflexe ne change rien.</span></div></li>
+        <li><div><strong>On renonce</strong><span>Échap ou « Garder tel quel » : la fenêtre se ferme, rien n'est envoyé, le curseur revient sur le bouton d'où l'on venait.</span></div></li>
+        <li><div><strong>On confirme</strong><span>Pendant l'envoi, les deux boutons sont désactivés et Échap ne ferme pas : jamais deux demandes.</span></div></li>
+        <li><div><strong>C'est fait</strong><span>La liste le dit (« « Vide-grenier de printemps » est supprimé. 1 brouillon. »), le curseur revient en haut de la liste, la liste est relue.</span></div></li>
+      </ol>
+      <div class="note"><p>Si le serveur refuse (par exemple, l'événement a été publié entre-temps depuis un autre onglet), son message s'affiche dans la fenêtre, qui reste ouverte, et la liste est relue.</p></div>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <div class="prose"><p class="muted">Captures prises par Playwright sur Epika en production, avec une fausse API : la personne (Camille Martin) et la structure (Comité des fêtes du village) sont fictives ; La Farlède est une vraie commune. Sur ordinateur à gauche, sur téléphone à droite.</p></div>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #85">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/85/01-la-liste-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page « Mes événements » : le bouton « Créer un événement », les filtres Tous (choisi), Brouillons, Publiés, Annulés, Suspendus, « 7 événements. », puis les cartes « Bal du village » (Publié, prochaine date samedi 12 décembre à 21:00, boutons Modifier, Voir la page publique, Repasser en brouillon, Annuler) et « Marché de Noël » (Publié, 2 dates au total). Sur ordinateur.">
+              <img class="shot-mobile" src="../images/85/01-la-liste-mobile.jpg" width="360" height="740" loading="lazy" alt="La page « Mes événements » : le bouton « Créer un événement », les filtres Tous (choisi), Brouillons, Publiés, Annulés, Suspendus, « 7 événements. », puis les cartes « Bal du village » (Publié, prochaine date samedi 12 décembre à 21:00, boutons Modifier, Voir la page publique, Repasser en brouillon, Annuler) et « Marché de Noël » (Publié, 2 dates au total). Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> « Mes événements » : chaque événement de la structure, son statut en mots, sa prochaine date, et les boutons de ce qu'on peut en faire. Le filtre par statut est en haut, le total juste dessous.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/85/02-les-brouillons-desktop.jpg" width="1280" height="800" loading="lazy" alt="La liste filtrée sur « Brouillons », « 2 brouillons. » : « Vide-grenier de printemps » (Brouillon, boutons Vérifier et publier, Modifier, Supprimer) et « Concert de la chorale » (Brouillon · déjà publié, boutons Vérifier et publier, Modifier, et la phrase « Cet événement a déjà été en ligne : il ne peut pas être supprimé. »). Sur ordinateur.">
+              <img class="shot-mobile" src="../images/85/02-les-brouillons-mobile.jpg" width="360" height="740" loading="lazy" alt="La liste filtrée sur « Brouillons », « 2 brouillons. » : « Vide-grenier de printemps » (Brouillon, boutons Vérifier et publier, Modifier, Supprimer) et « Concert de la chorale » (Brouillon · déjà publié, boutons Vérifier et publier, Modifier, et la phrase « Cet événement a déjà été en ligne : il ne peut pas être supprimé. »). Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> Le filtre « Brouillons » : il est dans l'adresse de la page (« ?statut=brouillons »). Un brouillon jamais publié peut être supprimé ; celui qui a déjà été en ligne le dit, et ne peut plus l'être.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/85/03-repasser-en-brouillon-desktop.jpg" width="1280" height="800" loading="lazy" alt="La fenêtre « Repasser en brouillon ? » par-dessus la liste : « « Bal du village » ne sera plus visible des visiteurs. Vous pourrez le republier. », les boutons « Repasser en brouillon » et « Garder tel quel ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/85/03-repasser-en-brouillon-mobile.jpg" width="360" height="740" loading="lazy" alt="La fenêtre « Repasser en brouillon ? » par-dessus la liste : « « Bal du village » ne sera plus visible des visiteurs. Vous pourrez le republier. », les boutons « Repasser en brouillon » et « Garder tel quel ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> « Repasser en brouillon » demande d'abord. La fenêtre dit ce qui va se passer ; le premier focus est sur « Garder tel quel » : un Entrée par réflexe ne change rien.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/85/04-annuler-avec-un-motif-desktop.jpg" width="1280" height="800" loading="lazy" alt="La fenêtre « Annuler l'événement ? » : « « Marché de Noël » reste visible, marqué Annulé, avec votre motif. Il ne pourra plus être modifié. », le champ « Motif de l'annulation » rempli avec « La place est réservée pour des travaux. » et son compteur, les boutons « Annuler l'événement » et « Garder tel quel ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/85/04-annuler-avec-un-motif-mobile.jpg" width="360" height="740" loading="lazy" alt="La fenêtre « Annuler l'événement ? » : « « Marché de Noël » reste visible, marqué Annulé, avec votre motif. Il ne pourra plus être modifié. », le champ « Motif de l'annulation » rempli avec « La place est réservée pour des travaux. » et son compteur, les boutons « Annuler l'événement » et « Garder tel quel ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">4</span> Annuler un événement publié demande son motif : l'événement reste visible, marqué « Annulé », avec ce motif, pour que les visiteurs sachent pourquoi.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/85/05-supprimer-un-brouillon-desktop.jpg" width="1280" height="800" loading="lazy" alt="La fenêtre « Supprimer ce brouillon ? » : « « Vide-grenier de printemps » sera supprimé définitivement. », le bouton rouge « Supprimer le brouillon » et « Garder tel quel ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/85/05-supprimer-un-brouillon-mobile.jpg" width="360" height="740" loading="lazy" alt="La fenêtre « Supprimer ce brouillon ? » : « « Vide-grenier de printemps » sera supprimé définitivement. », le bouton rouge « Supprimer le brouillon » et « Garder tel quel ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">5</span> Supprimer un brouillon : la fenêtre le dit sans détour, et le bouton porte le verbe exact, « Supprimer le brouillon », jamais un vague « Confirmer ».</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/85/06-c-est-fait-desktop.jpg" width="1280" height="800" loading="lazy" alt="La liste « Brouillons » après la suppression : la ligne « « Vide-grenier de printemps » est supprimé. 1 brouillon. », puis la seule carte restante, « Concert de la chorale ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/85/06-c-est-fait-mobile.jpg" width="360" height="740" loading="lazy" alt="La liste « Brouillons » après la suppression : la ligne « « Vide-grenier de printemps » est supprimé. 1 brouillon. », puis la seule carte restante, « Concert de la chorale ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">6</span> Une fois l'action faite, la liste le dit (« « Vide-grenier de printemps » est supprimé. ») avec le nouveau total ; un lecteur d'écran l'entend aussi, et le focus revient en haut de la liste.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/85/07-annules-suspendus-termines-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le bas de la liste « Tous » : « Loto du comité » (Annulé, bouton Voir la page publique), « Tournoi de pétanque » (Suspendu, « Suspendu par l'équipe d'Epika : il n'est plus visible et ne peut pas être modifié. Contactez l'équipe d'Epika. », aucun bouton) et « Fête de la Saint-Jean » (Publié, « Terminé le mercredi 24 juin à 23:30 »). Sur ordinateur.">
+              <img class="shot-mobile" src="../images/85/07-annules-suspendus-termines-mobile.jpg" width="360" height="740" loading="lazy" alt="Le bas de la liste « Tous » : « Loto du comité » (Annulé, bouton Voir la page publique), « Tournoi de pétanque » (Suspendu, « Suspendu par l'équipe d'Epika : il n'est plus visible et ne peut pas être modifié. Contactez l'équipe d'Epika. », aucun bouton) et « Fête de la Saint-Jean » (Publié, « Terminé le mercredi 24 juin à 23:30 »). Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">7</span> Ce qu'on ne peut plus changer : un événement annulé garde sa page publique ; un événement suspendu par l'équipe d'Epika l'explique et n'a aucun bouton ; un événement passé dit « Terminé le … ».</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/85/08-publication-refusee-desktop.jpg" width="1280" height="800" loading="lazy" alt="L'étape « Vérifier et publier » après un clic sur « Publier » : l'alerte rouge « Publication impossible : il manque encore 1 information, listée ci-dessous. », puis l'encadré « Presque prêt : une information manque pour publier » avec « Indiquez le lien de réservation. · Tarif et réservation ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/85/08-publication-refusee-mobile.jpg" width="360" height="740" loading="lazy" alt="L'étape « Vérifier et publier » après un clic sur « Publier » : l'alerte rouge « Publication impossible : il manque encore 1 information, listée ci-dessous. », puis l'encadré « Presque prêt : une information manque pour publier » avec « Indiquez le lien de réservation. · Tarif et réservation ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">8</span> Trouvé en essayant : un clic sur « Publier » alors qu'il manque une information semblait ne rien faire. Maintenant, une alerte le dit tout de suite et reçoit le focus ; la liste de ce qui manque est juste dessous.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/85/09-adresse-introuvable-desktop.jpg" width="1280" height="800" loading="lazy" alt="L'étape « Le lieu » : l'alerte rouge « Adresse enregistrée, mais nous ne l'avons pas trouvée sur la carte. Vérifiez le numéro, la rue et le code postal, puis continuez. Sans position sur la carte, l'événement ne pourra pas être publié. », puis le titre de l'étape « Le lieu » et ses champs. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/85/09-adresse-introuvable-mobile.jpg" width="360" height="740" loading="lazy" alt="L'étape « Le lieu » : l'alerte rouge « Adresse enregistrée, mais nous ne l'avons pas trouvée sur la carte. Vérifiez le numéro, la rue et le code postal, puis continuez. Sans position sur la carte, l'événement ne pourra pas être publié. », puis le titre de l'étape « Le lieu » et ses champs. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">9</span> Trouvé en essayant : une adresse que la carte ne trouve pas n'était signalée qu'à la fin. Maintenant, c'est dit tout de suite, à l'étape « Le lieu », là où on la corrige. Le brouillon est enregistré quand même.</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="decisions" aria-labelledby="decisions-titre">
+      <hgroup><p class="eyebrow">Le 25/11/2026</p><h2 id="decisions-titre">Les choix faits</h2></hgroup>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Les choix faits et les solutions écartées, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Choix retenu</th><th scope="col">Solution écartée</th><th scope="col">Pourquoi</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Publier passe par « Vérifier »</strong></td><td>Un bouton « Publier » dans la liste</td><td>Une seule façon de publier, toujours avec ce qui manque, l'aperçu et la ligne Google sous les yeux.</td></tr>
+            <tr><td><strong>Trois confirmations</strong></td><td>Agir au clic ; une seule confirmation, pour supprimer</td><td>Repasser en brouillon retire l'événement aux visiteurs, annuler est définitif, supprimer aussi : chacun mérite une phrase qui dit ce qui va se passer.</td></tr>
+            <tr><td><strong>Le premier focus sur « Garder tel quel »</strong></td><td>Sur le bouton de l'action</td><td>La recommandation du W3C pour une action destructrice : un Entrée par réflexe ne doit rien casser.</td></tr>
+            <tr><td><strong>Le filtre fait de liens</strong></td><td>Des boutons qui changent la liste sur place</td><td>Changer de filtre change le contenu de la page : c'est une navigation. L'adresse la garde, et le lien marche même avant que le JavaScript soit chargé.</td></tr>
+            <tr><td><strong>La liste reste à l'écran pendant qu'une page charge</strong></td><td>Un « Chargement… » à chaque clic</td><td>Rien ne saute ; la liste dit seulement qu'elle est occupée.</td></tr>
+            <tr><td><strong>Une page trop loin mène à la dernière</strong></td><td>Une liste vide</td><td>Après une suppression, ou avec une adresse tapée à la main, « page 3 » peut ne plus exister : on montre la dernière plutôt qu'un vide trompeur.</td></tr>
+            <tr><td><strong>Une structure non validée ne voit pas « Créer un événement »</strong></td><td>Le bouton, puis un refus</td><td>La liste explique pourquoi il n'y a encore rien à faire, et mène à la déclaration ou à la structure.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="chemin" aria-labelledby="chemin-titre">
+      <hgroup><p class="eyebrow">Trouvé par Flavie, le 25/11/2026</p><h2 id="chemin-titre">Trouvé en essayant</h2></hgroup>
+      <div class="prose"><p>En essayant le parcours complet, de la liste au formulaire, Flavie a trouvé trois défauts du formulaire de #82. Ils sont corrigés dans la même pull request.</p></div>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Ce qui a été trouvé en essayant, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Ce qui se passait</th><th scope="col">La cause</th><th scope="col">La correction</th></tr></thead>
+          <tbody>
+            <tr><td>Un clic sur « Publier » alors qu'il manquait une information semblait ne rien faire</td><td>Le refus changeait seulement la ligne d'état en haut de page, et le focus allait sur l'encadré « Presque prêt », déjà affiché</td><td>Une alerte visible, qui reçoit le focus : « Publication impossible : il manque encore 1 information, listée ci-dessous. »</td></tr>
+            <tr><td>Une adresse de Paris n'était jamais placée sur la carte</td><td>Le code postal de la structure (75004) était proposé ; or l'adresse était dans le 11e (75011), et le service de cartographie ne cherche que dans le code postal donné</td><td>Pour Paris, Lyon et Marseille, qui ont un code postal par arrondissement, seule la ville est proposée</td></tr>
+            <tr><td>Une adresse introuvable n'était signalée qu'à la fin, à « Vérifier »</td><td>L'étape « Le lieu » enregistrait l'adresse sans regarder si elle avait été placée</td><td>C'est dit tout de suite, à l'étape « Le lieu » ; un second « Suivant » sans changement continue, car un brouillon a le droit d'attendre</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note"><p>Le message « Placer l'adresse sur la carte peut prendre quelques secondes » ne s'affiche plus qu'à l'étape « Le lieu », la seule qui attend le service de cartographie. Pendant une publication, le message est « Publication en cours… ».</p></div>
+    </section>
+
+    <section id="accessibilite" aria-labelledby="accessibilite-titre">
+      <h2 id="accessibilite-titre">Pour tout le monde</h2>
+      <div class="grid2">
+        <div class="box"><h3>Naviguer de titre en titre</h3><p>Chaque événement a son titre de niveau 2 : un lecteur d'écran passe d'un événement au suivant d'une touche.</p></div>
+        <div class="box"><h3>Des boutons nommés</h3><p>Chaque bouton dit son action puis l'événement : « Supprimer : Bal du village ». Dans une liste de vingt « Supprimer », on sait toujours lequel.</p></div>
+        <div class="box"><h3>Ce qui change est dit</h3><p>Le total (« 3 brouillons. ») et ce qui vient d'être fait sont annoncés par une ligne d'état présente dès l'ouverture de la page. Le filtre en cours est marqué pour les lecteurs d'écran, pas seulement par sa couleur.</p></div>
+        <div class="box"><h3>Le statut en mots</h3><p>Chaque statut est écrit, avec une icône décorative : jamais la couleur seule.</p></div>
+      </div>
+      <div class="note"><p>Contrôlé avec axe à 360 et 1 280 px, sur la liste et sur une fenêtre ouverte, sans aucune violation, et au clavier dans les trois fenêtres. Les annonces des lecteurs d'écran (NVDA, VoiceOver) restent à vérifier à la main, à la recette du lot 6.</p></div>
+    </section>
+
+    <section id="limites" aria-labelledby="limites-titre">
+      <h2 id="limites-titre">Les limites</h2>
+      <ul class="prose">
+        <li><strong>Pas encore de contact</strong> : un événement suspendu dit « Contactez l'équipe d'Epika », mais le site n'a pas encore de page ni d'adresse de contact. À ajouter avant l'ouverture au public (#99).</li>
+        <li><strong>Les règles des boutons existent en deux endroits</strong> : dans l'API, qui reste juge, et dans la liste, qui les recopie pour ne pas charger chaque événement. Si l'API donne un jour les actions possibles avec la liste, la copie disparaîtra.</li>
+        <li><strong>Une seule date à la création</strong>, toujours : les autres séances arrivent avec l'écran des séances (#83).</li>
+        <li><strong>Une idée, rien n'est décidé</strong> : « Dupliquer un événement ». Une association refait souvent le même loto ou la même brocante chaque année ; repartir d'une copie lui ferait gagner beaucoup de temps.</li>
+      </ul>
+    </section>
+
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Les règles des boutons, le filtre dans l'adresse, la fenêtre de confirmation, les routes, les fichiers et les tests : pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+
+        <section id="regles" aria-labelledby="regles-titre">
+          <h2 id="regles-titre">Les règles des boutons</h2>
+          <div class="prose"><p>La liste de l'API ne porte pas <code>allowedActions</code> : il faudrait charger chaque événement. Les boutons viennent donc du <code>status</code> et de <code>firstPublishedAt</code>, écrits <strong>une seule fois</strong> dans une fonction pure, <code>listActions(item)</code>, qui rend <code>{ primary, secondary, note }</code> et qui est testée sur chaque ligne du tableau. Le serveur reste juge : une action refusée (403, 409) affiche son message et relit la liste.</p></div>
+          <div class="note"><p>Le <code>switch</code> sur le statut se termine par <code>item.status satisfies never</code> : si un cinquième statut apparaît un jour, TypeScript refuse de compiler tant qu'il n'a pas ses boutons.</p></div>
+        </section>
+
+        <section id="adresse" aria-labelledby="adresse-titre">
+          <h2 id="adresse-titre">Le filtre et la page dans l'adresse</h2>
+          <ol class="pipeline">
+            <li><div><strong>La page serveur lit l'adresse</strong><span><code>?statut=brouillons&amp;page=2</code> : <code>filterOf()</code> traduit le mot de l'adresse en statut de l'API grâce à un seul tableau, <code>MY_EVENT_FILTERS</code> ; une valeur inconnue donne « Tous », une page invalide la première.</span></div></li>
+            <li><div><strong>Le navigateur lit les événements</strong><span><code>useMyEvents(status, page)</code> (TanStack Query, clé <code>["my-events", status, page]</code>), demandé seulement quand la structure est validée.</span></div></li>
+            <li><div><strong>La page affichée reste</strong><span><code>placeholderData: keepPreviousData</code> garde l'ancienne page pendant que la nouvelle arrive ; <code>isPlaceholderData</code> met <code>aria-busy</code> sur la liste.</span></div></li>
+            <li><div><strong>Trop loin, on revient</strong><span>Aucun élément, page &gt; 1 et un total positif : <code>router.replace</code> vers la dernière page (jamais sur la page gardée à l'écran).</span></div></li>
+          </ol>
+        </section>
+
+        <section id="fenetre" aria-labelledby="fenetre-titre">
+          <h2 id="fenetre-titre">Une seule fenêtre</h2>
+          <div class="grid2">
+            <div class="box"><h3>Un <code>&lt;dialog&gt;</code> natif</h3><p><code>ConfirmEventAction</code> reçoit une demande <code>{ kind, item }</code> et tire ses textes d'un tableau <code>TEXTS</code>. <code>showModal()</code> rend le reste de la page inerte ; à la fermeture, le navigateur rend le focus au bouton d'origine.</p></div>
+            <div class="box"><h3>Le premier focus</h3><p>Posé après <code>showModal()</code> sur l'élément marqué <code>data-premier-focus</code> : l'<code>autoFocus</code> de React arrivait trop tôt, avant l'ouverture.</p></div>
+            <div class="box"><h3>Jamais deux envois</h3><p>Pendant l'envoi, les boutons sont désactivés et l'événement <code>cancel</code> (Échap) est bloqué par <code>preventDefault()</code>. L'état React suit l'événement <code>close</code> du dialogue, quelle que soit la façon de le fermer.</p></div>
+            <div class="box"><h3>Le cache</h3><p>Chaque action invalide le préfixe <code>["my-events"]</code> (toutes les pages et tous les filtres) ; une suppression retire aussi la fiche de l'événement du cache (<code>removeQueries</code>).</p></div>
+          </div>
+        </section>
+
+        <section id="api" aria-labelledby="api-titre">
+          <h2 id="api-titre">Les routes utilisées</h2>
+          <div class="prose"><p>Aucune route nouvelle : l'API de <a href="81-gerer-ses-evenements.html">#81</a> avait déjà tout.</p></div>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les routes de l'API utilisées par la liste, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Route</th><th scope="col">Rôle</th><th scope="col">Réponses</th></tr></thead>
+              <tbody>
+                <tr><td><code>GET /api/me/organization/events?status=&amp;page=&amp;itemsPerPage=20</code></td><td>La liste, à venir d'abord</td><td>200</td></tr>
+                <tr><td><code>DELETE /api/me/organization/events/{id}/publication</code></td><td>Repasser en brouillon</td><td>200, 403, 404, 409, 429</td></tr>
+                <tr><td><code>POST /api/me/organization/events/{id}/cancellation</code></td><td>Annuler, avec <code>{ reason }</code> (1 à 1 000 caractères)</td><td>200, 403, 404, 409, 422, 429</td></tr>
+                <tr><td><code>DELETE /api/me/organization/events/{id}</code></td><td>Supprimer un brouillon jamais publié</td><td>204, 403, 404, 409, 429</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="fichiers" aria-labelledby="fichiers-titre">
+          <h2 id="fichiers-titre">Les fichiers clés</h2>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les fichiers clés et leur rôle, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Fichier</th><th scope="col">Son rôle</th></tr></thead>
+              <tbody>
+                <tr><td><code>services/my-events.ts</code></td><td>Les appels à l'API : la liste, repasser en brouillon, annuler, supprimer, et leurs messages d'échec</td></tr>
+                <tr><td><code>hooks/use-my-events.ts</code></td><td>La liste et les actions avec TanStack Query, le cache</td></tr>
+                <tr><td><code>services/my-events-list.ts</code></td><td>Les règles pures : les filtres, <code>listActions()</code>, le statut et la date en mots</td></tr>
+                <tr><td><code>events/list/ConfirmEventAction.tsx</code></td><td>La fenêtre de confirmation, ses trois variantes</td></tr>
+                <tr><td><code>events/list/MyEventsList.tsx</code></td><td>La liste : la structure, le filtre, les lignes, le vide, la pagination</td></tr>
+                <tr><td><code>app/mon-espace/structure/evenements/page.tsx</code></td><td>La page, qui lit le filtre et la page dans l'adresse</td></tr>
+                <tr><td><code>form/use-publish-action.ts</code>, <code>form/EventSteps.tsx</code>, <code>steps/PlaceStep.tsx</code></td><td>Les trois corrections du formulaire</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Les tests</h2>
+          <div class="grid2">
+            <div class="box"><h3>Vitest : 640 tests</h3><ul>
+              <li><code>listActions()</code> sur chaque statut, les dates en mots, les filtres</li>
+              <li>Les fenêtres : le premier focus, Entrée par réflexe, l'envoi bloqué, un 409</li>
+              <li>La liste : la structure non validée, une page trop loin, une suppression</li>
+              <li>Les trois corrections du formulaire</li>
+            </ul></div>
+            <div class="box"><h3>Playwright : 193 tests</h3><ul>
+              <li>Le filtre et la page dans l'adresse, la pagination</li>
+              <li>Les trois fenêtres au clavier, Échap qui rend le focus</li>
+              <li>Un refus du serveur, un événement suspendu</li>
+              <li>axe à 360 et 1 280 px, la liste et une fenêtre ouverte</li>
+            </ul></div>
+          </div>
+          <div class="note"><p>Les fausses routes des tests gardent les événements en mémoire et les changent comme la vraie API : après « Repasser en brouillon », la liste relue montre bien « Brouillon · déjà publié ». Les tests de bout en bout ont été joués trois fois de suite, pour qu'un problème de timing ne passe pas inaperçu.</p></div>
+        </section>
+
+        <section id="prs" aria-labelledby="prs-titre">
+          <h2 id="prs-titre">La pull request</h2>
+          <ul class="prs">
+            <li><span class="num">#225</span><span>La liste « Mes événements », son filtre, ses pages, ses trois fenêtres de confirmation ; toutes les sorties du formulaire y mènent ; les trois corrections du formulaire trouvées en essayant.</span></li>
+          </ul>
+        </section>
+
+      </div>
+    </details>
+
+    <section id="appris" aria-labelledby="appris-titre">
+      <h2 id="appris-titre">Ce que ce travail a appris</h2>
+      <ul class="prose">
+        <li><strong>Essayer le parcours en entier</strong> : chaque écran passait ses tests, mais c'est en allant de la liste au formulaire, puis à la publication, que les trois défauts sont apparus.</li>
+        <li><strong>Une action sans réponse visible ressemble à une panne</strong> : un message lu seulement par les lecteurs d'écran ne suffit pas, il faut aussi le voir.</li>
+        <li><strong>Le choix le plus sûr en premier</strong> : dans une fenêtre qui détruit quelque chose, le curseur commence sur « Garder tel quel ».</li>
+        <li><strong>Une règle à un seul endroit</strong> : les boutons de chaque statut tiennent dans une seule fonction testée, plutôt que dispersés dans l'affichage.</li>
+      </ul>
+    </section>
+
+    <section id="suite" aria-labelledby="suite-titre">
+      <h2 id="suite-titre">La suite</h2>
+      <div class="prose"><p>L'écran des séances (#83), à sortir avec le formulaire, puis les photos et le programme (#84). Avant l'ouverture au public (#99) : une page ou une adresse de contact, pour l'organisatrice d'un événement suspendu.</p></div>
+    </section>
+
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="82-formulaire-d-evenement.html" rel="prev"><span>← Issue précédente</span><strong>#82 Le formulaire d'un événement</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>
