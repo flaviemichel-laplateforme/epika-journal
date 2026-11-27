@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>Les vues d'un événement (#86) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #86 d'Epika : l'organisatrice voit combien de fois la page publique de chaque événement a été ouverte, sans que ses propres visites comptent.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a class="home" href="../index.html">Accueil</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 4 · issues #86 et #15 · EF-16, US-O4, RG-09 · terminée le 27/11/2026</p>
+    <h1>Les vues d'un événement</h1>
+    <p class="lede">L'organisatrice sait maintenant combien de fois la page publique de chacun de ses événements a été ouverte. Le chiffre est honnête : ses propres visites ne comptent pas, et il n'est montré qu'à elle.</p>
+    <dl class="facts">
+      <div class="fact"><dt>requête de plus pour un visiteur</dt><dd>0</dd></div>
+      <div class="fact"><dt>pull request</dt><dd>1</dd></div>
+      <div class="fact"><dt>tests du backend à la fin (PHPUnit)</dt><dd>5 134</dd></div>
+      <div class="fact"><dt>endroits où le chiffre s'affiche</dt><dd>2</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#principe">Ce que ça change</a></li>
+        <li><a href="#regle">Ce qui compte comme une vue</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#decisions">Les choix faits</a></li>
+        <li><a href="#chemin">Trouvé en chemin</a></li>
+        <li><a href="#accessibilite">Pour tout le monde</a></li>
+        <li><a href="#limites">Les limites</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#api">Côté API</a></li>
+            <li><a href="#cookie">Le cookie, de bout en bout</a></li>
+            <li><a href="#ecran">Côté écran</a></li>
+            <li><a href="#preuves">Trois preuves pour une règle</a></li>
+            <li><a href="#fichiers">Les fichiers clés</a></li>
+            <li><a href="#tests">Les tests</a></li>
+            <li><a href="#prs">La pull request</a></li>
+          </ol>
+        </li>
+        <li><a href="#appris">Ce que ce travail a appris</a></li>
+        <li><a href="#suite">La suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="principe" aria-labelledby="principe-titre">
+      <h2 id="principe-titre">Ce que ça change</h2>
+      <div class="prose"><p>Depuis <a href="74-fiche-evenement.html">la fiche d'un événement</a>, Epika comptait chaque ouverture de la page publique, sans que personne puisse lire ce chiffre. Avec #86, l'organisatrice le voit à deux endroits.</p></div>
+      <ul class="prose">
+        <li><strong>Dans « Mes événements »</strong>, qui sert de tableau de bord : sur chaque événement déjà mis en ligne, « 1 240 vues ».</li>
+        <li><strong>À l'étape « Vérifier »</strong> de son formulaire : « 1 240 vues de la page publique ».</li>
+      </ul>
+      <div class="note key"><p>Un événement revenu en brouillon ou annulé garde ses vues : ce que les visiteurs ont fait reste vrai. Un brouillon jamais publié n'affiche rien, puisqu'il n'a jamais pu être vu.</p></div>
+    </section>
+
+    <section id="regle" aria-labelledby="regle-titre">
+      <h2 id="regle-titre">Ce qui compte comme une vue</h2>
+      <div class="grid2">
+        <div class="box"><h3>Une ouverture par onglet</h3><p>Une page ouverte dans un onglet compte une fois ; la recharger ne compte pas à nouveau, l'ouvrir dans un autre onglet compte. Règle décidée le 02/11/2026, avec l'API des pages publiques (#69).</p></div>
+        <div class="box"><h3>Pas ses propres visites</h3><p>Quand l'organisatrice, connectée, vérifie sa page publique, sa visite n'est pas comptée : elle ne gonfle pas le chiffre qu'elle lit.</p></div>
+        <div class="box"><h3>Dite à l'écran</h3><p>« Une vue correspond à une ouverture de la page publique, une fois par onglet. Vos propres visites ne sont pas comptées lorsque votre session est ouverte. » Une fois par page, en clair, jamais cachée dans une info-bulle.</p></div>
+        <div class="box"><h3>Jamais public</h3><p>Le nombre de vues d'un événement n'apparaît dans aucune réponse publique : ni sa fiche, ni l'accueil, ni la recherche, ni la page d'une structure. Il ne regarde que celle qui l'organise.</p></div>
+      </div>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <div class="prose"><p class="muted">Captures prises par Playwright sur Epika en production, avec une fausse API : la personne (Camille Martin), la structure (Comité des fêtes du village), les événements et leurs vues sont fictifs ; La Farlède est une vraie commune. Sur ordinateur à gauche, sur téléphone à droite.</p></div>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #86">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/86/01-les-vues-dans-la-liste-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page « Mes événements » : la règle « Une vue correspond à une ouverture de la page publique, une fois par onglet. Vos propres visites ne sont pas comptées lorsque votre session est ouverte. », puis les cartes : « Bal du village », Publié, « 1 240 vues » avec une icône d'œil ; « Marché de Noël », Publié, « 312 vues » ; « Vide-grenier de printemps », Brouillon, sans nombre de vues. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/86/01-les-vues-dans-la-liste-mobile.jpg" width="360" height="740" loading="lazy" alt="La page « Mes événements » : la règle « Une vue correspond à une ouverture de la page publique, une fois par onglet. Vos propres visites ne sont pas comptées lorsque votre session est ouverte. », puis les cartes : « Bal du village », Publié, « 1 240 vues » avec une icône d'œil ; « Marché de Noël », Publié, « 312 vues » ; « Vide-grenier de printemps », Brouillon, sans nombre de vues. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> « Mes événements » sert de tableau de bord : chaque événement déjà mis en ligne dit combien de fois sa page publique a été ouverte. Un brouillon jamais publié n'en dit rien. La règle de comptage est écrite une fois, au-dessus de la liste.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/86/02-un-brouillon-et-un-evenement-annule-desktop.jpg" width="1280" height="800" loading="lazy" alt="La suite de la liste : « Concert de la chorale », Brouillon · déjà publié, « 1 vue » ; « Loto du comité », Annulé, « 87 vues ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/86/02-un-brouillon-et-un-evenement-annule-mobile.jpg" width="360" height="740" loading="lazy" alt="La suite de la liste : « Concert de la chorale », Brouillon · déjà publié, « 1 vue » ; « Loto du comité », Annulé, « 87 vues ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> Plus bas : le concert, revenu en brouillon après une semaine en ligne, garde sa vue (« 1 vue », au singulier) ; le loto annulé garde les siennes. Ce que les visiteurs ont fait reste vrai.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/86/03-verifier-un-evenement-en-ligne-desktop.jpg" width="1280" height="800" loading="lazy" alt="L'étape « Vérifier et publier » du « Bal du village » : l'encadré « Votre événement est en ligne » avec « Voir la page publique » et « Voir mes événements », puis « 1 240 vues de la page publique » avec une icône d'œil et la phrase « Une vue correspond à une ouverture de la page publique, une fois par onglet. Vos propres visites ne sont pas comptées lorsque votre session est ouverte. », puis le récapitulatif. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/86/03-verifier-un-evenement-en-ligne-mobile.jpg" width="360" height="740" loading="lazy" alt="L'étape « Vérifier et publier » du « Bal du village » : l'encadré « Votre événement est en ligne » avec « Voir la page publique » et « Voir mes événements », puis « 1 240 vues de la page publique » avec une icône d'œil et la phrase « Une vue correspond à une ouverture de la page publique, une fois par onglet. Vos propres visites ne sont pas comptées lorsque votre session est ouverte. », puis le récapitulatif. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> À l'étape « Vérifier » d'un événement en ligne, sous son état : « 1 240 vues de la page publique », avec la même règle de comptage, écrite en clair.</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="decisions" aria-labelledby="decisions-titre">
+      <hgroup><p class="eyebrow">Le 27/11/2026</p><h2 id="decisions-titre">Les choix faits</h2></hgroup>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Les choix faits et les solutions écartées, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Choix retenu</th><th scope="col">Solution écartée</th><th scope="col">Pourquoi</th></tr></thead>
+          <tbody>
+            <tr><td><strong>« Mes événements » comme tableau de bord</strong>, plus l'étape « Vérifier »</td><td>Une page « Statistiques » à part</td><td>La liste montre déjà chaque événement, ligne par ligne : une autre page aurait fait double emploi.</td></tr>
+            <tr><td><strong>Ne pas compter ses propres visites</strong></td><td>Compter toutes les ouvertures</td><td>En vérifiant sa page, elle gonflerait elle-même le chiffre qu'elle lit.</td></tr>
+            <tr><td><strong>La règle appliquée par l'API</strong></td><td>La page qui choisit de ne pas envoyer la vue</td><td>La règle vit à un seul endroit, testé ; l'API reconnaît déjà la personne connectée.</td></tr>
+            <tr><td><strong>Rien sur un brouillon jamais publié</strong></td><td>« 0 vue » partout</td><td>Un brouillon n'a jamais pu être vu : « 0 vue » laisserait croire que personne ne s'y intéresse.</td></tr>
+            <tr><td><strong>Un total seulement</strong></td><td>Les vues jour par jour</td><td>Un historique demande une nouvelle table : une idée pour la V2.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="chemin" aria-labelledby="chemin-titre">
+      <hgroup><p class="eyebrow">Le 27/11/2026</p><h2 id="chemin-titre">Trouvé en chemin</h2></hgroup>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Ce qui a été trouvé pendant le travail, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Ce qui se passait</th><th scope="col">La cause</th><th scope="col">Ce qui a été fait</th></tr></thead>
+          <tbody>
+            <tr><td>Après une pause de plus de 15 minutes, la visite de l'organisatrice aurait été comptée</td><td>Son cookie de connexion vit 15 minutes ; la page envoyait la vue avant que la session soit renouvelée</td><td>La vue attend que la session soit connue (trouvé en vérifiant, avant d'écrire la règle, que le cookie arrive bien jusqu'à l'API)</td></tr>
+            <tr><td>Un jeton invalide reçoit une erreur sur toutes les routes publiques</td><td>Le pare-feu refuse un jeton qu'il ne peut pas lire</td><td>Rien : le navigateur jette le cookie quand le jeton expire, ce cas n'arrive pas en pratique</td></tr>
+            <tr><td>Les tests ne voyaient pas l'espace fine de « 1 240 »</td><td>Testing Library remplace par défaut tous les espaces par une espace simple</td><td>Les tests comparent les caractères exacts</td></tr>
+            <tr><td>La construction du site signale une faille connue de Next.js</td><td>La version installée de Next.js</td><td>Rien dans #86 : c'est l'issue #200, à reprendre avant la mise en ligne</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note"><p>Le plan a été relu par Flavie avant le code : c'est elle qui a demandé de vérifier le chemin du cookie plutôt que de le supposer, de prouver qu'aucune route publique ne donne le chiffre, de garder le chemin des visiteurs aussi rapide qu'avant, et d'écrire la règle sans supposer le genre de la personne qui la lit.</p></div>
+    </section>
+
+    <section id="accessibilite" aria-labelledby="accessibilite-titre">
+      <h2 id="accessibilite-titre">Pour tout le monde</h2>
+      <div class="grid2">
+        <div class="box"><h3>Le nombre, pas l'icône</h3><p>L'œil est décoratif : un lecteur d'écran entend « 1 240 vues », jamais « image ».</p></div>
+        <div class="box"><h3>Jamais coupé</h3><p>Une espace insécable relie le nombre à « vues » : « 124 » ne finit jamais seul en bout de ligne.</p></div>
+        <div class="box"><h3>Le français juste</h3><p>« 0 vue » et « 1 vue » au singulier, les milliers séparés par une espace fine, comme le veut la typographie française.</p></div>
+        <div class="box"><h3>Lisible, pas pâle</h3><p>La règle de comptage est écrite petite, mais dans la couleur du texte courant : son contraste reste entier.</p></div>
+      </div>
+      <div class="note"><p>Contrôlé avec axe à 360 et 1 280 px sur la liste avec ses vues : aucune violation. La lecture de « 1 240 » par les lecteurs d'écran reste à essayer à la main, à la recette du lot 6.</p></div>
+    </section>
+
+    <section id="limites" aria-labelledby="limites-titre">
+      <h2 id="limites-titre">Les limites</h2>
+      <ul class="prose">
+        <li><strong>Sans être connectée</strong> (sur un autre appareil, en navigation privée), ses visites comptent comme celles de n'importe qui.</li>
+        <li><strong>Un total seulement</strong> : ni courbe, ni vues de la semaine.</li>
+        <li><strong>Un robot qui exécute JavaScript</strong> peut être compté ; une page lue par le serveur, elle, ne l'est jamais.</li>
+      </ul>
+    </section>
+
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">La règle dans l'API, le chemin du cookie, la vue qui attend la session, les trois preuves, les fichiers et les tests : pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+
+        <section id="api" aria-labelledby="api-titre">
+          <h2 id="api-titre">Côté API</h2>
+          <ol class="pipeline">
+            <li><div><strong>Le chiffre lu avec la liste</strong><span><code>viewCount</code> ajouté à la requête qui lit déjà « Mes événements » (<code>MyEventListItem</code>) et à un événement (<code>MyEventView</code>) : aucune requête de plus.</span></div></li>
+            <li><div><strong>La vue, chargée comme avant</strong><span><code>POST /api/events/{slug}/views</code> lit l'événement avec sa structure ; 404 si le public ne peut pas le voir.</span></div></li>
+            <li><div><strong>Qui l'envoie ?</strong><span>Si la personne connectée gère la structure (<code>Organization::isManagedBy()</code>, qui compare deux identifiants déjà en mémoire), rien n'est écrit. La réponse reste 204.</span></div></li>
+            <li><div><strong>Sinon, un seul UPDATE</strong><span><code>view_count = view_count + 1</code>, sans passer par l'entité : deux vues au même instant comptent toutes les deux.</span></div></li>
+          </ol>
+          <div class="note"><p>Ce n'est pas un contrôle d'accès, qui reste celui du voter : on ne refuse rien, on applique une règle de comptage.</p></div>
+        </section>
+
+        <section id="cookie" aria-labelledby="cookie-titre">
+          <h2 id="cookie-titre">Le cookie, de bout en bout</h2>
+          <div class="prose"><p>L'API reconnaît l'organisatrice à son cookie <code>BEARER</code>. Avant d'écrire la règle, trois choses ont été vérifiées dans le code :</p></div>
+          <ul class="prose">
+            <li>le navigateur appelle une adresse <strong>relative</strong>, sur la même origine que le site : le cookie part tout seul, puis la réécriture de Next.js le transmet à l'API ;</li>
+            <li>la route passe par le pare-feu qui lit le jeton (<code>jwt</code>), pas par un pare-feu sans sécurité ;</li>
+            <li><code>isManagedBy()</code> ne dépend pas du statut de la structure.</li>
+          </ul>
+          <div class="prose"><p>La quatrième vérification a montré le piège : le cookie vit <strong>15 minutes</strong>, comme le jeton. Après une pause, il a disparu ; la session le renouvelle quand elle est relue (<code>/api/me</code>, puis <code>/api/token/refresh</code>). Une vue envoyée dès l'affichage serait partie sans lui.</p></div>
+        </section>
+
+        <section id="ecran" aria-labelledby="ecran-titre">
+          <h2 id="ecran-titre">Côté écran</h2>
+          <div class="grid2">
+            <div class="box"><h3>La vue attend la session</h3><p><code>ViewCounter</code> lit la session partagée (<code>useCurrentUser()</code>) et n'envoie la vue qu'une fois sa réponse arrivée, quelle qu'elle soit. L'en-tête la demande déjà : aucune requête de plus.</p></div>
+            <div class="box"><h3>Les vues en français</h3><p><code>viewsText()</code> s'appuie sur <code>Intl.NumberFormat</code> (l'espace fine U+202F des milliers) et <code>Intl.PluralRules</code> (0 et 1 au singulier), avec une espace insécable U+00A0 avant le mot.</p></div>
+            <div class="box"><h3>Jamais remplacé par 0</h3><p><code>viewCount</code> est obligatoire dans les types : un oubli de l'API se voit (TypeScript, le test de l'API), il ne devient jamais « 0 vue ».</p></div>
+            <div class="box"><h3>Une phrase, un endroit</h3><p>La règle de comptage est une constante (<code>VIEWS_RULE</code>) partagée par la liste et l'étape « Vérifier ».</p></div>
+          </div>
+        </section>
+
+        <section id="preuves" aria-labelledby="preuves-titre">
+          <h2 id="preuves-titre">Trois preuves pour une règle</h2>
+          <div class="prose"><p>Les tests de bout en bout d'Epika parlent à une fausse API : aucun outil ne voit à lui seul le trajet complet. Chaque maillon est donc prouvé par l'outil qui peut le voir.</p></div>
+          <ol class="pipeline">
+            <li><div><strong>Navigateur → Next.js → API</strong><span>Playwright : après une pause, la vue attend le renouvellement de la session, puis arrive à l'API avec le nouveau cookie ; celle d'un visiteur arrive sans cookie.</span></div></li>
+            <li><div><strong>Cookie → pare-feu → pas compté</strong><span>PHPUnit, avec une vraie connexion : l'organisatrice n'est pas comptée, une autre personne connectée l'est, un visiteur aussi.</span></div></li>
+            <li><div><strong>La vraie pile</strong><span>Une vérification à la main, décrite dans la pull request : connectée, le chiffre ne bouge pas ; en navigation privée, il augmente de 1.</span></div></li>
+          </ol>
+        </section>
+
+        <section id="fichiers" aria-labelledby="fichiers-titre">
+          <h2 id="fichiers-titre">Les fichiers clés</h2>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les fichiers clés et leur rôle, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Fichier</th><th scope="col">Son rôle</th></tr></thead>
+              <tbody>
+                <tr><td><code>State/EventViewProcessor.php</code></td><td>Compte une vue, sauf celle de l'organisatrice connectée</td></tr>
+                <tr><td><code>Dto/MyEventListItem.php</code>, <code>Dto/MyEventView.php</code></td><td>Le nombre de vues dans la liste et dans un événement</td></tr>
+                <tr><td><code>services/event-views.ts</code></td><td>Le nombre en français et la phrase de la règle</td></tr>
+                <tr><td><code>components/events/ViewCounter.tsx</code></td><td>Envoie la vue, une fois par onglet, quand la session est connue</td></tr>
+                <tr><td><code>list/MyEventsList.tsx</code>, <code>steps/ReviewStep.tsx</code></td><td>Les vues dans « Mes événements » et à l'étape « Vérifier »</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Les tests</h2>
+          <div class="grid2">
+            <div class="box"><h3>PHPUnit : 5 134 tests</h3><ul>
+              <li>Qui compte et qui ne compte pas, avec une vraie connexion</li>
+              <li>Le journal SQL d'une vue : pour un visiteur, une lecture et un UPDATE, rien de plus</li>
+              <li>Aucune clé « view » dans les quatre réponses publiques</li>
+              <li>Chaque test échoue quand on retire ce qu'il protège</li>
+            </ul></div>
+            <div class="box"><h3>Vitest et Playwright : 716 et 213 tests</h3><ul>
+              <li><code>viewsText()</code> avec les caractères exacts</li>
+              <li>La vue attend la session, et part même si la session est illisible</li>
+              <li>Le cookie de l'organisatrice reçu par l'API, à travers Next.js</li>
+              <li>axe à 360 et 1 280 px sur la liste avec ses vues</li>
+            </ul></div>
+          </div>
+        </section>
+
+        <section id="prs" aria-labelledby="prs-titre">
+          <h2 id="prs-titre">La pull request</h2>
+          <ul class="prs">
+            <li><span class="num">#236</span><span>Les vues dans la liste et dans un événement, la règle des visites de l'organisatrice, aucune route publique qui donne le chiffre, la vue qui attend la session, l'affichage en français, les tests à trois niveaux et la documentation. Ferme #86 et #15 (US-O4).</span></li>
+          </ul>
+        </section>
+
+      </div>
+    </details>
+
+    <section id="appris" aria-labelledby="appris-titre">
+      <h2 id="appris-titre">Ce que ce travail a appris</h2>
+      <ul class="prose">
+        <li><strong>Vérifier avant de supposer</strong> : « le cookie arrive jusqu'à l'API » semblait évident ; le vérifier a révélé le cas de la pause de 15 minutes.</li>
+        <li><strong>Un chiffre est une donnée sensible</strong> : ce qui n'est pas affiché peut encore fuir dans une réponse d'API, d'où un test qui fouille chaque réponse publique.</li>
+        <li><strong>Un test ne peut prouver que ce qu'il voit</strong> : quand aucun outil ne voit tout le trajet, on prouve chaque maillon avec le bon outil, et on le dit.</li>
+        <li><strong>Les détails typographiques comptent</strong> : une espace fine, une espace insécable, « 0 vue » au singulier.</li>
+      </ul>
+    </section>
+
+    <section id="suite" aria-labelledby="suite-titre">
+      <h2 id="suite-titre">La suite</h2>
+      <div class="prose"><p>#86 était la dernière issue numérotée du lot 4. Restent à vérifier, critère par critère, deux user stories que le lot a réalisées : US-O6 (#41) et US-O2 (#13). Puis vient le lot 5, l'espace administrateur.</p></div>
+    </section>
+
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="84-photos-et-programme.html" rel="prev"><span>← Issue précédente</span><strong>#84 Photos et programme</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>
