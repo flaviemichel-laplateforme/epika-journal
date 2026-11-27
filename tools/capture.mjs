@@ -28,7 +28,10 @@ if (issues.length === 0) {
 
 const escape = (text) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-const browser = await chromium.launch();
+// In French, as the browser of a French visitor: the native parts of the page (the button of a file field) follow
+// the language of the browser, not the locale of the page. The full Chromium (channel « chromium »): the headless shell
+// Playwright uses by default carries the English strings only.
+const browser = await chromium.launch({ channel: "chromium", args: ["--lang=fr-FR"] });
 try {
     for (const issue of issues) {
         const { scenes } = await import(`./scenes/${issue}.mjs`);

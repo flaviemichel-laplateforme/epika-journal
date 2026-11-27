@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Apply the saved theme before the first paint (no flash). Keep in sync with theme.js.
+try { var t = localStorage.getItem("epika-journal-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<title>Photos et programme (#84) · Journal d'Epika</title>
+<meta name="description" content="Bilan de l'issue #84 d'Epika : une organisatrice ajoute jusqu'à 10 photos à son événement, les ordonne, choisit l'image principale, écrit le programme et envoie son PDF ; chaque fichier est vérifié contre les attaques.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../gallery.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Site">
+  <div class="inner">
+    <a class="brand" href="../index.html">Epika<span>.</span> journal</a>
+    <a class="home" href="../index.html">Accueil</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="inner">
+    <p class="eyebrow">Lot 4 · issue #84 · terminée le 27/11/2026</p>
+    <h1>Photos et programme</h1>
+    <p class="lede">Un événement a maintenant ses propres photos, jusqu'à dix, son programme heure par heure et un PDF à télécharger. L'organisatrice les ajoute dans une septième étape du formulaire, choisit l'image des cartes et l'ordre de la galerie. Chaque fichier envoyé est contrôlé, réécrit ou refusé, pour qu'aucun fichier piégé n'arrive jusqu'aux visiteurs.</p>
+    <dl class="facts">
+      <div class="fact"><dt>photos au plus par événement</dt><dd>10</dd></div>
+      <div class="fact"><dt>pull requests</dt><dd>2</dd></div>
+      <div class="fact"><dt>tests du frontend à la fin (Vitest et Playwright)</dt><dd>919</dd></div>
+      <div class="fact"><dt>défauts trouvés en chemin, et corrigés</dt><dd>6</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="Sommaire">
+    <details open>
+      <summary>Sommaire</summary>
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#principe">Ce que ça change</a></li>
+        <li><a href="#photos">Les photos</a></li>
+        <li><a href="#programme">Le programme et son PDF</a></li>
+        <li><a href="#securite">Des envois sûrs</a></li>
+        <li><a href="#images">En images</a></li>
+        <li><a href="#decisions">Les choix faits</a></li>
+        <li><a href="#chemin">Trouvé en chemin</a></li>
+        <li><a href="#accessibilite">Pour tout le monde</a></li>
+        <li><a href="#limites">Les limites</a></li>
+        <li><a href="#technique">La partie technique</a>
+          <ol>
+            <li><a href="#api">Les routes de l'API</a></li>
+            <li><a href="#image">Une image refaite, pas copiée</a></li>
+            <li><a href="#pdf">L'inspection des PDF</a></li>
+            <li><a href="#verrou">Dix photos, même à deux</a></li>
+            <li><a href="#ordre">Les fichiers, dans cet ordre</a></li>
+            <li><a href="#ecran">L'écran</a></li>
+            <li><a href="#fichiers">Les fichiers clés</a></li>
+            <li><a href="#tests">Les tests</a></li>
+            <li><a href="#prs">Les pull requests</a></li>
+          </ol>
+        </li>
+        <li><a href="#appris">Ce que ce travail a appris</a></li>
+        <li><a href="#suite">La suite</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <section id="principe" aria-labelledby="principe-titre">
+      <h2 id="principe-titre">Ce que ça change</h2>
+      <div class="prose"><p>Jusqu'ici, un événement saisi sur Epika n'avait pas d'image à lui : ses cartes montraient l'image par défaut. Seuls les événements importés d'OpenAgenda avaient des photos (<a href="66-images-importees.html">#66</a>). Avec #84, l'organisatrice complète son événement dans une nouvelle étape, <strong>« Photos et programme »</strong>, entre « Présentation » et « Le lieu ».</p></div>
+      <ul class="prose">
+        <li><strong>Jusqu'à 10 photos</strong>, chacune avec son crédit et, si elle le veut, une légende.</li>
+        <li><strong>L'image principale</strong>, celle des cartes : la première photo, ou une autre choisie d'un clic.</li>
+        <li><strong>L'ordre de la galerie</strong>, avec « Monter » et « Descendre ».</li>
+        <li><strong>Le programme</strong>, étape par étape, avec une heure ou sans.</li>
+        <li><strong>Un PDF du programme</strong>, que les visiteurs téléchargent depuis la page.</li>
+      </ul>
+      <div class="note key"><p>Tout est facultatif : un événement se publie sans photo ni programme. Mais une belle photo et un déroulé clair font la différence entre une carte qu'on survole et une sortie qu'on choisit.</p></div>
+    </section>
+
+    <section id="photos" aria-labelledby="photos-titre">
+      <h2 id="photos-titre">Les photos</h2>
+      <div class="grid2">
+        <div class="box"><h3>Envoyée tout de suite</h3><p>Une photo s'enregistre dès qu'on l'envoie, sans attendre la fin de l'étape : un fichier n'est pas un champ du formulaire. Son aperçu s'affiche dès qu'on la choisit.</p></div>
+        <div class="box"><h3>Les droits, à chaque fois</h3><p>Une case à cocher pour chaque photo : « Je détiens les droits sur cette photo, et les personnes reconnaissables ont donné leur accord. » Jamais cochée d'avance. Le moment où elle est cochée est gardé, comme preuve.</p></div>
+        <div class="box"><h3>Un crédit obligatoire</h3><p>L'auteur de la photo, ou qui en a les droits. Il s'affiche sur la photo, dans la page publique.</p></div>
+        <div class="box"><h3>Une légende utile</h3><p>Facultative, elle décrit ce qu'on voit. C'est aussi le texte lu aux personnes aveugles à la place de l'image.</p></div>
+      </div>
+    </section>
+
+    <section id="programme" aria-labelledby="programme-titre">
+      <h2 id="programme-titre">Le programme et son PDF</h2>
+      <ol class="pipeline">
+        <li><div><strong>Une étape par ligne</strong><span>« Ouverture des portes », « Initiation aux danses de salon », « Dernière valse » : un libellé, un jour et une heure facultatifs. 30 étapes au plus.</span></div></li>
+        <li><div><strong>Enregistré avec l'étape</strong><span>Comme le reste du formulaire : quand on passe à l'étape suivante.</span></div></li>
+        <li><div><strong>Un PDF à côté</strong><span>Pour un programme déjà mis en page : 5 Mo au plus, envoyé tout de suite, que l'on peut remplacer ou retirer.</span></div></li>
+        <li><div><strong>Sur la page publique</strong><span>Le « Programme détaillé », heure par heure, et « Télécharger le programme (PDF) ».</span></div></li>
+      </ol>
+    </section>
+
+    <section id="securite" aria-labelledby="securite-titre">
+      <hgroup><p class="eyebrow">Demandé par Flavie pendant le travail</p><h2 id="securite-titre">Des envois sûrs</h2></hgroup>
+      <div class="prose"><p>Accepter des fichiers venus de n'importe qui est l'une des portes d'entrée préférées des attaques : une « image » qui cache un programme, un PDF qui lance un script à l'ouverture, un fichier minuscule qui gonfle jusqu'à saturer le serveur. Chaque envoi est donc traité comme suspect, et l'écran n'est qu'un premier filtre de confort : c'est le serveur qui juge.</p></div>
+      <div class="grid2">
+        <div class="box"><h3>Une photo refaite de zéro</h3><p>Epika ne garde jamais le fichier envoyé : il en lit les pixels et fabrique une nouvelle image. Tout ce qui pourrait se cacher dans le fichier d'origine disparaît, et avec lui la position GPS du téléphone.</p></div>
+        <div class="box"><h3>Un PDF inspecté</h3><p>Un PDF ne peut pas être refait comme une image. Il est donc fouillé, y compris dans ses parties compressées : script, pièce jointe, formulaire qui envoie des données, contenu chiffré… il est refusé, avec la façon de le corriger.</p></div>
+        <div class="box"><h3>Jamais le nom d'origine</h3><p>Chaque fichier est rangé sous un nom tiré au hasard. Un nom piégé comme <code>../../config.php</code> ne sert à rien, et la base de données refuse d'ailleurs tout autre format.</p></div>
+        <div class="box"><h3>Des limites partout</h3><p>10 Mo par photo, 5 Mo par PDF, 10 photos par événement (même si deux envois arrivent au même instant), 60 envois par heure et par compte.</p></div>
+      </div>
+      <div class="note"><p>Pour la mise en ligne (#99), d'autres protections sont déjà notées : servir les fichiers depuis un domaine à part, avec des en-têtes qui empêchent tout script de s'y exécuter, et un antivirus en option.</p></div>
+    </section>
+
+    <section id="images" aria-labelledby="images-titre">
+      <h2 id="images-titre">En images</h2>
+      <div class="prose"><p class="muted">Captures prises par Playwright sur Epika en production, avec une fausse API : la personne (Camille Martin), la structure (Comité des fêtes du village) et le bal sont fictifs, et les « photos » sont des dessins faits pour l'occasion ; La Farlède est une vraie commune. Sur ordinateur à gauche, sur téléphone à droite.</p></div>
+      <div class="gallery" data-gallery role="region" aria-roledescription="carrousel" aria-label="Captures d'écran de l'issue #84">
+        <div class="gallery-controls" hidden>
+          <button type="button" class="gallery-button" data-gallery-previous aria-label="Capture précédente">←</button>
+          <span class="gallery-count" aria-live="polite"></span>
+          <button type="button" class="gallery-button" data-gallery-next aria-label="Capture suivante">→</button>
+        </div>
+        <ul class="gallery-track" tabindex="0" aria-label="Captures, défilement horizontal">
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/84/01-l-etape-photos-et-programme-desktop.jpg" width="1280" height="800" loading="lazy" alt="L'étape « Photos et programme », troisième sur sept : la section « Photos » (0 / 10, « Facultatif : ajoutez jusqu'à 10 photos. La première sera l'image des cartes de l'événement. », bouton « Ajouter une photo »), puis le début de la section « Programme » (« Facultatif · 30 étapes au plus »). Sur ordinateur.">
+              <img class="shot-mobile" src="../images/84/01-l-etape-photos-et-programme-mobile.jpg" width="360" height="740" loading="lazy" alt="L'étape « Photos et programme », troisième sur sept : la section « Photos » (0 / 10, « Facultatif : ajoutez jusqu'à 10 photos. La première sera l'image des cartes de l'événement. », bouton « Ajouter une photo »), puis le début de la section « Programme » (« Facultatif · 30 étapes au plus »). Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">1</span> Une nouvelle étape du formulaire, entre « Présentation » et « Le lieu » : les photos, le programme et son PDF. Tout y est facultatif ; un événement sans photo garde l'image par défaut.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/84/02-ajouter-une-photo-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le panneau « Ajouter une photo » : l'aperçu de l'image choisie (un dessin de couples qui dansent au coucher du soleil), le champ « La photo » (« JPEG, PNG ou WebP, 10 Mo au plus. », fichier IMG_2041.png), « Crédit » rempli avec « Camille Martin », « Légende » avec « La piste de danse au coucher du soleil », la case cochée « Je détiens les droits sur cette photo, et les personnes reconnaissables ont donné leur accord. », et les boutons « Envoyer la photo » et « Fermer sans envoyer ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/84/02-ajouter-une-photo-mobile.jpg" width="360" height="740" loading="lazy" alt="Le panneau « Ajouter une photo » : l'aperçu de l'image choisie (un dessin de couples qui dansent au coucher du soleil), le champ « La photo » (« JPEG, PNG ou WebP, 10 Mo au plus. », fichier IMG_2041.png), « Crédit » rempli avec « Camille Martin », « Légende » avec « La piste de danse au coucher du soleil », la case cochée « Je détiens les droits sur cette photo, et les personnes reconnaissables ont donné leur accord. », et les boutons « Envoyer la photo » et « Fermer sans envoyer ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">2</span> « Ajouter une photo » : le fichier et son aperçu tout de suite, le crédit (obligatoire), une légende, et la case des droits, jamais cochée d'avance : l'accord est donné pour chaque photo, et son moment est gardé.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/84/03-un-envoi-incomplet-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le panneau « Ajouter une photo » avec trois messages rouges : « Choisissez une photo à envoyer. » sous le champ du fichier, « Indiquez le crédit de la photo (son auteur ou son ayant droit). » sous le crédit, « Confirmez que vous détenez les droits sur cette photo et l'accord des personnes reconnaissables. » sous la case. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/84/03-un-envoi-incomplet-mobile.jpg" width="360" height="740" loading="lazy" alt="Le panneau « Ajouter une photo » avec trois messages rouges : « Choisissez une photo à envoyer. » sous le champ du fichier, « Indiquez le crédit de la photo (son auteur ou son ayant droit). » sous le crédit, « Confirmez que vous détenez les droits sur cette photo et l'accord des personnes reconnaissables. » sous la case. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">3</span> Rien ne part tant qu'il manque quelque chose : chaque oubli est dit sous son champ, et le curseur va sur le premier à corriger.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/84/04-les-photos-desktop.jpg" width="1280" height="800" loading="lazy" alt="La section « Photos », 3 / 10 : trois lignes avec leur miniature. La première, des lampions sur la place la nuit, porte la pastille « Image principale », sa légende « La place du village sous les lampions » et « Crédit : Comité des fêtes du village », avec les boutons Monter (grisé), Descendre, Modifier, Supprimer. La deuxième, l'orchestre sur la scène, a en plus « Choisir comme image principale ». La troisième, « Sans légende », crédit Camille Martin. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/84/04-les-photos-mobile.jpg" width="360" height="740" loading="lazy" alt="La section « Photos », 3 / 10 : trois lignes avec leur miniature. La première, des lampions sur la place la nuit, porte la pastille « Image principale », sa légende « La place du village sous les lampions » et « Crédit : Comité des fêtes du village », avec les boutons Monter (grisé), Descendre, Modifier, Supprimer. La deuxième, l'orchestre sur la scène, a en plus « Choisir comme image principale ». La troisième, « Sans légende », crédit Camille Martin. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">4</span> Les photos de l'événement : la première est l'image des cartes, une autre peut le devenir. « Monter » et « Descendre » changent l'ordre, « Modifier » change la légende et le crédit sur place.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/84/05-supprimer-une-photo-desktop.jpg" width="1280" height="800" loading="lazy" alt="La deuxième photo, l'orchestre sur la scène, avec à la place de ses boutons un encadré rose « Supprimer cette photo ? » et les boutons « Supprimer la photo » et « Garder ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/84/05-supprimer-une-photo-mobile.jpg" width="360" height="740" loading="lazy" alt="La deuxième photo, l'orchestre sur la scène, avec à la place de ses boutons un encadré rose « Supprimer cette photo ? » et les boutons « Supprimer la photo » et « Garder ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">5</span> Supprimer demande d'abord, sur place : le curseur est sur « Garder », pour qu'un appui sur Entrée par réflexe ne supprime rien.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/84/06-le-programme-et-son-pdf-desktop.jpg" width="1280" height="800" loading="lazy" alt="La section « Programme » avec « Étape 1 » (Ouverture des portes et de la buvette, 12/12/2026, 20:00), « Étape 2 » (Initiation aux danses de salon, 20:30), « Étape 3 » (Le bal, avec l'orchestre, 21:30), chacune avec ses champs Libellé, Jour et Heure et un bouton Supprimer ; sur ordinateur, plus bas, « Étape 4 » (Dernière valse, 13/12/2026, 00:45), « Ajouter une étape », puis « PDF du programme » avec le lien « Voir le PDF du programme » et les boutons Remplacer et Retirer. Sur ordinateur.">
+              <img class="shot-mobile" src="../images/84/06-le-programme-et-son-pdf-mobile.jpg" width="360" height="740" loading="lazy" alt="La section « Programme » avec « Étape 1 » (Ouverture des portes et de la buvette, 12/12/2026, 20:00), « Étape 2 » (Initiation aux danses de salon, 20:30), « Étape 3 » (Le bal, avec l'orchestre, 21:30), chacune avec ses champs Libellé, Jour et Heure et un bouton Supprimer ; sur ordinateur, plus bas, « Étape 4 » (Dernière valse, 13/12/2026, 00:45), « Ajouter une étape », puis « PDF du programme » avec le lien « Voir le PDF du programme » et les boutons Remplacer et Retirer. Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">6</span> Le programme, étape par étape, chacune avec son heure si elle en a une ; dessous, le PDF du programme, qui s'ouvre dans un nouvel onglet, et peut être remplacé ou retiré.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/84/07-l-apercu-avec-les-photos-desktop.jpg" width="1280" height="800" loading="lazy" alt="La page « Aperçu de votre événement » : le bandeau « Brouillon. Voici ce que verront les visiteurs une fois l'événement publié. » avec « Publier l'événement », puis la grande image des lampions sur la place la nuit, son crédit « © Comité des fêtes du village », les flèches et trois points du carrousel, et le début de la page du « Bal du village ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/84/07-l-apercu-avec-les-photos-mobile.jpg" width="360" height="740" loading="lazy" alt="La page « Aperçu de votre événement » : le bandeau « Brouillon. Voici ce que verront les visiteurs une fois l'événement publié. » avec « Publier l'événement », puis la grande image des lampions sur la place la nuit, son crédit « © Comité des fêtes du village », les flèches et trois points du carrousel, et le début de la page du « Bal du village ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">7</span> L'aperçu de la page, avant de publier : l'image principale en tête, avec son crédit, et les autres photos dans le carrousel, comme le verront les visiteurs.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/84/08-l-apercu-du-programme-desktop.jpg" width="1280" height="800" loading="lazy" alt="La section « Programme détaillé » de l'aperçu : 20:00 Ouverture des portes et de la buvette, 20:30 Initiation aux danses de salon, 21:30 Le bal, avec l'orchestre, 00:45 Dernière valse, puis le lien « Télécharger le programme (PDF) ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/84/08-l-apercu-du-programme-mobile.jpg" width="360" height="740" loading="lazy" alt="La section « Programme détaillé » de l'aperçu : 20:00 Ouverture des portes et de la buvette, 20:30 Initiation aux danses de salon, 21:30 Le bal, avec l'orchestre, 00:45 Dernière valse, puis le lien « Télécharger le programme (PDF) ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">8</span> Plus bas dans l'aperçu, le « Programme détaillé », heure par heure, et le lien pour télécharger le programme en PDF.</figcaption>
+          </figure>
+        </li>
+        <li class="slide">
+          <figure>
+            <div class="shots">
+              <img class="shot-desktop" src="../images/84/09-verifier-desktop.jpg" width="1280" height="800" loading="lazy" alt="Le récapitulatif de l'étape « Vérifier et publier » : la ligne « Photos et programme » dit « 3 photos · programme en 4 étapes · PDF du programme », avec un lien Modifier, entre « Présentation » et « Le lieu ». Sur ordinateur.">
+              <img class="shot-mobile" src="../images/84/09-verifier-mobile.jpg" width="360" height="740" loading="lazy" alt="Le récapitulatif de l'étape « Vérifier et publier » : la ligne « Photos et programme » dit « 3 photos · programme en 4 étapes · PDF du programme », avec un lien Modifier, entre « Présentation » et « Le lieu ». Sur téléphone.">
+            </div>
+            <figcaption><span class="slide-num">9</span> À l'étape « Vérifier », le résumé dit ce que l'étape contient : « 3 photos · programme en 4 étapes · PDF du programme ».</figcaption>
+          </figure>
+        </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="decisions" aria-labelledby="decisions-titre">
+      <hgroup><p class="eyebrow">Du 26 au 27/11/2026</p><h2 id="decisions-titre">Les choix faits</h2></hgroup>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Les choix faits et les solutions écartées, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Choix retenu</th><th scope="col">Solution écartée</th><th scope="col">Pourquoi</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Une septième étape « Photos et programme »</strong></td><td>Les photos dans « Présentation »</td><td>Une étape déjà longue, et des fichiers qui s'enregistrent autrement que les champs : les séparer rend chaque étape plus claire.</td></tr>
+            <tr><td><strong>10 photos de 10 Mo</strong></td><td>Sans limite</td><td>Assez pour une galerie, pas assez pour faire d'Epika un espace de stockage ; 10 Mo laissent passer une photo de téléphone récent.</td></tr>
+            <tr><td><strong>Le moment de l'accord gardé</strong></td><td>Une case sans trace</td><td>En cas de litige sur une photo, Epika peut montrer quand l'organisatrice a déclaré en avoir les droits (cahier des charges, section 10).</td></tr>
+            <tr><td><strong>Refuser les PDF à contenu actif</strong></td><td>Les accepter tels quels</td><td>Un PDF simple suffit pour un programme ; un script ou une pièce jointe n'y a rien à faire, et le message dit comment l'enregistrer à nouveau.</td></tr>
+            <tr><td><strong>Stockage local, puis Scaleway (ou un autre) en production</strong></td><td>Tout sur le serveur, pour toujours</td><td>Le code passe par une couche (Flysystem) qui ne connaît que des noms de fichiers : changer de stockage ne touchera pas au reste.</td></tr>
+            <tr><td><strong>L'antivirus pour plus tard</strong> (#99)</td><td>L'installer maintenant</td><td>Les images sont refaites et les PDF inspectés ; un antivirus demande un service à part et environ 1 Go de mémoire : à décider avec l'hébergement.</td></tr>
+            <tr><td><strong>« Monter » et « Descendre »</strong></td><td>Glisser-déposer les photos</td><td>Des boutons marchent au clavier, au doigt et avec un lecteur d'écran, sans rien de plus à apprendre.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="chemin" aria-labelledby="chemin-titre">
+      <hgroup><p class="eyebrow">Du 26 au 27/11/2026</p><h2 id="chemin-titre">Trouvé en chemin</h2></hgroup>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Ce qui a été trouvé pendant le travail, tableau défilant">
+        <table>
+          <thead><tr><th scope="col">Ce qui se passait</th><th scope="col">La cause</th><th scope="col">La correction</th></tr></thead>
+          <tbody>
+            <tr><td>L'aperçu de la page ne montrait pas le programme</td><td>L'aperçu ne recopiait pas les nouveaux champs de l'événement</td><td>Les photos, le programme et le PDF passent dans l'aperçu (trouvé par Flavie en essayant)</td></tr>
+            <tr><td>Une onzième photo refusée aurait bloqué la suite de la requête</td><td>Le refus était levé dans la transaction, qui fermait alors le gestionnaire de la base</td><td>Le refus est dit après la transaction (trouvé par Flavie en relisant)</td></tr>
+            <tr><td>Le test du verrou passait même sans le verrou</td><td>Il prouvait le recomptage des photos, pas le verrou</td><td>Un test qui lit les requêtes SQL envoyées, prouvé en retirant le verrou pour le voir échouer (trouvé par Flavie en relisant)</td></tr>
+            <tr><td>Après une action sur une photo, le curseur se perdait</td><td>La liste à jour arrive un affichage plus tard, et le bouton visé était encore désactivé</td><td>Le curseur attend que l'élément existe et soit utilisable</td></tr>
+            <tr><td>Le lien du PDF se lisait « programme(nouvel onglet) »</td><td>Un espace en début de texte caché est perdu dans le nom calculé par le navigateur</td><td>Le texte visible groupé à part ; les 7 autres liens du site dans le même cas forment l'issue #234</td></tr>
+            <tr><td>Une photo sans type annoncé par le navigateur était refusée à l'écran</td><td>Certains navigateurs n'annoncent pas le type d'un fichier</td><td>Laissée passer à l'écran, comme pour le logo de #80 : le serveur lit le vrai type dans le contenu</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note"><p>Pour ce journal aussi : le bouton du fichier apparaissait en anglais sur les captures (« Choose File »). Le Chromium léger des captures n'a que l'anglais ; elles sont maintenant prises avec le Chromium complet, en français, comme chez un visiteur.</p></div>
+    </section>
+
+    <section id="accessibilite" aria-labelledby="accessibilite-titre">
+      <h2 id="accessibilite-titre">Pour tout le monde</h2>
+      <div class="grid2">
+        <div class="box"><h3>Chaque bouton dit sa photo</h3><p>Un lecteur d'écran entend « Monter : photo 2 », « Supprimer : photo 3 », et non cinq « Supprimer » identiques.</p></div>
+        <div class="box"><h3>Le curseur suit la photo</h3><p>Après « Descendre », il reste sur la photo déplacée ; après une suppression, il va sur la suivante ; après un envoi, sur la nouvelle photo.</p></div>
+        <div class="box"><h3>Une suppression qui protège</h3><p>La confirmation s'ouvre sur « Garder » : un Entrée réflexe ne supprime rien.</p></div>
+        <div class="box"><h3>Les erreurs à leur place</h3><p>Chaque oubli est dit sous son champ, et le curseur va sur le premier. Pendant un envoi, le bouton garde le curseur au lieu de le perdre.</p></div>
+      </div>
+      <div class="note"><p>Contrôlé avec axe à 360 et 1 280 px, avec deux photos puis avec le panneau d'envoi ouvert et ses erreurs : aucune violation. Les annonces des lecteurs d'écran restent à vérifier à la main, à la recette du lot 6.</p></div>
+    </section>
+
+    <section id="limites" aria-labelledby="limites-titre">
+      <h2 id="limites-titre">Les limites</h2>
+      <ul class="prose">
+        <li><strong>Pas de recadrage</strong> d'une photo avant l'envoi, ni de glisser-déposer dans la galerie.</li>
+        <li><strong>Un PDF est servi tel qu'il est venu</strong> : inspecté, mais pas nettoyé. Il ne s'exécute jamais chez Epika ; c'est le lecteur PDF du navigateur qui l'ouvre.</li>
+        <li><strong>Pas encore d'antivirus</strong>, ni de domaine séparé pour les fichiers : prévus avec la mise en ligne (#99).</li>
+        <li><strong>La modération des fichiers</strong> (une photo signalée, retirée par l'équipe) viendra avec le lot 5 (#89).</li>
+        <li><strong>Les fichiers sont sur le serveur</strong> pendant le développement ; un stockage objet (Scaleway ou un autre) prendra le relais en production.</li>
+      </ul>
+    </section>
+
+    <details class="tech" id="technique">
+      <summary>
+        <span class="tech-title">La partie technique</span>
+        <span class="tech-hint">Les routes, l'image refaite, l'inspection des PDF, le verrou des dix photos, l'ordre des fichiers, l'écran, les fichiers et les tests : pour les développeurs.</span>
+        <span class="tech-action" aria-hidden="true"><span class="when-closed">Afficher</span><span class="when-open">Masquer</span></span>
+      </summary>
+      <div class="tech-body">
+
+        <section id="api" aria-labelledby="api-titre">
+          <h2 id="api-titre">Les routes de l'API</h2>
+          <div class="prose"><p>Toutes sous <code>/api/me/organization/events/{id}</code>, pour un compte connecté, sur un événement de sa structure. Comme pour <a href="81-gerer-ses-evenements.html">#81</a>, les réponses suivent toujours le même ordre : 404 (pas un de mes événements), 403 (pas le droit, via <code>EventVoter</code>), 409 (pas depuis cet état), 422 (une règle).</p></div>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les routes des photos et du PDF, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Route</th><th scope="col">Ce qu'elle fait</th><th scope="col">Limite par compte</th></tr></thead>
+              <tbody>
+                <tr><td><code>POST /photos</code> (multipart)</td><td>Ajoute une photo : <code>file</code>, <code>credit</code>, <code>caption</code>, <code>rightsConfirmed</code></td><td>60 par heure</td></tr>
+                <tr><td><code>PATCH /photos/{photoId}</code></td><td>Change la légende et le crédit</td><td>120 par heure, partagées</td></tr>
+                <tr><td><code>POST /photos/{photoId}/primary</code></td><td>En fait l'image des cartes</td><td>idem</td></tr>
+                <tr><td><code>POST /photos/{photoId}/position</code></td><td>La déplace dans la galerie (0 = première)</td><td>idem</td></tr>
+                <tr><td><code>DELETE /photos/{photoId}</code></td><td>La retire, avec son fichier</td><td>idem</td></tr>
+                <tr><td><code>POST /program-pdf</code> (multipart)</td><td>Envoie le PDF, qui remplace le précédent</td><td>60 par heure</td></tr>
+                <tr><td><code>DELETE /program-pdf</code></td><td>Le retire, avec son fichier</td><td>120 par heure, partagées</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="prose"><p>Le programme, lui, n'a pas de route : c'est un champ, <code>programSteps</code>, envoyé avec le <code>PATCH</code> de l'étape. La liste entière remplace l'ancienne. Toutes ces routes renvoient l'événement complet : l'écran le met tel quel dans son cache (TanStack Query), sans relire.</p></div>
+          <div class="note"><p>Pourquoi <code>POST</code> pour remplacer le PDF, et pas <code>PUT</code> ? PHP ne lit les fichiers d'une requête multipart que pour un <code>POST</code>.</p></div>
+        </section>
+
+        <section id="image" aria-labelledby="image-titre">
+          <h2 id="image-titre">Une image refaite, pas copiée</h2>
+          <ol class="pipeline">
+            <li><div><strong>Le vrai type, lu dans le contenu</strong><span>Pas l'extension ni ce que dit le navigateur : JPEG, PNG ou WebP. SVG et GIF sont refusés (un SVG peut contenir du script).</span></div></li>
+            <li><div><strong>La taille avant de décoder</strong><span>10 Mo, 100 à 6 000 pixels de côté : un petit fichier qui se décompresserait en image géante (une « bombe ») est refusé avant d'occuper la mémoire.</span></div></li>
+            <li><div><strong>Réécrite par GD</strong><span><code>ImageProcessor</code> (de #80) en fait un WebP de 1 600 pixels au plus, redressé, sans données EXIF : une image neuve, faite de pixels seulement.</span></div></li>
+            <li><div><strong>Rangée sous un nom au hasard</strong><span><code>events/&lt;UUID&gt;.webp</code>, avec son type écrit à côté (<code>mimetype</code>) : un stockage objet servira le bon <code>Content-Type</code>, sans le deviner.</span></div></li>
+          </ol>
+          <div class="prose"><p>La base de données garde la clé, jamais une adresse : l'adresse est construite à l'affichage (<code>MediaUrls::ofFileOrSource()</code>). Changer de stockage ou de domaine ne demandera aucune migration. Des contraintes <code>CHECK</code> tiennent l'origine d'une photo : une photo importée a une adresse et rien d'autre ; une photo envoyée a sa clé, son crédit et la date de l'accord.</p></div>
+        </section>
+
+        <section id="pdf" aria-labelledby="pdf-titre">
+          <h2 id="pdf-titre">L'inspection des PDF</h2>
+          <div class="prose"><p><code>PdfInspector</code> est une classe « pure » : elle reçoit des octets et refuse ou laisse passer, sans base ni fichier, donc facile à tester. Elle est appelée après les deux premières vérifications (le type <code>application/pdf</code> lu dans le contenu, et la signature <code>%PDF-</code> en tête du fichier).</p></div>
+          <div class="grid2">
+            <div class="box"><h3>Les noms qui agissent</h3><p><code>/JavaScript</code>, <code>/JS</code>, <code>/Launch</code>, <code>/EmbeddedFile(s)</code>, <code>/RichMedia</code>, <code>/XFA</code>, <code>/AA</code>, <code>/SubmitForm</code>, <code>/ImportData</code> : leur présence suffit à refuser.</p></div>
+            <div class="box"><h3>Les noms déguisés</h3><p>Dans un PDF, <code>/J#61vaScript</code> veut dire <code>/JavaScript</code> (<code>#61</code> = « a »). Les échappements sont décodés avant la recherche.</p></div>
+            <div class="box"><h3>Les flux compressés</h3><p>Un nom peut se cacher dans une partie compressée. Chaque flux est décompressé morceau par morceau (64 Ko), jusqu'à 20 Mo en tout : au-delà, c'est une bombe de décompression, refusée.</p></div>
+            <div class="box"><h3>Le chiffrement</h3><p>Un PDF chiffré (<code>/Encrypt</code>) ne se lit pas, donc ne s'inspecte pas : il est refusé.</p></div>
+          </div>
+          <div class="note"><p>Le message dit quoi faire : « enregistrez-le à nouveau en PDF simple, puis envoyez-le ». Une fonction « Imprimer en PDF » suffit à retirer le contenu actif.</p></div>
+        </section>
+
+        <section id="verrou" aria-labelledby="verrou-titre">
+          <h2 id="verrou-titre">Dix photos, même à deux</h2>
+          <div class="prose"><p>Deux onglets envoient chacun une photo au même instant, sur un événement qui en a 9. Chaque requête compte 9 photos, toutes deux en ajoutent une : 11. Pour l'éviter, l'ajout se fait dans une transaction qui <strong>verrouille la ligne de l'événement</strong> (<code>SELECT … FOR UPDATE</code>, via <code>lock(PESSIMISTIC_WRITE)</code> de Doctrine) puis recompte. La seconde requête attend que la première ait fini, recompte, trouve 10 et refuse.</p></div>
+          <ol class="pipeline">
+            <li><div><strong>L'image d'abord écrite</strong><span>Le travail lourd (décodage, WebP) se fait hors du verrou, pour ne pas faire attendre les autres.</span></div></li>
+            <li><div><strong>Verrou, recompte, ajout</strong><span>La transaction renvoie « ajoutée » ou « pleine », sans lever d'erreur à l'intérieur : une exception dans <code>wrapInTransaction()</code> fermerait le gestionnaire de Doctrine.</span></div></li>
+            <li><div><strong>Pleine : le fichier effacé</strong><span>Puis la 422 « 10 photos au plus » sur le champ <code>file</code>.</span></div></li>
+          </ol>
+          <div class="prose"><p>Deux tests le prouvent : l'un insère une dixième photo par une autre connexion et vérifie que la onzième est refusée ; l'autre lit le journal SQL de Doctrine et vérifie l'ordre <code>FOR UPDATE</code>, puis <code>COUNT</code>, puis <code>INSERT</code>. Tous deux échouent si l'on retire le verrou ou le recompte (vérifié en les retirant). La PR décrit aussi une vérification à la main avec deux sessions <code>psql</code> : l'une tient le verrou, l'envoi attend, <code>pg_stat_activity</code> le montre en attente.</p></div>
+        </section>
+
+        <section id="ordre" aria-labelledby="ordre-titre">
+          <h2 id="ordre-titre">Les fichiers, dans cet ordre</h2>
+          <div class="prose"><p>Chaque changement de fichier suit le même ordre, pour que la base ne pointe jamais vers un fichier absent : le nouveau fichier écrit d'abord ; puis la base enregistrée (si elle échoue, le nouveau fichier est effacé) ; ensuite seulement l'ancien fichier supprimé. Une suppression ratée laisse un fichier orphelin, noté dans les journaux, jamais une erreur pour la personne. Un brouillon supprimé emporte les fichiers de ses photos et de son PDF, après ses lignes.</p></div>
+        </section>
+
+        <section id="ecran" aria-labelledby="ecran-titre">
+          <h2 id="ecran-titre">L'écran</h2>
+          <div class="grid2">
+            <div class="box"><h3>Un hook par action</h3><p><code>hooks/use-event-media.ts</code> : envoyer, modifier, choisir la principale, déplacer, supprimer une photo ; envoyer, retirer le PDF. Chacun met l'événement renvoyé dans le cache.</p></div>
+            <div class="box"><h3>Un panneau, pas un formulaire</h3><p>« Ajouter une photo » vit dans le formulaire de l'événement : un <code>&lt;form&gt;</code> ne peut pas en contenir un autre. Entrée y envoie la photo au lieu de passer à l'étape suivante.</p></div>
+            <div class="box"><h3>Le focus qui attend</h3><p><code>useFocusWhenReady</code> réessaie après chaque affichage, jusqu'à ce que l'élément existe et ne soit plus désactivé : l'événement à jour arrive par le cache un affichage plus tard.</p></div>
+            <div class="box"><h3>L'aperçu libéré</h3><p>L'aperçu est une adresse <code>blob:</code> qui garde le fichier en mémoire ; elle est libérée à chaque nouveau choix, après l'envoi et à la fermeture du panneau.</p></div>
+          </div>
+          <div class="prose"><p>Le bouton « Envoyer la photo » porte <code>aria-disabled</code> pendant l'envoi, et non <code>disabled</code> : un bouton désactivé perd le focus, et le lecteur d'écran avec lui. Un second clic est simplement ignoré.</p></div>
+        </section>
+
+        <section id="fichiers" aria-labelledby="fichiers-titre">
+          <h2 id="fichiers-titre">Les fichiers clés</h2>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Les fichiers clés et leur rôle, tableau défilant">
+            <table>
+              <thead><tr><th scope="col">Fichier</th><th scope="col">Son rôle</th></tr></thead>
+              <tbody>
+                <tr><td><code>Service/Event/EventPhotoUploader.php</code></td><td>Lit, refait et range une photo ; le verrou des dix photos</td></tr>
+                <tr><td><code>Service/Event/EventProgramPdfUploader.php</code></td><td>Vérifie et range le PDF, remplace le précédent</td></tr>
+                <tr><td><code>Service/Media/PdfInspector.php</code></td><td>Refuse un PDF à contenu actif, chiffré ou trop gonflé</td></tr>
+                <tr><td><code>Entity/Event.php</code>, <code>Entity/Photo.php</code></td><td>Les règles : 10 photos, une seule principale, l'ordre, 30 étapes de programme</td></tr>
+                <tr><td><code>services/event-media.ts</code></td><td>Les appels à l'API, les vérifications de confort, les messages d'échec</td></tr>
+                <tr><td><code>form/PhotoManager.tsx</code>, <code>form/PhotoUpload.tsx</code></td><td>La liste des photos et le panneau d'envoi</td></tr>
+                <tr><td><code>form/ProgramEditor.tsx</code>, <code>form/ProgramPdfField.tsx</code></td><td>Le programme et son PDF</td></tr>
+                <tr><td><code>services/event-preview.ts</code></td><td>Les photos, le programme et le PDF dans l'aperçu</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="tests" aria-labelledby="tests-titre">
+          <h2 id="tests-titre">Les tests</h2>
+          <div class="grid2">
+            <div class="box"><h3>PHPUnit</h3><ul>
+              <li>Chaque route : les envois, les refus, les droits, les limites</li>
+              <li><code>PdfInspector</code> : 13 PDF faits à la main, dont un nom déguisé et un script caché dans un flux compressé</li>
+              <li>Le verrou : la course entre deux connexions, l'ordre des requêtes SQL</li>
+              <li>Les fichiers effacés avec leur photo, leur PDF remplacé ou leur brouillon</li>
+            </ul></div>
+            <div class="box"><h3>Vitest et Playwright : 709 et 210 tests</h3><ul>
+              <li>La liste : principale, déplacer et le focus, modifier, supprimer confirmé</li>
+              <li>Un envoi réel : le contenu du formulaire multipart vérifié</li>
+              <li>Le nom du lien du PDF, tel que Chrome le calcule</li>
+              <li>axe à 360 et 1 280 px, sans débordement</li>
+            </ul></div>
+          </div>
+        </section>
+
+        <section id="prs" aria-labelledby="prs-titre">
+          <h2 id="prs-titre">Les pull requests</h2>
+          <ul class="prs">
+            <li><span class="num">#232</span><span>L'API : les photos (ajout refait en WebP, légende, crédit, principale, ordre, suppression), le PDF du programme, le programme en étapes, les fichiers d'un brouillon supprimé, la documentation.</span></li>
+            <li><span class="num">#235</span><span>L'écran de la septième étape, l'aperçu, l'inspection des PDF, le type écrit avec chaque fichier, le verrou des dix photos, les notes de sécurité pour #99 et #89, les tests de bout en bout et la documentation.</span></li>
+          </ul>
+        </section>
+
+      </div>
+    </details>
+
+    <section id="appris" aria-labelledby="appris-titre">
+      <h2 id="appris-titre">Ce que ce travail a appris</h2>
+      <ul class="prose">
+        <li><strong>Un fichier envoyé est suspect par principe</strong> : on ne le garde pas tel quel quand on peut le refaire, et on l'inspecte quand on ne peut pas.</li>
+        <li><strong>Un test doit prouver ce qu'il prétend</strong> : retirer ce qu'il protège, et le voir échouer, est la seule façon d'en être sûr.</li>
+        <li><strong>Deux requêtes au même instant</strong> trompent un simple « compter puis ajouter » : il faut un verrou.</li>
+        <li><strong>Essayer l'écran soi-même</strong> reste indispensable : l'aperçu sans programme ne se voyait dans aucun test.</li>
+      </ul>
+    </section>
+
+    <section id="suite" aria-labelledby="suite-titre">
+      <h2 id="suite-titre">La suite</h2>
+      <div class="prose"><p>La suite du lot 4. Deux issues sont nées pendant #84 : une politique de sécurité des contenus (CSP) pour tout le site (#233), et sept liens « nouvel onglet » dont le texte caché colle au nom (#234). Les protections de la mise en ligne sont notées pour #99, et la modération des fichiers pour #89.</p></div>
+    </section>
+
+    <nav class="pager" aria-label="Issue précédente et suivante">
+      <a href="83-les-dates-d-un-evenement.html" rel="prev"><span>← Issue précédente</span><strong>#83 Les dates d'un événement</strong></a>
+    </nav>
+  </main>
+</div>
+<script src="../theme.js"></script>
+<script src="../toc.js"></script>
+<script src="../gallery.js"></script>
+</body>
+</html>
